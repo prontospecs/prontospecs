@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PRODUCTION SPECS</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root { --pronto: #2b6cb0; --bg: #f1f5f9; --text: #1e293b; --white: #ffffff; --border: #cbd5e1; }
+        body.dark-theme { --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155; }
+        
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); padding-bottom: 100px; }
+        #app { max-width: 950px; margin: 20px auto; width: 96%; }
+
+        /* ИНТЕРФЕЙС */
+        .home-card { background: var(--white); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .main-title { font-size: 50px; font-weight: 900; color: var(--pronto); line-height: 1; margin: 0; }
+        .subtitle { font-size: 40px; font-weight: 900; color: #3b82f6; margin-bottom: 30px; line-height: 1; }
+
+        /* АРХИВ */
+        .archive-item { background: var(--white); border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; border-radius: 12px; }
+        .archive-content { display: flex; gap: 15px; align-items: center; }
+        .archive-thumb { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; background: #eee; border: 1px solid #ddd; }
+        .archive-actions { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; justify-content: flex-end; }
+
+        /* ЛИСТ ТЗ */
+        .document-sheet { background: white; padding: 40px; border-radius: 4px; box-shadow: 0 0 40px rgba(0,0,0,0.15); color: black; }
+        .doc-header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--pronto); padding-bottom: 15px; margin-bottom: 20px; }
+        .top-info-grid { display: grid; grid-template-columns: 2.2fr 0.7fr 0.7fr; gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; }
+
+        /* ТАБЛИЦА */
+        .spec-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+        .spec-table td { border: 1px solid #94a3b8; padding: 8px; vertical-align: middle; color: black; }
+        .section-title td { background: #e0f2fe; font-weight: bold; color: #0369a1; text-transform: uppercase; font-size: 11px; padding: 10px; }
+
+        /* ПОЛЯ ВВОДА */
+        input, select, textarea { width: 100%; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px; font-size: 14px; font-weight: bold; font-family: inherit; background: white; }
+        textarea { resize: none; }
+
+        /* КНОПКИ */
+        .footer-btns { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; display: flex; gap: 10px; justify-content: center; z-index: 100; border-top: 1px solid #ccc; }
+        .btn { border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: var(--pronto); }
+        .btn-mini { padding: 8px 12px; font-size: 14px; border-radius: 6px; border: none; color: white; cursor: pointer; }
+        .close-x { font-size: 30px; cursor: pointer; color: #ccc; background: none; border: none; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 400px; text-align: center; }
+        
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #eee; border-top: 5px solid var(--pronto); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* === РЕЖИМ ПЕЧАТИ И PDF (ЧИСТЫЙ ЛИСТ) === */
+/* === НАСТРОЙКИ ПЕЧАТИ И PDF === */
+        @media print {
+            @page { 
+                margin: 10mm; /* Отступы сверху и снизу 10 мм */
+                size: A4;
+            }
+
+            body { 
+                background: white; 
+                -webkit-print-color-adjust: exact; 
+            }
+
+            /* Скрываем лишнее: кнопки, плюсики админа, крестики */
+            .home-card, .footer-btns, .close-x, .admin-add-btn, .no-print, #loader { 
+                display: none !important; 
+            }
+            
+            .document-sheet { 
+                box-shadow: none; padding: 0; margin: 0; width: 100%; border: none; 
+            }
+            
+            /* Управление разрывами страниц: строки не режутся пополам */
+            table, tr, td { 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important;
+            }
+            
+            /* Раздел "Эскиз" всегда начинаем с новой страницы, если он не влезает */
+            tr.section-title:nth-last-of-type(1) {
+                page-break-before: auto; 
+            }
+
+            /* --- ГЛАВНОЕ: РАМОЧКИ ОСТАЮТСЯ --- */
+            input, select, textarea { 
+                border: 2px solid #cbd5e1 !important; /* Красивая рамочка */
+                background: white !important; 
+                color: black !important;
+                font-weight: bold;
+                box-shadow: none !important;
+                appearance: none !important; /* Убираем стрелку выпадающего списка */
+                -webkit-appearance: none !important;
+                padding-right: 5px !important; /* Чтобы текст не наезжал */
+            }
+
+            /* Если поле пустое или "Нет" - делаем текст серым или черным по желанию */
+            ::placeholder { color: transparent; }
+            
+            /* Картинка эскиза растягивается */
+            #upload_zone { border: none !important; }
+            #img_text { display: none !important; }
+            #preview_img { 
+                max-width: 100% !important; 
+                max-height: 900px !important; 
+                display: block !important; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loader"><div class="spinner"></div></div>
+    <div id="app"></div>
+    <script src="config.js"></script>
+    <script src="router.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
