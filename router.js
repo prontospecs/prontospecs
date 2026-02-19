@@ -218,6 +218,7 @@ function renderSelect(id, configKey) {
 // 5. HTML ШАБЛОНЫ (VIEWS)
 // ======================================================
 
+// --- МОДАЛЬНЫЕ ОКНА ---
 const modalsHTML = `
     <div id="loginModal" class="modal" style="display:none">
         <div class="modal-content">
@@ -255,60 +256,42 @@ const modalsHTML = `
     </div>
 `;
 
-// --- АРХИВ ПРОЕКТОВ (Внутри приложения PRODUCTION SPECS) ---
-const homeView = () => {
-    const archive = getArchive();
-    
-    return `
-    <div class="home-card fade-in">
-        <h1 class="main-title">PRODUCTION</h1>
-        <div class="subtitle">SPECS</div>
-        <div style="font-size:16px; font-weight:bold; color:var(--pronto); margin-top:-10px; margin-bottom:20px; text-transform:uppercase;">(fridge)</div>
-        
-        <div style="text-align:left; background:#f8fafc; padding:25px; border-radius:15px; margin:25px 0; border-left:6px solid var(--pronto); color:#475569; font-size:14px; line-height:1.6;">
-            <p><strong>PRODUCTION SPECS (fridge)</strong> — цифровой модуль компании PRONTO.</p>
-            <p>Система предназначена для мгновенной синхронизации технических заданий на холодильное оборудование между всеми подразделениями производства.</p>
-        </div>
+// --- ПОРТАЛ (ГЛАВНАЯ СТРАНИЦА ЭКОСИСТЕМЫ) ---
+const portalView = () => `
+    <div class="home-card fade-in" style="max-width: 800px; text-align: center;">
+        <h1 class="main-title" style="font-size: 48px;">PRONTO</h1>
+        <div class="subtitle" style="font-size: 24px; margin-bottom: 5px;">SPECS</div>
+        <p style="color:#64748b; margin-bottom: 40px;">Единая платформа для всех сервисов компании</p>
 
-        <button onclick="createNewTZ()" class="btn" style="height:85px; width:100%; font-size:22px; margin-bottom:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            + СОЗДАТЬ ТЗ
-        </button>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button onclick="navigate('settings')" class="btn btn-secondary" style="flex:1;">НАСТРОЙКИ СИСТЕМЫ</button>
-            <button onclick="navigate('portal')" class="btn btn-secondary" style="background:#64748b; border:none; color:white;">НА ПОРТАЛ</button>
-        </div>
-        
-        <div style="margin-top:70px; text-align:left;">
-            <h4 style="border-bottom:3px solid var(--border); padding-bottom:15px; color:var(--pronto); font-weight:900;">ПОСЛЕДНИЕ ПРОЕКТЫ</h4>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; text-align: left;">
             
-            ${archive.length > 0 ? archive.map((item, i) => `
-                <div class="archive-item">
-                    <div class="archive-content" style="display:flex; align-items:center; gap:15px; width:100%;">
-                        ${item.image ? 
-                            `<img src="${item.image}" class="archive-thumb">` : 
-                            `<div class="archive-thumb" style="display:flex; align-items:center; justify-content:center; color:#ccc;">📷</div>`
-                        }
-                        <div style="flex:1;">
-                            <b style="font-size:18px; color:var(--pronto);">№ ${item.tz_no}</b>
-                            <div style="font-size:14px; margin-top:5px; font-weight:bold;">${item.eq}</div>
-                            <div style="font-size:12px; color:#64748b; margin-top:3px;">Менеджер: ${item.manager || '—'} | ${item.date}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="archive-actions" style="margin-top:15px; display:flex; justify-content:flex-end; gap:8px;">
-                        <button onclick="editFromArchive(${i})" class="btn-mini" style="background:#10b981;" title="Открыть">📂</button>
-                        <button onclick="alert('Генерация PDF из архива...')" class="btn-mini" style="background:#3b82f6;" title="PDF">📄</button>
-                        <button onclick="alert('Печать из архива...')" class="btn-mini" style="background:#64748b;" title="Печать">🖨️</button>
-                        <button onclick="sendFromArchive(${i})" class="btn-mini" style="background:#8b5cf6;" title="Отправить">📤</button>
-                        <button onclick="deleteFromArchive(${i})" class="btn-mini" style="background:#ef4444;" title="Удалить">🗑️</button>
-                    </div>
+            <div style="border:2px solid #cbd5e1; border-radius:15px; padding:25px; cursor:pointer; transition:0.3s; background: white;" 
+                 onmouseover="this.style.borderColor='var(--pronto)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
+                 onmouseout="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'" 
+                 onclick="navigate('login')">
+                <div style="color:var(--pronto); margin-bottom:15px;">
+                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="5" y1="9" x2="19" y2="9"></line>
+                        <line x1="9" y1="4.5" x2="9" y2="6.5"></line>
+                        <line x1="9" y1="12" x2="9" y2="15"></line>
+                    </svg>
                 </div>
-            `).join('') : '<p style="text-align:center; color:#94a3b8; padding:40px;">Архив пуст</p>'}
+                <h3 style="margin:0 0 5px 0; color:var(--text); font-size:22px;">PRODUCTION SPECS</h3>
+                <div style="font-size:14px; font-weight:bold; color:var(--pronto); margin-bottom:10px;">(fridge)</div>
+                <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий для холодильного оборудования. Создание, печать и экспорт в PDF.</p>
+            </div>
+
+            <div style="border:2px dashed #cbd5e1; border-radius:15px; padding:25px; cursor:not-allowed; opacity:0.6; background: #f8fafc;">
+                <div style="font-size:40px; margin-bottom:15px;">🚀</div>
+                <h3 style="margin:0 0 10px 0; color:var(--text);">NEW APP</h3>
+                <p style="font-size:13px; color:#64748b; margin:0;">Следующее приложение в разработке...</p>
+            </div>
         </div>
-    </div>`;
-};
-// --- ЭКРАН ВХОДА (Если аккаунт есть) ---
+    </div>
+`;
+
+// --- ЭКРАН ВХОДА ---
 const loginView = () => `
     <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
@@ -316,171 +299,9 @@ const loginView = () => `
             <h2 style="margin:0; color:var(--pronto);">ВХОД</h2>
             <div style="width:50px;"></div>
         </div>
-        
         <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Войдите, если у вас уже есть аккаунт.</p>
-
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
-            <input type="text" id="auth_login" placeholder="Ваш логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-            
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
-            <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
-            
-            <button onclick="mockLogin()" class="btn" style="width:100%; margin-bottom:15px; background:#10b981;">ВОЙТИ</button>
-            
-            <div style="text-align:center; margin-top:10px;">
-                <span style="color:#64748b; font-size:14px;">Нет аккаунта? </span>
-                <a href="#" onclick="navigate('register')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Зарегистрироваться</a>
-            </div>
-        </div>
-    </div>
-`;
-
-// --- ЭКРАН РЕГИСТРАЦИИ (Если аккаунта нет) ---
-const registerView = () => `
-    <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-            <button onclick="navigate('portal')" class="btn-mini" style="background:#cbd5e1; color:#0f172a;">🡠 Назад</button>
-            <h2 style="margin:0; color:var(--pronto);">РЕГИСТРАЦИЯ</h2>
-            <div style="width:50px;"></div>
-        </div>
-        
-        <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Создайте новый аккаунт (потребуется одобрение).</p>
-
-        <div style="text-align: left;">
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ЛОГИН:</label>
-            <input type="text" id="reg_login" placeholder="Новый логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-            
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ПАРОЛЬ:</label>
-            <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
-            
-            <button onclick="mockRegister()" class="btn" style="width:100%; margin-bottom:15px; background:#3b82f6;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
-            
-            <div style="text-align:center; margin-top:10px;">
-                <span style="color:#64748b; font-size:14px;">Уже есть аккаунт? </span>
-                <a href="#" onclick="navigate('login')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Войти</a>
-            </div>
-        </div>
-    </div>
-`;
-
-// --- ОБНОВЛЕННАЯ ЛОГИКА КНОПОК ---
-function mockLogin() {
-    const login = document.getElementById('auth_login').value;
-    if(login.trim() === '') {
-        alert("Введите логин!");
-        return;
-    }
-    // Временно пускаем всех для теста дизайна
-    alert("Успешный вход!");
-    navigate('home'); // Пускаем в приложение SPECS
-}
-
-function mockRegister() {
-    const login = document.getElementById('reg_login').value;
-    if(login.trim() === '') {
-        alert("Придумайте логин для регистрации!");
-        return;
-    }
-    alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
-    navigate('portal'); // Возвращаем на главную после заявки
-}
-
-// --- АРХИВ ПРОЕКТОВ (Бывшая главная) ---
-const homeView = () => {
-    const archive = getArchive();
-    
-    return `
-    <div class="home-card fade-in">
-        <h1 class="main-title">PRONTO</h1>
-        <div class="subtitle">SPECS</div>
-        
-        <div style="text-align:left; background:#f8fafc; padding:25px; border-radius:15px; margin:25px 0; border-left:6px solid var(--pronto); color:#475569; font-size:14px; line-height:1.6;">
-            <p><strong>PRODUCTION SPECS</strong> — цифровая экосистема компании PRONTO.</p>
-            <p>Система предназначена для мгновенной синхронизации технических заданий между всеми подразделениями производства в режиме реального времени.</p>
-        </div>
-
-        <button onclick="createNewTZ()" class="btn" style="height:85px; width:100%; font-size:22px; margin-bottom:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            + СОЗДАТЬ ТЗ
-        </button>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button onclick="navigate('settings')" class="btn btn-secondary" style="flex:1;">НАСТРОЙКИ СИСТЕМЫ</button>
-            <button onclick="navigate('portal')" class="btn btn-secondary" style="background:#64748b; border:none; color:white;">НА ПОРТАЛ</button>
-        </div>
-        
-        <div style="margin-top:70px; text-align:left;">
-            <h4 style="border-bottom:3px solid var(--border); padding-bottom:15px; color:var(--pronto); font-weight:900;">ПОСЛЕДНИЕ ПРОЕКТЫ</h4>
-            
-            ${archive.length > 0 ? archive.map((item, i) => `
-                <div class="archive-item">
-                    <div class="archive-content" style="display:flex; align-items:center; gap:15px; width:100%;">
-                        ${item.image ? 
-                            `<img src="${item.image}" class="archive-thumb">` : 
-                            `<div class="archive-thumb" style="display:flex; align-items:center; justify-content:center; color:#ccc;">📷</div>`
-                        }
-                        <div style="flex:1;">
-                            <b style="font-size:18px; color:var(--pronto);">№ ${item.tz_no}</b>
-                            <div style="font-size:14px; margin-top:5px; font-weight:bold;">${item.eq}</div>
-                            <div style="font-size:12px; color:#64748b; margin-top:3px;">Менеджер: ${item.manager || '—'} | ${item.date}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="archive-actions" style="margin-top:15px; display:flex; justify-content:flex-end; gap:8px;">
-                        <button onclick="editFromArchive(${i})" class="btn-mini" style="background:#10b981;" title="Открыть">📂</button>
-                        <button onclick="alert('Печать...')" class="btn-mini" style="background:#3b82f6;" title="PDF">📄</button>
-                        <button onclick="alert('Печать...')" class="btn-mini" style="background:#64748b;" title="Печать">🖨️</button>
-                        <button onclick="editFromArchive(${i})" class="btn-mini" style="background:#f59e0b;" title="Редактировать">✏️</button>
-                        <button onclick="deleteFromArchive(${i})" class="btn-mini" style="background:#ef4444;" title="Удалить">🗑️</button>
-                    </div>
-                </div>
-            `).join('') : '<p style="text-align:center; color:#94a3b8; padding:40px;">Архив пуст</p>'}
-        </div>
-    </div>`;
-};
-
-// Страница: НАСТРОЙКИ (SETTINGS)
-const settingsView = () => {
-    const s = getSettings();
-    const isAdmin = s.role === 'admin';
-    
-    return `
-    <div class="home-card fade-in">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
-            <h1 style="margin:0; font-weight:900;">НАСТРОЙКИ</h1>
-            <button onclick="navigate('home')" class="close-x">✕</button>
-        </div>
-        
-        <div style="text-align:left; max-width:600px; margin:0 auto;">
-            <div style="margin-bottom:30px;">
-                <label style="font-weight:bold; display:block; margin-bottom:10px;">ТЕМА ОФОРМЛЕНИЯ:</label>
-                <select id="theme_select" style="width:100%;">
-                    <option value="light" ${s.theme==='light'?'selected':''}>Светлая тема</option>
-                    <option value="dark" ${s.theme==='dark'?'selected':''}>Темная тема</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom:30px;">
-                <label style="font-weight:bold; display:block; margin-bottom:10px;">РОЛЬ ПОЛЬЗОВАТЕЛЯ:</label>
-                <select id="role_select" onchange="handleRole(this)" style="width:100%;">
-                    <option value="participant" ${!isAdmin?'selected':''}>Участник</option>
-                    <option value="admin" ${isAdmin?'selected':''}>Администратор</option>
-                </select>
-            </div>
-
-            ${isAdmin ? `
-                <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px; text-align:center;">
-                    <h4 style="margin-top:0;">БЕЗОПАСНОСТЬ</h4>
-                    <button onclick="document.getElementById('changePassModal').style.display='flex'" class="btn" style="background:orange; width:100%;">СМЕНИТЬ ПАРОЛЬ</button>
-                </div>
-            ` : ''}
-            
-            <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ</button>
-        </div>
-        ${modalsHTML}
-    </div>`;
-};
-
 // --- ШАБЛОН ТАБЛИЦЫ ---
 const templateView = () => `
     <div class="document-sheet fade-in" id="print-root">
@@ -894,6 +715,7 @@ function mockRegister() {
     }
     alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
+
 
 
 
