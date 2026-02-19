@@ -1,10 +1,10 @@
 /**
  * ======================================================
- * PRONTO SPECS CLOUD ENGINE | VERSION 2.1 (FINAL)
+ * PRONTO SPECS CLOUD ENGINE | VERSION 3.0 (ECOSYSTEM)
  * ======================================================
  * Разработчик: Тимур
  * Назначение: Управление логикой приложения, рендеринг,
- * синхронизация с Firebase и генерация HD документов.
+ * портал экосистемы и генерация HD документов.
  * ======================================================
  */
 
@@ -44,8 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Применяем тему оформления при старте
     applyTheme();
     
-    // Загружаем главную страницу
-    navigate('home');
+    // Загружаем ПОРТАЛ при старте (изменено с home на portal)
+    navigate('portal');
 });
 
 /**
@@ -81,7 +81,7 @@ const getSettings = () => {
 };
 
 // ======================================================
-// 3. СИСТЕМНЫЕ ФУНКЦИИ
+// 3. СИСТЕМНЫЕ ФУНКЦИИ И НАВИГАЦИЯ
 // ======================================================
 
 function applyTheme() {
@@ -104,17 +104,20 @@ function navigate(view) {
     const app = document.getElementById('app');
     if (!app) return;
 
-    if (view === 'home') {
+    app.innerHTML = ''; // Очищаем экран
+
+    if (view === 'portal') {
+        app.innerHTML = portalView();
+    } else if (view === 'login') {
+        app.innerHTML = loginView();
+    } else if (view === 'home') {
         app.innerHTML = homeView();
-    } 
-    else if (view === 'settings') {
+    } else if (view === 'settings') {
         app.innerHTML = settingsView();
-    } 
-    else if (view === 'template') {
+    } else if (view === 'template') {
         app.innerHTML = templateView();
-    } 
-    else {
-        app.innerHTML = homeView();
+    } else {
+        app.innerHTML = portalView();
     }
 
     // После отрисовки страницы запускаем скрипты
@@ -143,7 +146,6 @@ function renderManageList() {
     if (!modalSelect) return;
     
     modalSelect.innerHTML = '';
-    // Берем данные из глобального конфига
     const list = APP_CONFIG[currentManageKey] || [];
     
     list.forEach(item => {
@@ -189,7 +191,6 @@ function refreshAfterChange() {
     syncToCloud();
 }
 
-// Функция отрисовки выпадающего списка с кнопкой "+"
 function renderSelect(id, configKey) {
     const isAdmin = getSettings().role === 'admin';
     let btnHTML = '';
@@ -216,7 +217,6 @@ function renderSelect(id, configKey) {
 // 5. HTML ШАБЛОНЫ (VIEWS)
 // ======================================================
 
-// Модальные окна (Вход, Пароль, Редактор)
 const modalsHTML = `
     <div id="loginModal" class="modal" style="display:none">
         <div class="modal-content">
@@ -254,7 +254,57 @@ const modalsHTML = `
     </div>
 `;
 
-// Страница: ГЛАВНАЯ (HOME)
+// --- ПОРТАЛ (ГЛАВНАЯ СТРАНИЦА ЭКОСИСТЕМЫ) ---
+const portalView = () => `
+    <div class="home-card fade-in" style="max-width: 800px; text-align: center;">
+        <h1 class="main-title" style="font-size: 48px;">PRONTO</h1>
+        <div class="subtitle" style="font-size: 24px; margin-bottom: 5px;">ECOSYSTEM</div>
+        <p style="color:#64748b; margin-bottom: 40px;">Единая платформа для всех сервисов компании</p>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; text-align: left;">
+            <div style="border:2px solid #cbd5e1; border-radius:15px; padding:25px; cursor:pointer; transition:0.3s; background: white;" 
+                 onmouseover="this.style.borderColor='var(--pronto)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
+                 onmouseout="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'" 
+                 onclick="navigate('login')">
+                <div style="font-size:40px; margin-bottom:15px;">📄</div>
+                <h3 style="margin:0 0 10px 0; color:var(--text);">PRONTO SPECS</h3>
+                <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий. Создание, печать и экспорт в PDF.</p>
+            </div>
+
+            <div style="border:2px dashed #cbd5e1; border-radius:15px; padding:25px; cursor:not-allowed; opacity:0.6; background: #f8fafc;">
+                <div style="font-size:40px; margin-bottom:15px;">🚀</div>
+                <h3 style="margin:0 0 10px 0; color:var(--text);">NEW APP</h3>
+                <p style="font-size:13px; color:#64748b; margin:0;">Следующее приложение в разработке...</p>
+            </div>
+        </div>
+    </div>
+`;
+
+// --- ЭКРАН ВХОДА И РЕГИСТРАЦИИ ---
+const loginView = () => `
+    <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <button onclick="navigate('portal')" class="btn-mini" style="background:#cbd5e1; color:#0f172a;">🡠 Назад</button>
+            <h2 style="margin:0; color:var(--pronto);">ВХОД В СЕРВИС</h2>
+            <div style="width:50px;"></div>
+        </div>
+        
+        <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Для доступа к PRONTO SPECS необходимо авторизоваться.</p>
+
+        <div style="text-align: left;">
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
+            <input type="text" id="auth_login" placeholder="Ваш логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
+            
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
+            <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
+            
+            <button onclick="mockLogin()" class="btn" style="width:100%; margin-bottom:10px;">ВОЙТИ</button>
+            <button onclick="mockRegister()" class="btn btn-secondary" style="width:100%; border:2px solid var(--pronto); background:transparent; color:var(--pronto);">РЕГИСТРАЦИЯ</button>
+        </div>
+    </div>
+`;
+
+// --- АРХИВ ПРОЕКТОВ (Бывшая главная) ---
 const homeView = () => {
     const archive = getArchive();
     
@@ -272,9 +322,10 @@ const homeView = () => {
             + СОЗДАТЬ ТЗ
         </button>
         
-        <button onclick="navigate('settings')" class="btn btn-secondary" style="width:100%;">
-            НАСТРОЙКИ СИСТЕМЫ
-        </button>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button onclick="navigate('settings')" class="btn btn-secondary" style="flex:1;">НАСТРОЙКИ СИСТЕМЫ</button>
+            <button onclick="navigate('portal')" class="btn btn-secondary" style="background:#64748b; border:none; color:white;">НА ПОРТАЛ</button>
+        </div>
         
         <div style="margin-top:70px; text-align:left;">
             <h4 style="border-bottom:3px solid var(--border); padding-bottom:15px; color:var(--pronto); font-weight:900;">ПОСЛЕДНИЕ ПРОЕКТЫ</h4>
@@ -348,7 +399,7 @@ const settingsView = () => {
     </div>`;
 };
 
-// --- 8. ТАБЛИЦА ТЗ (ВСЕ РАЗДЕЛЫ ВЫРОВНЕНЫ) ---
+// --- ШАБЛОН ТАБЛИЦЫ ---
 const templateView = () => `
     <div class="document-sheet fade-in" id="print-root">
         <div class="doc-header">
@@ -519,7 +570,15 @@ function handleFile(input) {
         r.readAsDataURL(f);
     }
 }
-// --- БЛОК 3: ГЕНЕРАТОР PDF (ВСТАВИТЬ ПОСЛЕ handlePrint) ---
+
+// --- ВОССТАНОВЛЕННАЯ ФУНКЦИЯ ПЕЧАТИ ---
+function handlePrint() {
+    prepareForPrint(true);
+    window.print();
+    setTimeout(() => prepareForPrint(false), 1000);
+}
+
+// --- БЛОК 3: ГЕНЕРАТОР PDF ---
 async function genPDF() {
     const el = document.querySelector('.document-sheet');
     const footer = document.querySelector('.footer-btns');
@@ -570,6 +629,7 @@ async function genPDF() {
         prepareForPrint(false);
     }
 }
+
 function saveToArchive() {
     const arc = getArchive();
     arc.unshift({ 
@@ -583,7 +643,6 @@ function saveToArchive() {
     navigate('home');
 }
 
-// --- УМНАЯ ПОДГОТОВКА К ПЕЧАТИ ---
 // --- УМНАЯ ПОДГОТОВКА (ЗАМЕНА СЛОВ) ---
 function prepareForPrint(enable) {
     const inputs = document.querySelectorAll('input, select, textarea');
@@ -592,25 +651,13 @@ function prepareForPrint(enable) {
         if(enable) {
             // ЛОГИКА ДЛЯ ВЫПАДАЮЩИХ СПИСКОВ
             if(el.tagName === 'SELECT') {
-                // Запоминаем, что там было написано
                 if(!el.dataset.originalText) {
                     el.dataset.originalText = el.options[el.selectedIndex].text;
                 }
-
-                // Если выбрано "Выбор..." или пусто -> меняем текст опции на "Нет"
-                // Но саму рамочку не трогаем (она останется благодаря CSS)
                 if(el.value.includes('Выбор') || el.value === '' || el.value.includes('--')) {
-                    // Визуально подменяем текст выбранной опции
                     el.options[el.selectedIndex].text = 'Нет';
                 }
             }
-            
-            // ЛОГИКА ДЛЯ ПУСТЫХ ПОЛЕЙ ВВОДА
-            if(el.tagName === 'INPUT' && el.value === '') {
-                // Можно написать "—" или оставить пустым, но рамка будет
-                // el.value = '—'; // Если хочешь прочерк, раскомментируй
-            }
-
         } else {
             // ВОЗВРАЩАЕМ ВСЁ НАЗАД ПОСЛЕ ПЕЧАТИ
             if(el.tagName === 'SELECT' && el.dataset.originalText) {
@@ -620,14 +667,13 @@ function prepareForPrint(enable) {
         }
     });
 
-    // Скрываем зону "Нажмите для загрузки", если фото нет
     const imgText = document.getElementById('img_text');
     if(imgText) imgText.style.display = enable ? 'none' : (uploadedImageBase64 ? 'none' : 'block');
     
-    // Убираем пунктирную рамку вокруг фото (но оставляем место)
     const upZone = document.getElementById('upload_zone');
     if(upZone) upZone.style.border = enable ? 'none' : '3px dashed #cbd5e1';
 }
+
 function deleteFromArchive(i) {
     if(confirm("Удалить проект из архива?")) {
         const arc = getArchive(); 
@@ -656,6 +702,27 @@ function editFromArchive(i) {
 function createNewTZ() { 
     uploadedImageBase64 = null; 
     navigate('template'); 
+}
+
+// --- ВРЕМЕННЫЕ ФУНКЦИИ ВХОДА (ДЛЯ ПОРТАЛА) ---
+function mockLogin() {
+    const login = document.getElementById('auth_login').value;
+    if(login.trim() === '') {
+        alert("Введите логин!");
+        return;
+    }
+    // Временно пускаем всех для теста дизайна
+    alert("Успешный вход!");
+    navigate('home'); // Пускаем в приложение SPECS
+}
+
+function mockRegister() {
+    const login = document.getElementById('auth_login').value;
+    if(login.trim() === '') {
+        alert("Придумайте логин для регистрации!");
+        return;
+    }
+    alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
 
 
