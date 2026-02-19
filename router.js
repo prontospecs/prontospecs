@@ -503,8 +503,9 @@ const templateView = () => `
                 <tr><td>4.7</td><td>Нагрузка</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_4_7" value="40" style="width:60px; text-align:center;"> <span>кг</span></div></td></tr>
                 <tr><td>4.8</td><td>Подсветка</td><td>${renderSelect('val_4_8', 'lighting')}</td></tr>
                 <tr><td>4.9</td><td>Ножки</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_9', 'legs')} <input type="number" id="val_4_9" value="4" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                <tr><td>4.10</td><td>Колеса (торм.)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_10', 'wheels')} <input type="number" id="val_4_10" value="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                <tr><td>4.11</td><td>Колеса (б/торм)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_11', 'wheels')} <input type="number" id="val_4_11" value="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+<tr id="row_4_10"><td>4.10</td><td>Колеса (торм.)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_10', 'wheels')} <input type="number" id="val_4_10" value="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+                
+                <tr id="row_4_11" class="page-break-row"><td>4.11</td><td>Колеса (б/торм)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_11', 'wheels')} <input type="number" id="val_4_11" value="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
                 <tr><td>4.12</td><td>Вентиляция</td><td>${renderSelect('val_4_12', 'ventilation')}</td></tr>
                 
                 <tr class="section-title"><td colspan="3">5. ТЕМПЕРАТУРА</td></tr>
@@ -639,17 +640,22 @@ function handlePrint() {
     }, 100);
 }
 
-// --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР PDF (СОХРАНЯЕТ НА УСТРОЙСТВО) ---
+// --- ХИТРЫЙ ГЕНЕРАТОР PDF (С БЕЛОЙ ЗОНОЙ ДЛЯ РАЗРЕЗА) ---
 function genPDF() {
     const el = document.querySelector('.document-sheet');
     const footer = document.querySelector('.footer-btns');
     const closeBtn = document.querySelector('.close-x');
+    const row411 = document.getElementById('row_4_11'); // Находим строку 4.11
     
     prepareForPrint(true);
     if (footer) footer.style.display = 'none';
     if (closeBtn) closeBtn.style.display = 'none';
 
-    // Даем браузеру паузу перед созданием картинки
+    // ХИТРОСТЬ: Делаем отступ 50px сверху у строки 4.11, чтобы линия разреза прошла по пустоте
+    if (row411) {
+        Array.from(row411.children).forEach(td => td.style.paddingTop = '50px');
+    }
+
     setTimeout(async () => {
         try {
             const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
@@ -662,9 +668,7 @@ function genPDF() {
             
             let heightLeft = imgHeight;
             let position = 10; 
-            
-            // Смещаем линию разреза страницы, чтобы не резать строку 4.11
-            const sliceHeight = pageHeight - 28; 
+            const sliceHeight = pageHeight - 20; // Стандартный вырез
 
             pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
             heightLeft -= sliceHeight;
@@ -672,37 +676,25 @@ function genPDF() {
             while (heightLeft >= 0) {
                 position = heightLeft - imgHeight + 10; 
                 pdf.addPage();
-                // Сдвигаем следующую страницу так, чтобы она аккуратно продолжала таблицу
-                pdf.addImage(imgData, 'PNG', 10, position - 28, imgWidth, imgHeight); 
+                pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight); 
                 heightLeft -= sliceHeight;
             }
 
-            // Просто сохраняем файл на устройство
             pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
 
         } catch (err) { 
             alert("Ошибка при создании PDF."); 
         } finally { 
+            // Возвращаем всё как было
             if (footer) footer.style.display = 'flex'; 
             if (closeBtn) closeBtn.style.display = 'block';
+            if (row411) {
+                Array.from(row411.children).forEach(td => td.style.paddingTop = ''); // Убираем отступ
+            }
             prepareForPrint(false);
         }
     }, 150); 
 }
-
-function saveToArchive() {
-    const arc = getArchive();
-    arc.unshift({ 
-        tz_no: document.getElementById('tz_no').value || '?', 
-        eq: document.getElementById('equipment_select').value,
-        manager: document.getElementById('manager_name').value,
-        date: new Date().toLocaleDateString(),
-        image: uploadedImageBase64
-    });
-    localStorage.setItem('pronto_archive', JSON.stringify(arc));
-    navigate('home');
-}
-
 // --- ИСПРАВЛЕННАЯ ПОДГОТОВКА (БЕЗ ЗАВИСАНИЙ) ---
 function prepareForPrint(enable) {
     try {
@@ -864,6 +856,7 @@ function mockRegister() {
     }
     alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
+
 
 
 
