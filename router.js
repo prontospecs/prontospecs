@@ -530,16 +530,18 @@ const templateView = () => `
                         </div>
                     </div>
                 </td></tr>
-            </tbody>
+</tbody>
         </table>
 
-        <div class="footer-btns no-print">
-            <button class="btn btn-success" onclick="saveToArchive()">В АРХИВ</button>
-            <button class="btn btn-secondary" onclick="handlePrint()">ПЕЧАТЬ</button>
-            <button class="btn" onclick="genPDF()" style="background:#2b6cb0;">PDF</button>
+        <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" onclick="saveToArchive()" style="background:#10b981; color:white; font-weight:bold; flex:1;">В АРХИВ</button>
+            <button class="btn btn-secondary" onclick="handlePrint()" style="flex:1;">ПЕЧАТЬ</button>
+            <button class="btn" onclick="genPDF()" style="background:#2b6cb0; color:white; flex:1;">PDF</button>
+            <button class="btn" onclick="sendTZ()" style="background:#8b5cf6; color:white; font-weight:bold; flex:1;">ОТПРАВИТЬ</button>
         </div>
+        
         ${modalsHTML}
-    </div>`;
+    </div>`; // <--- ВАЖНО: Вот этот закрывающий div и кавычка спасают код!
 
 // ======================================================
 // 10. ОБРАБОТЧИКИ СОБЫТИЙ И ЛОГИКА
@@ -626,63 +628,60 @@ function handleFile(input) {
     }
 }
 
-// --- ВОССТАНОВЛЕННАЯ ФУНКЦИЯ ПЕЧАТИ ---
+// --- ИСПРАВЛЕННАЯ ПЕЧАТЬ С ЗАДЕРЖКОЙ ---
 function handlePrint() {
-    prepareForPrint(true);
-    window.print();
-    setTimeout(() => prepareForPrint(false), 1000);
+    prepareForPrint(true); // Меняем слова на "Нет"
+    
+    // Даем браузеру 100 миллисекунд, чтобы обновить экран, и только потом печатаем
+    setTimeout(() => {
+        window.print();
+        setTimeout(() => prepareForPrint(false), 500); // Возвращаем всё обратно
+    }, 100);
 }
 
-// --- БЛОК 3: ГЕНЕРАТОР PDF ---
-async function genPDF() {
+// --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР PDF ---
+function genPDF() {
     const el = document.querySelector('.document-sheet');
     const footer = document.querySelector('.footer-btns');
     const closeBtn = document.querySelector('.close-x');
     
-    // 1. Включаем режим чистовой печати
     prepareForPrint(true);
-    
-    // 2. Прячем кнопки
     if (footer) footer.style.display = 'none';
     if (closeBtn) closeBtn.style.display = 'none';
 
-    try {
-        // 3. Делаем снимок
-        const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-        
-        // 4. Настройка размеров (А4 с полями 10мм)
-        const imgWidth = 190; // 210 (ширина А4) - 20 (поля слева и справа)
-        const pageHeight = 297; 
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        let heightLeft = imgHeight;
-        let position = 10; // Отступ сверху 10мм
+    // Даем браузеру паузу перед созданием картинки
+    setTimeout(async () => {
+        try {
+            const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 297; 
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 10;
 
-        // Первая страница
-        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= (pageHeight - 20); // Вычитаем высоту листа минус поля
-
-        // Если документ длинный — добавляем страницы
-        while (heightLeft >= 0) {
-            position = heightLeft - imgHeight + 10; 
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
             heightLeft -= (pageHeight - 20);
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight + 10; 
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
+
+            pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
+        } catch (err) { 
+            alert("Ошибка при создании PDF. Проверьте подключение библиотек."); 
+        } finally { 
+            if (footer) footer.style.display = 'flex'; 
+            if (closeBtn) closeBtn.style.display = 'block';
+            prepareForPrint(false);
         }
-
-        // 5. Сохраняем файл
-        pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
-
-    } catch (err) { 
-        alert("Ошибка при создании PDF: " + err); 
-    } finally { 
-        // 6. Возвращаем всё назад
-        if (footer) footer.style.display = 'flex'; 
-        if (closeBtn) closeBtn.style.display = 'block';
-        prepareForPrint(false);
-    }
+    }, 100); // Та самая спасительная пауза 100мс
 }
 
 function saveToArchive() {
@@ -763,6 +762,23 @@ function createNewTZ() {
     navigate('template'); 
 }
 
+// --- ФУНКЦИИ ОТПРАВКИ ТЗ ---
+function sendTZ() {
+    // Эта кнопка работает внутри самого документа ТЗ
+    const tzNo = document.getElementById('tz_no').value || "Без номера";
+    
+    // Временно показываем просто уведомление. Завтра подключим отправку в Firebase!
+    alert(`ТЗ № ${tzNo} подготовлено к отправке на сервер!\n(Пока это тест дизайна)`);
+}
+
+function sendFromArchive(index) {
+    // Эта кнопка работает прямо из списка в Архиве
+    const archive = getArchive();
+    const project = archive[index];
+    
+    alert(`Проект № ${project.tz_no} отправлен администратору!\n(Пока это тест дизайна)`);
+}
+
 // --- ВРЕМЕННЫЕ ФУНКЦИИ ВХОДА (ДЛЯ ПОРТАЛА) ---
 function mockLogin() {
     const login = document.getElementById('auth_login').value;
@@ -783,6 +799,7 @@ function mockRegister() {
     }
     alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
+
 
 
 
