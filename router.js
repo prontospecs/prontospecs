@@ -355,6 +355,7 @@ const settingsView = () => {
     </div>`;
 };
 
+// --- ШАБЛОН ТАБЛИЦЫ (Абсолютно пустые поля) ---
 const templateView = () => `
     <div class="document-sheet fade-in" id="print-root">
         <div class="doc-header">
@@ -375,17 +376,17 @@ const templateView = () => `
         <div class="top-info-grid">
             <div><label style="font-size:11px; font-weight:bold; color:#64748b; display:block;">ОБОРУДОВАНИЕ</label>${renderSelect('equipment_select', 'equipment')}</div>
             <div><label style="font-size:11px; font-weight:bold; color:#64748b; display:block;">ЕД. ИЗМ.</label><select id="unit"><option>шт.</option><option>компл.</option></select></div>
-            <div><label style="font-size:11px; font-weight:bold; color:#64748b; display:block;">КОЛ-ВО</label><input type="number" id="qty" placeholder="1" style="width:100%;"></div>
+            <div><label style="font-size:11px; font-weight:bold; color:#64748b; display:block;">КОЛ-ВО</label><input type="number" id="qty" style="width:100%;"></div>
         </div>
 
         <table class="spec-table">
             <thead><tr><th width="45">№</th><th>ПАРАМЕТР</th><th>ТЕХНИЧЕСКИЕ ТРЕБОВАНИЯ</th></tr></thead>
             <tbody>
                 <tr class="section-title"><td colspan="3">1. ГАБАРИТНЫЕ РАЗМЕРЫ (мм)</td></tr>
-                <tr><td>1.1</td><td>Высота (H)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="h" placeholder="850" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
-                <tr><td>1.2</td><td>Ширина (W)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="w" placeholder="1200" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
-                <tr><td>1.3</td><td>Глубина (D)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="d" placeholder="700" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
-                <tr><td>1.4</td><td>Допуск</td><td><div style="display:flex; align-items:center; gap:5px;"><span>±</span><input type="number" id="val_1_4" placeholder="5" style="width:50px; text-align:center;"> <span>мм</span></div></td></tr>
+                <tr><td>1.1</td><td>Высота (H)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="h" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
+                <tr><td>1.2</td><td>Ширина (W)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="w" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
+                <tr><td>1.3</td><td>Глубина (D)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="d" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
+                <tr><td>1.4</td><td>Допуск</td><td><div style="display:flex; align-items:center; gap:5px;"><span>±</span><input type="number" id="val_1_4" style="width:50px; text-align:center;"> <span>мм</span></div></td></tr>
                 
                 <tr class="section-title"><td colspan="3">2. ИСПОЛНЕНИЕ</td></tr>
                 <tr><td>2.1</td><td>Материал</td><td>${renderSelect('mat', 'materials')}</td></tr>
@@ -396,29 +397,29 @@ const templateView = () => `
                 
                 <tr class="section-title"><td colspan="3">4. КОМПЛЕКТАЦИЯ</td></tr>
                 <tr><td>4.1</td><td>Столешница</td><td><div style="display:flex; gap:10px;">${renderSelect('val_4_1', 'tabletops')}${renderSelect('val_4_1_mat', 'tabletopMaterials')}</div></td></tr>
-                <tr><td>4.2</td><td>Гастроёмкости</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_2', 'gnTypes')} <span>глуб:</span> <input type="number" id="val_4_2" placeholder="150" style="width:60px; text-align:center;"> <span>мм</span></div></td></tr>
-                <tr><td>4.3</td><td>Количество GN</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_4_3" placeholder="0" style="width:60px; text-align:center;"> <span>шт.</span></div></td></tr>
-                <tr><td>4.4</td><td>Двери</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_4', 'doorTypes')} <input type="number" id="val_4_4" placeholder="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+                <tr><td>4.2</td><td>Гастроёмкости</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_2', 'gnTypes')} <span>глуб:</span> <input type="number" id="val_4_2" style="width:60px; text-align:center;"> <span>мм</span></div></td></tr>
+                <tr><td>4.3</td><td>Количество GN</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_4_3" style="width:60px; text-align:center;"> <span>шт.</span></div></td></tr>
+                <tr><td>4.4</td><td>Двери</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_4', 'doorTypes')} <input type="number" id="val_4_4" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
                 <tr><td>4.5</td><td>Ящики / Салазки</td><td><div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">${renderSelect('sel_4_5', 'drawerTypes')}${renderSelect('val_4_5_slides', 'slideTypes')}</div></td></tr>
-                <tr><td>4.6</td><td>Полки</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_6', 'shelfTypes')} <input type="number" id="val_4_6" placeholder="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                <tr><td>4.7</td><td>Нагрузка</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_4_7" placeholder="40" style="width:60px; text-align:center;"> <span>кг</span></div></td></tr>
+                <tr><td>4.6</td><td>Полки</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_6', 'shelfTypes')} <input type="number" id="val_4_6" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+                <tr><td>4.7</td><td>Нагрузка</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_4_7" style="width:60px; text-align:center;"> <span>кг</span></div></td></tr>
                 <tr><td>4.8</td><td>Подсветка</td><td>${renderSelect('val_4_8', 'lighting')}</td></tr>
-                <tr><td>4.9</td><td>Ножки</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_9', 'legs')} <input type="number" id="val_4_9" placeholder="4" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                <tr><td>4.10</td><td>Колеса (торм.)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_10', 'wheels')} <input type="number" id="val_4_10" placeholder="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                <tr><td>4.11</td><td>Колеса (б/торм)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_11', 'wheels')} <input type="number" id="val_4_11" placeholder="2" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+                <tr><td>4.9</td><td>Ножки</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_9', 'legs')} <input type="number" id="val_4_9" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+                <tr><td>4.10</td><td>Колеса (торм.)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_10', 'wheels')} <input type="number" id="val_4_10" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+                <tr><td>4.11</td><td>Колеса (б/торм)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_11', 'wheels')} <input type="number" id="val_4_11" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
                 <tr><td>4.12</td><td>Вентиляция</td><td>${renderSelect('val_4_12', 'ventilation')}</td></tr>
                 
                 <tr class="section-title"><td colspan="3">5. ТЕМПЕРАТУРА</td></tr>
-                <tr><td>5.1</td><td>Режим</td><td><div style="display:flex; align-items:center; gap:10px;"><span>t° :</span> <input type="text" id="val_5_1" placeholder="+2...+8" style="width:90px; text-align:center;"> <div id="dual_temp_zone" style="display:none; align-items:center; gap:5px;"><span>/ t° :</span> <input type="text" id="val_5_1_2" placeholder="-18" style="width:90px; text-align:center;"></div></div></td></tr>
+                <tr><td>5.1</td><td>Режим</td><td><div style="display:flex; align-items:center; gap:10px;"><span>t° :</span> <input type="text" id="val_5_1" style="width:90px; text-align:center;"> <div id="dual_temp_zone" style="display:none; align-items:center; gap:5px;"><span>/ t° :</span> <input type="text" id="val_5_1_2" style="width:90px; text-align:center;"></div></div></td></tr>
                 
                 <tr class="section-title"><td colspan="3">6. СРЕДА</td></tr>
-                <tr><td>6.1</td><td>Условия</td><td><div style="display:flex; align-items:center; gap:5px;"><span>+</span> <input type="number" id="val_6_1" placeholder="32" style="width:50px; text-align:center;"> <span>/</span> <input type="number" id="val_6_2" placeholder="60" style="width:50px; text-align:center;"> <span>%</span></div></td></tr>
+                <tr><td>6.1</td><td>Условия</td><td><div style="display:flex; align-items:center; gap:5px;"><span>+</span> <input type="number" id="val_6_1" style="width:50px; text-align:center;"> <span>/</span> <input type="number" id="val_6_2" style="width:50px; text-align:center;"> <span>%</span></div></td></tr>
 
                 <tr class="section-title"><td colspan="3">7. ГАРАНТИЯ</td></tr>
-                <tr><td>7.1</td><td>Срок гарантии</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_7_1" placeholder="12" style="width:60px; text-align:center; font-weight:bold;"> <span>мес.</span></div></td></tr>
+                <tr><td>7.1</td><td>Срок гарантии</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_7_1" style="width:60px; text-align:center; font-weight:bold;"> <span>мес.</span></div></td></tr>
 
                 <tr class="section-title"><td colspan="3">8. СРОК СЛУЖБЫ</td></tr>
-                <tr><td>8.1</td><td>Расчетный срок</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_8_1" placeholder="5" style="width:60px; text-align:center; font-weight:bold;"> <span>лет</span></div></td></tr>
+                <tr><td>8.1</td><td>Расчетный срок</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_8_1" style="width:60px; text-align:center; font-weight:bold;"> <span>лет</span></div></td></tr>
                 
                 <tr class="section-title"><td colspan="3">9. ЭСКИЗ И ПРИМЕЧАНИЯ</td></tr>
                 <tr><td colspan="3">
@@ -440,9 +441,9 @@ const templateView = () => `
             <button class="btn" onclick="genPDF()" style="background:#2b6cb0; color:white; flex:1;">PDF</button>
             <button class="btn" onclick="sendTZ()" style="background:#8b5cf6; color:white; font-weight:bold; flex:1;">ОТПРАВИТЬ</button>
         </div>
+        
         ${modalsHTML}
     </div>`;
-
 // ======================================================
 // 5. ФУНКЦИИ И ОБРАБОТЧИКИ СОБЫТИЙ
 // ======================================================
@@ -720,6 +721,7 @@ async function sendTZ() {
 function sendFromArchive(index) {
     alert("Чтобы отправить ТЗ в мессенджер, сначала откройте его (зеленая кнопка 📂), а затем нажмите 'ОТПРАВИТЬ' внутри документа.");
 }
+
 
 
 
