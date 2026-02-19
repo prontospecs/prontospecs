@@ -255,21 +255,30 @@ const modalsHTML = `
     </div>
 `;
 
-// --- ПОРТАЛ (ГЛАВНАЯ СТРАНИЦА ЭКОСИСТЕМЫ) ---
+// --- ПОРТАЛ (ГЛАВНАЯ СТРАНИЦА С ХОЛОДИЛЬНИКОМ) ---
 const portalView = () => `
     <div class="home-card fade-in" style="max-width: 800px; text-align: center;">
         <h1 class="main-title" style="font-size: 48px;">PRONTO</h1>
-        <div class="subtitle" style="font-size: 24px; margin-bottom: 5px;">ECOSYSTEM</div>
+        <div class="subtitle" style="font-size: 24px; margin-bottom: 5px;">SPECS</div>
         <p style="color:#64748b; margin-bottom: 40px;">Единая платформа для всех сервисов компании</p>
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; text-align: left;">
+            
             <div style="border:2px solid #cbd5e1; border-radius:15px; padding:25px; cursor:pointer; transition:0.3s; background: white;" 
                  onmouseover="this.style.borderColor='var(--pronto)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
                  onmouseout="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'" 
                  onclick="navigate('login')">
-                <div style="font-size:40px; margin-bottom:15px;">📄</div>
-                <h3 style="margin:0 0 10px 0; color:var(--text);">PRONTO SPECS</h3>
-                <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий. Создание, печать и экспорт в PDF.</p>
+                <div style="color:var(--pronto); margin-bottom:15px;">
+                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="5" y1="9" x2="19" y2="9"></line>
+                        <line x1="9" y1="4.5" x2="9" y2="6.5"></line>
+                        <line x1="9" y1="12" x2="9" y2="15"></line>
+                    </svg>
+                </div>
+                <h3 style="margin:0 0 5px 0; color:var(--text); font-size:22px;">PRODUCTION SPECS</h3>
+                <div style="font-size:12px; font-weight:bold; color:var(--pronto); margin-bottom:10px;">(PRONTO SPECS)</div>
+                <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий для холодильного оборудования. Создание, печать и экспорт.</p>
             </div>
 
             <div style="border:2px dashed #cbd5e1; border-radius:15px; padding:25px; cursor:not-allowed; opacity:0.6; background: #f8fafc;">
@@ -280,7 +289,6 @@ const portalView = () => `
         </div>
     </div>
 `;
-
 // --- ЭКРАН ВХОДА (Если аккаунт есть) ---
 const loginView = () => `
     <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
@@ -365,7 +373,7 @@ const homeView = () => {
     
     return `
     <div class="home-card fade-in">
-        <h1 class="main-title">PRODUCTION</h1>
+        <h1 class="main-title">PRONTO</h1>
         <div class="subtitle">SPECS</div>
         
         <div style="text-align:left; background:#f8fafc; padding:25px; border-radius:15px; margin:25px 0; border-left:6px solid var(--pronto); color:#475569; font-size:14px; line-height:1.6;">
@@ -867,6 +875,7 @@ function mockRegister() {
     }
     alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
+
 
 
 
