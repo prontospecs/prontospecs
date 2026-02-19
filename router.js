@@ -100,16 +100,19 @@ function syncToCloud() {
 }
 
 // Главный роутер (переключатель страниц)
+// --- ОБНОВЛЕННАЯ НАВИГАЦИЯ ---
 function navigate(view) {
     const app = document.getElementById('app');
     if (!app) return;
 
-    app.innerHTML = ''; // Очищаем экран
+    app.innerHTML = ''; 
 
     if (view === 'portal') {
         app.innerHTML = portalView();
     } else if (view === 'login') {
         app.innerHTML = loginView();
+    } else if (view === 'register') {
+        app.innerHTML = registerView(); // Добавили экран регистрации
     } else if (view === 'home') {
         app.innerHTML = homeView();
     } else if (view === 'settings') {
@@ -120,7 +123,6 @@ function navigate(view) {
         app.innerHTML = portalView();
     }
 
-    // После отрисовки страницы запускаем скрипты
     if (view === 'template') {
         populateSelects();
         checkDualTemp();
@@ -128,7 +130,6 @@ function navigate(view) {
     
     window.scrollTo(0, 0);
 }
-
 // ======================================================
 // 4. ЛОГИКА АДМИНИСТРАТОРА
 // ======================================================
@@ -280,16 +281,16 @@ const portalView = () => `
     </div>
 `;
 
-// --- ЭКРАН ВХОДА И РЕГИСТРАЦИИ ---
+// --- ЭКРАН ВХОДА (Если аккаунт есть) ---
 const loginView = () => `
     <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <button onclick="navigate('portal')" class="btn-mini" style="background:#cbd5e1; color:#0f172a;">🡠 Назад</button>
-            <h2 style="margin:0; color:var(--pronto);">ВХОД В СЕРВИС</h2>
+            <h2 style="margin:0; color:var(--pronto);">ВХОД</h2>
             <div style="width:50px;"></div>
         </div>
         
-        <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Для доступа к PRONTO SPECS необходимо авторизоваться.</p>
+        <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Войдите, если у вас уже есть аккаунт.</p>
 
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
@@ -298,11 +299,65 @@ const loginView = () => `
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
             <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
             
-            <button onclick="mockLogin()" class="btn" style="width:100%; margin-bottom:10px;">ВОЙТИ</button>
-            <button onclick="mockRegister()" class="btn btn-secondary" style="width:100%; border:2px solid var(--pronto); background:transparent; color:var(--pronto);">РЕГИСТРАЦИЯ</button>
+            <button onclick="mockLogin()" class="btn" style="width:100%; margin-bottom:15px; background:#10b981;">ВОЙТИ</button>
+            
+            <div style="text-align:center; margin-top:10px;">
+                <span style="color:#64748b; font-size:14px;">Нет аккаунта? </span>
+                <a href="#" onclick="navigate('register')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Зарегистрироваться</a>
+            </div>
         </div>
     </div>
 `;
+
+// --- ЭКРАН РЕГИСТРАЦИИ (Если аккаунта нет) ---
+const registerView = () => `
+    <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <button onclick="navigate('portal')" class="btn-mini" style="background:#cbd5e1; color:#0f172a;">🡠 Назад</button>
+            <h2 style="margin:0; color:var(--pronto);">РЕГИСТРАЦИЯ</h2>
+            <div style="width:50px;"></div>
+        </div>
+        
+        <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Создайте новый аккаунт (потребуется одобрение).</p>
+
+        <div style="text-align: left;">
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ЛОГИН:</label>
+            <input type="text" id="reg_login" placeholder="Новый логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
+            
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ПАРОЛЬ:</label>
+            <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
+            
+            <button onclick="mockRegister()" class="btn" style="width:100%; margin-bottom:15px; background:#3b82f6;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+            
+            <div style="text-align:center; margin-top:10px;">
+                <span style="color:#64748b; font-size:14px;">Уже есть аккаунт? </span>
+                <a href="#" onclick="navigate('login')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Войти</a>
+            </div>
+        </div>
+    </div>
+`;
+
+// --- ОБНОВЛЕННАЯ ЛОГИКА КНОПОК ---
+function mockLogin() {
+    const login = document.getElementById('auth_login').value;
+    if(login.trim() === '') {
+        alert("Введите логин!");
+        return;
+    }
+    // Временно пускаем всех для теста дизайна
+    alert("Успешный вход!");
+    navigate('home'); // Пускаем в приложение SPECS
+}
+
+function mockRegister() {
+    const login = document.getElementById('reg_login').value;
+    if(login.trim() === '') {
+        alert("Придумайте логин для регистрации!");
+        return;
+    }
+    alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
+    navigate('portal'); // Возвращаем на главную после заявки
+}
 
 // --- АРХИВ ПРОЕКТОВ (Бывшая главная) ---
 const homeView = () => {
@@ -643,35 +698,39 @@ function saveToArchive() {
     navigate('home');
 }
 
-// --- УМНАЯ ПОДГОТОВКА (ЗАМЕНА СЛОВ) ---
+// --- ИСПРАВЛЕННАЯ ПОДГОТОВКА (БЕЗ ЗАВИСАНИЙ) ---
 function prepareForPrint(enable) {
-    const inputs = document.querySelectorAll('input, select, textarea');
-    
-    inputs.forEach(el => {
-        if(enable) {
-            // ЛОГИКА ДЛЯ ВЫПАДАЮЩИХ СПИСКОВ
-            if(el.tagName === 'SELECT') {
-                if(!el.dataset.originalText) {
-                    el.dataset.originalText = el.options[el.selectedIndex].text;
+    try {
+        const inputs = document.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(el => {
+            if(enable) {
+                // Строгая проверка, что в SELECT есть варианты для выбора
+                if(el.tagName === 'SELECT' && el.options && el.selectedIndex >= 0) {
+                    if(!el.dataset.originalText) {
+                        el.dataset.originalText = el.options[el.selectedIndex].text;
+                    }
+                    if(el.value.includes('Выбор') || el.value === '' || el.value.includes('--')) {
+                        el.options[el.selectedIndex].text = 'Нет';
+                    }
                 }
-                if(el.value.includes('Выбор') || el.value === '' || el.value.includes('--')) {
-                    el.options[el.selectedIndex].text = 'Нет';
+            } else {
+                if(el.tagName === 'SELECT' && el.dataset.originalText && el.options && el.selectedIndex >= 0) {
+                    el.options[el.selectedIndex].text = el.dataset.originalText;
+                    delete el.dataset.originalText;
                 }
             }
-        } else {
-            // ВОЗВРАЩАЕМ ВСЁ НАЗАД ПОСЛЕ ПЕЧАТИ
-            if(el.tagName === 'SELECT' && el.dataset.originalText) {
-                el.options[el.selectedIndex].text = el.dataset.originalText;
-                delete el.dataset.originalText;
-            }
-        }
-    });
+        });
 
-    const imgText = document.getElementById('img_text');
-    if(imgText) imgText.style.display = enable ? 'none' : (uploadedImageBase64 ? 'none' : 'block');
-    
-    const upZone = document.getElementById('upload_zone');
-    if(upZone) upZone.style.border = enable ? 'none' : '3px dashed #cbd5e1';
+        const imgText = document.getElementById('img_text');
+        if(imgText) imgText.style.display = enable ? 'none' : (uploadedImageBase64 ? 'none' : 'block');
+        
+        const upZone = document.getElementById('upload_zone');
+        if(upZone) upZone.style.border = enable ? 'none' : '3px dashed #cbd5e1';
+    } catch (e) {
+        console.error("Ошибка при подготовке текста:", e);
+        // Даже если есть ошибка, печать не остановится
+    }
 }
 
 function deleteFromArchive(i) {
@@ -724,6 +783,7 @@ function mockRegister() {
     }
     alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
+
 
 
 
