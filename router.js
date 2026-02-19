@@ -630,16 +630,16 @@ function handleFile(input) {
 
 // --- ИСПРАВЛЕННАЯ ПЕЧАТЬ С ЗАДЕРЖКОЙ ---
 function handlePrint() {
-    prepareForPrint(true); // Меняем слова на "Нет"
+    prepareForPrint(true); // Меняем "Выбор" на "Нет"
     
-    // Даем браузеру 100 миллисекунд, чтобы обновить экран, и только потом печатаем
+    // Даем браузеру 100 миллисекунд на обновление экрана перед печатью
     setTimeout(() => {
         window.print();
         setTimeout(() => prepareForPrint(false), 500); // Возвращаем всё обратно
     }, 100);
 }
 
-// --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР PDF ---
+// --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР PDF (СОХРАНЯЕТ НА УСТРОЙСТВО) ---
 function genPDF() {
     const el = document.querySelector('.document-sheet');
     const footer = document.querySelector('.footer-btns');
@@ -661,27 +661,33 @@ function genPDF() {
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             let heightLeft = imgHeight;
-            let position = 10;
+            let position = 10; 
+            
+            // Смещаем линию разреза страницы, чтобы не резать строку 4.11
+            const sliceHeight = pageHeight - 28; 
 
             pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-            heightLeft -= (pageHeight - 20);
+            heightLeft -= sliceHeight;
 
             while (heightLeft >= 0) {
                 position = heightLeft - imgHeight + 10; 
                 pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight);
-                heightLeft -= (pageHeight - 20);
+                // Сдвигаем следующую страницу так, чтобы она аккуратно продолжала таблицу
+                pdf.addImage(imgData, 'PNG', 10, position - 28, imgWidth, imgHeight); 
+                heightLeft -= sliceHeight;
             }
 
+            // Просто сохраняем файл на устройство
             pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
+
         } catch (err) { 
-            alert("Ошибка при создании PDF. Проверьте подключение библиотек."); 
+            alert("Ошибка при создании PDF."); 
         } finally { 
             if (footer) footer.style.display = 'flex'; 
             if (closeBtn) closeBtn.style.display = 'block';
             prepareForPrint(false);
         }
-    }, 100); // Та самая спасительная пауза 100мс
+    }, 150); 
 }
 
 function saveToArchive() {
@@ -762,21 +768,80 @@ function createNewTZ() {
     navigate('template'); 
 }
 
-// --- ФУНКЦИИ ОТПРАВКИ ТЗ ---
-function sendTZ() {
-    // Эта кнопка работает внутри самого документа ТЗ
-    const tzNo = document.getElementById('tz_no').value || "Без номера";
+// --- МАГИЯ ОТПРАВКИ В МЕССЕНДЖЕРЫ (Web Share API) ---
+async function sendTZ() {
+    const tzNo = document.getElementById('tz_no').value || "DOC";
+    const fileName = `TZ_${tzNo}.pdf`;
     
-    // Временно показываем просто уведомление. Завтра подключим отправку в Firebase!
-    alert(`ТЗ № ${tzNo} подготовлено к отправке на сервер!\n(Пока это тест дизайна)`);
+    const el = document.querySelector('.document-sheet');
+    const footer = document.querySelector('.footer-btns');
+    const closeBtn = document.querySelector('.close-x');
+    
+    // Прячем лишнее перед созданием PDF
+    prepareForPrint(true);
+    if (footer) footer.style.display = 'none';
+    if (closeBtn) closeBtn.style.display = 'none';
+
+    // Даем паузу, чтобы спрятались кнопки
+    setTimeout(async () => {
+        try {
+            // 1. Создаем PDF (точно так же, как при сохранении)
+            const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 190;
+            const pageHeight = 297; 
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 10; 
+            const sliceHeight = pageHeight - 28; 
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= sliceHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight + 10; 
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position - 28, imgWidth, imgHeight); 
+                heightLeft -= sliceHeight;
+            }
+
+            // 2. ПРЕВРАЩАЕМ PDF В ФАЙЛ ДЛЯ ОТПРАВКИ (Без скачивания)
+            const pdfBlob = pdf.output('blob'); 
+            const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+            // 3. ВЫЗЫВАЕМ МЕНЮ "ПОДЕЛИТЬСЯ" (Telegram, WhatsApp и т.д.)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: `Техническое задание №${tzNo}`,
+                    text: `Отправляю ТЗ №${tzNo} из PRONTO SPECS.`
+                });
+            } else {
+                // Если браузер старый или это компьютер без поддержки Share
+                alert("На этом устройстве нет меню 'Поделиться'. Файл будет просто скачан.");
+                pdf.save(fileName);
+            }
+
+        } catch (err) { 
+            // Если пользователь просто отменил отправку, ошибку не показываем
+            if (err.name !== 'AbortError') {
+                alert("Ошибка при отправке: " + err); 
+            }
+        } finally { 
+            // Возвращаем кнопки обратно
+            if (footer) footer.style.display = 'flex'; 
+            if (closeBtn) closeBtn.style.display = 'block';
+            prepareForPrint(false);
+        }
+    }, 150);
 }
 
 function sendFromArchive(index) {
-    // Эта кнопка работает прямо из списка в Архиве
-    const archive = getArchive();
-    const project = archive[index];
-    
-    alert(`Проект № ${project.tz_no} отправлен администратору!\n(Пока это тест дизайна)`);
+    // Безопасный способ: просим пользователя открыть ТЗ для генерации
+    alert("Чтобы отправить ТЗ в мессенджер, сначала откройте его (зеленая кнопка 📂), а затем нажмите 'ОТПРАВИТЬ' внутри документа.");
 }
 
 // --- ВРЕМЕННЫЕ ФУНКЦИИ ВХОДА (ДЛЯ ПОРТАЛА) ---
@@ -799,6 +864,7 @@ function mockRegister() {
     }
     alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
+
 
 
 
