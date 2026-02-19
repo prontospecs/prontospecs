@@ -319,15 +319,21 @@ const homeView = () => {
     </div>`;
 };
 
+// --- ЭКРАН НАСТРОЕК (С панелью управления пользователями) ---
 const settingsView = () => {
     const s = getSettings();
     const isAdmin = s.role === 'admin';
+    
+    // Если это админ, запускаем поиск заявок в базе с микро-задержкой
+    if (isAdmin) setTimeout(loadPendingUsers, 100);
+
     return `
     <div class="home-card fade-in">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
             <h1 style="margin:0; font-weight:900;">НАСТРОЙКИ</h1>
             <button onclick="navigate('home')" class="close-x">✕</button>
         </div>
+        
         <div style="text-align:left; max-width:600px; margin:0 auto;">
             <div style="margin-bottom:30px;">
                 <label style="font-weight:bold; display:block; margin-bottom:10px;">ТЕМА ОФОРМЛЕНИЯ:</label>
@@ -336,6 +342,7 @@ const settingsView = () => {
                     <option value="dark" ${s.theme==='dark'?'selected':''}>Темная тема</option>
                 </select>
             </div>
+
             <div style="margin-bottom:30px;">
                 <label style="font-weight:bold; display:block; margin-bottom:10px;">РОЛЬ ПОЛЬЗОВАТЕЛЯ:</label>
                 <select id="role_select" onchange="handleRole(this)" style="width:100%;">
@@ -343,18 +350,24 @@ const settingsView = () => {
                     <option value="admin" ${isAdmin?'selected':''}>Администратор</option>
                 </select>
             </div>
+
             ${isAdmin ? `
-                <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px; text-align:center;">
-                    <h4 style="margin-top:0;">БЕЗОПАСНОСТЬ</h4>
-                    <button onclick="document.getElementById('changePassModal').style.display='flex'" class="btn" style="background:orange; width:100%;">СМЕНИТЬ ПАРОЛЬ</button>
+                <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
+                    <h4 style="margin-top:0; text-align:center;">БЕЗОПАСНОСТЬ</h4>
+                    <button onclick="document.getElementById('changePassModal').style.display='flex'" class="btn" style="background:orange; width:100%; margin-bottom:20px;">СМЕНИТЬ СИСТЕМНЫЙ ПАРОЛЬ</button>
+                    
+                    <h4 style="margin-top:20px; text-align:center; color:#3b82f6;">ЗАЯВКИ НА РЕГИСТРАЦИЮ</h4>
+                    <div id="pending_users_list" style="background:#f8fafc; border-radius:10px; padding:15px; min-height:50px; text-align:center; color:#64748b; font-size:14px; border: 1px solid #cbd5e1;">
+                        Загрузка заявок...
+                    </div>
                 </div>
             ` : ''}
-            <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ</button>
+            
+            <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ НАСТРОЙКИ</button>
         </div>
         ${modalsHTML}
     </div>`;
 };
-
 // --- ШАБЛОН ТАБЛИЦЫ (Абсолютно пустые поля) ---
 const templateView = () => `
     <div class="document-sheet fade-in" id="print-root">
@@ -782,6 +795,66 @@ function sendFromArchive(index) {
     alert("Чтобы отправить ТЗ в мессенджер, сначала откройте его (зеленая кнопка 📂), а затем нажмите 'ОТПРАВИТЬ' внутри документа.");
 }
 
+// ======================================================
+// 7. ПАНЕЛЬ АДМИНИСТРАТОРА (ОДОБРЕНИЕ ПОЛЬЗОВАТЕЛЕЙ)
+// ======================================================
+
+function loadPendingUsers() {
+    if (typeof db === 'undefined') return;
+    const listDiv = document.getElementById('pending_users_list');
+    if (!listDiv) return;
+
+    // Стучимся в Firebase и забираем всех пользователей
+    db.ref('users').once('value').then(snapshot => {
+        if (!snapshot.exists()) {
+            listDiv.innerHTML = "Пока нет новых заявок";
+            return;
+        }
+        
+        const users = snapshot.val();
+        let html = '';
+        
+        // Перебираем всех пользователей и ищем тех, у кого статус pending
+        for (let login in users) {
+            if (users[login].status === 'pending') {
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:10px; text-align:left;">
+                        <b style="color:var(--text); font-size:16px;">👤 ${login}</b>
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px 10px; font-weight:bold;">✓ Одобрить</button>
+                            <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px 10px; font-weight:bold;">✕ Отказ</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Если заявок нет, пишем текст, если есть — выводим кнопки
+        listDiv.innerHTML = html === '' ? "Пока нет новых заявок" : html;
+    });
+}
+
+function approveUser(login) {
+    if(confirm(`Одобрить доступ для пользователя ${login}?`)) {
+        // Меняем статус в базе на approved
+        db.ref('users/' + login).update({ status: 'approved' })
+            .then(() => {
+                alert(`Пользователь ${login} успешно одобрен!`);
+                loadPendingUsers(); // Перезагружаем список
+            });
+    }
+}
+
+function rejectUser(login) {
+    if(confirm(`Удалить заявку от ${login}? Это действие нельзя отменить.`)) {
+        // Удаляем пользователя из базы
+        db.ref('users/' + login).remove()
+            .then(() => {
+                alert('Заявка удалена.');
+                loadPendingUsers(); // Перезагружаем список
+            });
+    }
+}
 
 
 
