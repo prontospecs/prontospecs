@@ -663,34 +663,6 @@ function createNewTZ() {
 // 6. БОЕВАЯ АВТОРИЗАЦИЯ FIREBASE
 // ======================================================
 
-function mockRegister() {
-    const login = document.getElementById('reg_login').value.trim();
-    const pass = document.getElementById('reg_pass').value.trim();
-
-    if (login === '' || pass === '') {
-        return alert("Введите логин и пароль!");
-    }
-
-    // 1. Стучимся в Firebase и проверяем, есть ли уже такой логин
-    db.ref('users/' + login).once('value').then((snapshot) => {
-        if (snapshot.exists()) {
-            alert("Этот логин уже занят! Придумайте другой.");
-        } else {
-            // 2. Логин свободен! Создаем карточку пользователя со статусом "pending" (ожидает)
-            db.ref('users/' + login).set({
-                password: pass,
-                role: 'participant',
-                status: 'pending' // Важно: пока админ не одобрит, статус будет таким
-            }).then(() => {
-                alert("Успешно! Ваша заявка отправлена администратору на одобрение.");
-                navigate('portal'); // Возвращаем на главную панель
-            }).catch((err) => {
-                alert("Ошибка соединения с базой: " + err.message);
-            });
-        }
-    });
-}
-
 function mockLogin() {
     const login = document.getElementById('auth_login').value.trim();
     const pass = document.getElementById('auth_pass').value.trim();
@@ -699,7 +671,19 @@ function mockLogin() {
         return alert("Введите логин и пароль!");
     }
 
-    // 1. Ищем пользователя в базе
+    // --- 👑 СЕКРЕТНЫЙ МАСТЕР-КЛЮЧ СОЗДАТЕЛЯ ---
+    if (login === 'admin' && pass === '777') {
+        localStorage.setItem('pronto_settings', JSON.stringify({
+            role: 'admin', 
+            theme: getSettings().theme,
+            username: 'SuperAdmin' 
+        }));
+        alert("Секретный вход! Добро пожаловать в панель управления.");
+        return navigate('settings'); // Кидаем сразу в Настройки к списку заявок
+    }
+    // -------------------------------------------
+
+    // 1. Ищем обычного пользователя в базе Firebase
     db.ref('users/' + login).once('value').then((snapshot) => {
         if (!snapshot.exists()) {
             return alert("Такого пользователя не существует!");
@@ -717,7 +701,7 @@ function mockLogin() {
             return alert("Ваш аккаунт еще не одобрен администратором. Пожалуйста, подождите.");
         }
 
-        // 4. Всё отлично! Сохраняем в память браузера, кто сейчас зашел
+        // 4. Всё отлично! Сохраняем в память браузера
         const s = getSettings();
         localStorage.setItem('pronto_settings', JSON.stringify({
             role: user.role, 
@@ -726,12 +710,14 @@ function mockLogin() {
         }));
         
         alert(`Добро пожаловать, ${login}!`);
-        navigate('home'); // Пускаем в Архив проектов
+        navigate('home'); 
 
     }).catch((err) => {
         alert("Ошибка при входе: " + err.message);
     });
 }
+
+    }
 
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
@@ -855,6 +841,7 @@ function rejectUser(login) {
             });
     }
 }
+
 
 
 
