@@ -57,10 +57,10 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* === РЕЖИМ ПЕЧАТИ И PDF (ЧИСТЫЙ ЛИСТ) === */
-/* --- ЖЕСТКИЕ ПРАВИЛА ДЛЯ ПРИНТЕРА --- */
+/* --- ЧИСТАЯ ПЕЧАТЬ (БЕЗ РАЗРЫВОВ) --- */
         @media print {
-            body * { visibility: hidden; } /* Прячем весь фон и меню */
-            #print-root, #print-root * { visibility: visible; } /* Показываем только ТЗ */
+            body * { visibility: hidden; } 
+            #print-root, #print-root * { visibility: visible; } 
             #print-root { 
                 position: absolute; 
                 left: 0; 
@@ -68,9 +68,19 @@
                 width: 100%; 
             }
             .spec-table { width: 100% !important; border-collapse: collapse; }
-            tr { page-break-inside: avoid !important; } /* Запрет резать строки пополам */
-            .page-break-row { page-break-before: always !important; } /* Прыжок на новый лист */
             .no-print { display: none !important; }
+            
+            /* Чиним шапку с оборудованием для принтера */
+            .top-info-grid {
+                display: flex !important;
+                justify-content: space-between !important;
+                width: 100% !important;
+                margin-bottom: 20px !important;
+            }
+            .top-info-grid > div {
+                flex: 1 !important;
+                margin-right: 15px !important;
+            }
         }
     </style>
 </head>
@@ -81,6 +91,7 @@
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
