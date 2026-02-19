@@ -1,6 +1,6 @@
 /**
  * ======================================================
- * PRONTO SPECS CLOUD ENGINE | VERSION 3.2 (ECOSYSTEM)
+ * PRONTO SPECS CLOUD ENGINE | FINAL VERSION 
  * ======================================================
  */
 
@@ -9,28 +9,25 @@
 // ======================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("[System] Запуск ядра...");
-    setTimeout(hideLoader, 3000); // Таймер безопасности
+    setTimeout(hideLoader, 3000); 
 
     if (typeof db !== 'undefined') {
         db.ref('settings').on('value', (snapshot) => {
             const cloudData = snapshot.val();
             if (cloudData) {
-                console.log("[Firebase] Данные успешно загружены.");
                 APP_CONFIG = cloudData;
                 if (document.getElementById('equipment_select')) populateSelects();
             } else {
-                console.warn("[Firebase] База пуста. Инициализация...");
                 db.ref('settings').set(APP_CONFIG);
             }
             hideLoader();
         });
     } else {
-        hideLoader(); // Если Firebase пока не подключен
+        hideLoader(); 
     }
 
     applyTheme();
-    navigate('portal'); // Стартуем с Портала
+    navigate('portal'); 
 });
 
 function hideLoader() {
@@ -65,9 +62,7 @@ function applyTheme() {
 
 function syncToCloud() {
     if (typeof db !== 'undefined') {
-        db.ref('settings').set(APP_CONFIG)
-            .then(() => console.log("Синхронизация успешна"))
-            .catch((err) => console.error("Ошибка сети:", err));
+        db.ref('settings').set(APP_CONFIG);
     }
 }
 
@@ -77,21 +72,13 @@ function navigate(view) {
 
     app.innerHTML = ''; 
 
-    if (view === 'portal') {
-        app.innerHTML = portalView();
-    } else if (view === 'login') {
-        app.innerHTML = loginView();
-    } else if (view === 'register') {
-        app.innerHTML = registerView();
-    } else if (view === 'home') {
-        app.innerHTML = homeView();
-    } else if (view === 'settings') {
-        app.innerHTML = settingsView();
-    } else if (view === 'template') {
-        app.innerHTML = templateView();
-    } else {
-        app.innerHTML = portalView();
-    }
+    if (view === 'portal') app.innerHTML = portalView();
+    else if (view === 'login') app.innerHTML = loginView();
+    else if (view === 'register') app.innerHTML = registerView();
+    else if (view === 'home') app.innerHTML = homeView();
+    else if (view === 'settings') app.innerHTML = settingsView();
+    else if (view === 'template') app.innerHTML = templateView();
+    else app.innerHTML = portalView();
 
     if (view === 'template') {
         populateSelects();
@@ -166,7 +153,7 @@ function renderSelect(id, configKey) {
 const modalsHTML = `
     <div id="loginModal" class="modal" style="display:none">
         <div class="modal-content">
-            <h3 style="color:var(--pronto); margin-top:0;">ВХОД АДМИНИСТРАТОРА</h3>
+            <h3 style="color:var(--pronto); margin-top:0;">ВХОД (СИСТЕМНЫЙ)</h3>
             <input type="password" id="inputPassword" placeholder="Пароль" style="width:100%; padding:12px; margin-bottom:20px; border-radius:10px; border:1px solid #ccc;">
             <div style="display:flex; gap:10px;">
                 <button onclick="closeModals()" class="btn btn-secondary" style="flex:1;">ОТМЕНА</button>
@@ -273,7 +260,6 @@ const registerView = () => `
     </div>
 `;
 
-// --- АРХИВ ПРОЕКТОВ (Внутри приложения) ---
 const homeView = () => {
     const archive = getArchive();
     return `
@@ -319,12 +305,9 @@ const homeView = () => {
     </div>`;
 };
 
-// --- ЭКРАН НАСТРОЕК (С панелью управления пользователями) ---
 const settingsView = () => {
     const s = getSettings();
     const isAdmin = s.role === 'admin';
-    
-    // Если это админ, запускаем поиск заявок в базе с микро-задержкой
     if (isAdmin) setTimeout(loadPendingUsers, 100);
 
     return `
@@ -333,7 +316,6 @@ const settingsView = () => {
             <h1 style="margin:0; font-weight:900;">НАСТРОЙКИ</h1>
             <button onclick="navigate('home')" class="close-x">✕</button>
         </div>
-        
         <div style="text-align:left; max-width:600px; margin:0 auto;">
             <div style="margin-bottom:30px;">
                 <label style="font-weight:bold; display:block; margin-bottom:10px;">ТЕМА ОФОРМЛЕНИЯ:</label>
@@ -342,7 +324,6 @@ const settingsView = () => {
                     <option value="dark" ${s.theme==='dark'?'selected':''}>Темная тема</option>
                 </select>
             </div>
-
             <div style="margin-bottom:30px;">
                 <label style="font-weight:bold; display:block; margin-bottom:10px;">РОЛЬ ПОЛЬЗОВАТЕЛЯ:</label>
                 <select id="role_select" onchange="handleRole(this)" style="width:100%;">
@@ -350,7 +331,6 @@ const settingsView = () => {
                     <option value="admin" ${isAdmin?'selected':''}>Администратор</option>
                 </select>
             </div>
-
             ${isAdmin ? `
                 <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
                     <h4 style="margin-top:0; text-align:center;">БЕЗОПАСНОСТЬ</h4>
@@ -362,13 +342,12 @@ const settingsView = () => {
                     </div>
                 </div>
             ` : ''}
-            
-            <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ НАСТРОЙКИ</button>
+            <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ</button>
         </div>
         ${modalsHTML}
     </div>`;
 };
-// --- ШАБЛОН ТАБЛИЦЫ (Абсолютно пустые поля) ---
+
 const templateView = () => `
     <div class="document-sheet fade-in" id="print-root">
         <div class="doc-header">
@@ -454,9 +433,9 @@ const templateView = () => `
             <button class="btn" onclick="genPDF()" style="background:#2b6cb0; color:white; flex:1;">PDF</button>
             <button class="btn" onclick="sendTZ()" style="background:#8b5cf6; color:white; font-weight:bold; flex:1;">ОТПРАВИТЬ</button>
         </div>
-        
         ${modalsHTML}
     </div>`;
+
 // ======================================================
 // 5. ФУНКЦИИ И ОБРАБОТЧИКИ СОБЫТИЙ
 // ======================================================
@@ -659,66 +638,6 @@ function createNewTZ() {
     navigate('template'); 
 }
 
-// ======================================================
-// 6. БОЕВАЯ АВТОРИЗАЦИЯ FIREBASE
-// ======================================================
-
-function mockLogin() {
-    const login = document.getElementById('auth_login').value.trim();
-    const pass = document.getElementById('auth_pass').value.trim();
-
-    if (login === '' || pass === '') {
-        return alert("Введите логин и пароль!");
-    }
-
-    // --- 👑 СЕКРЕТНЫЙ МАСТЕР-КЛЮЧ СОЗДАТЕЛЯ ---
-    if (login === 'admin' && pass === '777') {
-        localStorage.setItem('pronto_settings', JSON.stringify({
-            role: 'admin', 
-            theme: getSettings().theme,
-            username: 'SuperAdmin' 
-        }));
-        alert("Секретный вход! Добро пожаловать в панель управления.");
-        return navigate('settings'); // Кидаем сразу в Настройки к списку заявок
-    }
-    // -------------------------------------------
-
-    // 1. Ищем обычного пользователя в базе Firebase
-    db.ref('users/' + login).once('value').then((snapshot) => {
-        if (!snapshot.exists()) {
-            return alert("Такого пользователя не существует!");
-        }
-
-        const user = snapshot.val();
-
-        // 2. Проверяем пароль
-        if (user.password !== pass) {
-            return alert("Неверный пароль!");
-        }
-
-        // 3. Самая главная проверка: ОДОБРИЛ ЛИ АДМИН?
-        if (user.status !== 'approved') {
-            return alert("Ваш аккаунт еще не одобрен администратором. Пожалуйста, подождите.");
-        }
-
-        // 4. Всё отлично! Сохраняем в память браузера
-        const s = getSettings();
-        localStorage.setItem('pronto_settings', JSON.stringify({
-            role: user.role, 
-            theme: s.theme,
-            username: login 
-        }));
-        
-        alert(`Добро пожаловать, ${login}!`);
-        navigate('home'); 
-
-    }).catch((err) => {
-        alert("Ошибка при входе: " + err.message);
-    });
-}
-
-    }
-
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
     const fileName = `TZ_${tzNo}.pdf`;
@@ -782,6 +701,69 @@ function sendFromArchive(index) {
 }
 
 // ======================================================
+// 6. БОЕВАЯ АВТОРИЗАЦИЯ FIREBASE
+// ======================================================
+
+function mockRegister() {
+    const login = document.getElementById('reg_login').value.trim();
+    const pass = document.getElementById('reg_pass').value.trim();
+
+    if (login === '' || pass === '') return alert("Введите логин и пароль!");
+
+    db.ref('users/' + login).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+            alert("Этот логин уже занят! Придумайте другой.");
+        } else {
+            db.ref('users/' + login).set({
+                password: pass,
+                role: 'participant',
+                status: 'pending' 
+            }).then(() => {
+                alert("Успешно! Ваша заявка отправлена администратору на одобрение.");
+                navigate('portal'); 
+            }).catch((err) => alert("Ошибка соединения с базой: " + err.message));
+        }
+    });
+}
+
+function mockLogin() {
+    const login = document.getElementById('auth_login').value.trim();
+    const pass = document.getElementById('auth_pass').value.trim();
+
+    if (login === '' || pass === '') return alert("Введите логин и пароль!");
+
+    // --- 👑 СЕКРЕТНЫЙ МАСТЕР-КЛЮЧ СОЗДАТЕЛЯ ---
+    if (login === 'admin' && pass === '777') {
+        localStorage.setItem('pronto_settings', JSON.stringify({
+            role: 'admin', 
+            theme: getSettings().theme,
+            username: 'SuperAdmin' 
+        }));
+        alert("Секретный вход! Добро пожаловать в панель управления.");
+        return navigate('settings'); 
+    }
+
+    db.ref('users/' + login).once('value').then((snapshot) => {
+        if (!snapshot.exists()) return alert("Такого пользователя не существует!");
+        
+        const user = snapshot.val();
+        if (user.password !== pass) return alert("Неверный пароль!");
+        if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором. Пожалуйста, подождите.");
+
+        const s = getSettings();
+        localStorage.setItem('pronto_settings', JSON.stringify({
+            role: user.role, 
+            theme: s.theme,
+            username: login 
+        }));
+        
+        alert(`Добро пожаловать, ${login}!`);
+        navigate('home'); 
+
+    }).catch((err) => alert("Ошибка при входе: " + err.message));
+}
+
+// ======================================================
 // 7. ПАНЕЛЬ АДМИНИСТРАТОРА (ОДОБРЕНИЕ ПОЛЬЗОВАТЕЛЕЙ)
 // ======================================================
 
@@ -790,7 +772,6 @@ function loadPendingUsers() {
     const listDiv = document.getElementById('pending_users_list');
     if (!listDiv) return;
 
-    // Стучимся в Firebase и забираем всех пользователей
     db.ref('users').once('value').then(snapshot => {
         if (!snapshot.exists()) {
             listDiv.innerHTML = "Пока нет новых заявок";
@@ -800,7 +781,6 @@ function loadPendingUsers() {
         const users = snapshot.val();
         let html = '';
         
-        // Перебираем всех пользователей и ищем тех, у кого статус pending
         for (let login in users) {
             if (users[login].status === 'pending') {
                 html += `
@@ -815,47 +795,26 @@ function loadPendingUsers() {
             }
         }
         
-        // Если заявок нет, пишем текст, если есть — выводим кнопки
         listDiv.innerHTML = html === '' ? "Пока нет новых заявок" : html;
     });
 }
 
 function approveUser(login) {
     if(confirm(`Одобрить доступ для пользователя ${login}?`)) {
-        // Меняем статус в базе на approved
         db.ref('users/' + login).update({ status: 'approved' })
             .then(() => {
                 alert(`Пользователь ${login} успешно одобрен!`);
-                loadPendingUsers(); // Перезагружаем список
+                loadPendingUsers(); 
             });
     }
 }
 
 function rejectUser(login) {
     if(confirm(`Удалить заявку от ${login}? Это действие нельзя отменить.`)) {
-        // Удаляем пользователя из базы
         db.ref('users/' + login).remove()
             .then(() => {
                 alert('Заявка удалена.');
-                loadPendingUsers(); // Перезагружаем список
+                loadPendingUsers(); 
             });
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
