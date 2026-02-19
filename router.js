@@ -459,9 +459,10 @@ const templateView = () => `
     <div class="document-sheet fade-in" id="print-root">
         <div class="doc-header">
             <div style="flex-grow:1;">
-                <div style="display:flex; align-items:center;">
+         <div style="display:flex; align-items:center;">
                     <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right:15px;">SPECS №</span>
-                    <input type="text" id="tz_no" style="width:160px; font-size:32px; border:none; font-weight:900;" placeholder="000-00">
+                    <input type="text" id="tz_no" style="width:250px; font-size:32px; border:none; font-weight:900;" placeholder="000-00">
+                    <span id="tz_no_text" style="display:none; width:250px; font-size:32px; font-weight:900;"></span>
                 </div>
                 <div style="margin-top:10px;">
                     <b style="font-size:16px;">МЕНЕДЖЕР:</b> 
@@ -695,39 +696,49 @@ function genPDF() {
         }
     }, 150); 
 }
-// --- ИСПРАВЛЕННАЯ ПОДГОТОВКА (БЕЗ ЗАВИСАНИЙ) ---
+// --- УМНАЯ ПОДГОТОВКА (С ФИКСОМ УПЛЫВАЮЩЕГО НОМЕРА) ---
 function prepareForPrint(enable) {
-    try {
-        const inputs = document.querySelectorAll('input, select, textarea');
-        
-        inputs.forEach(el => {
-            if(enable) {
-                // Строгая проверка, что в SELECT есть варианты для выбора
-                if(el.tagName === 'SELECT' && el.options && el.selectedIndex >= 0) {
-                    if(!el.dataset.originalText) {
-                        el.dataset.originalText = el.options[el.selectedIndex].text;
-                    }
-                    if(el.value.includes('Выбор') || el.value === '' || el.value.includes('--')) {
-                        el.options[el.selectedIndex].text = 'Нет';
-                    }
-                }
-            } else {
-                if(el.tagName === 'SELECT' && el.dataset.originalText && el.options && el.selectedIndex >= 0) {
-                    el.options[el.selectedIndex].text = el.dataset.originalText;
-                    delete el.dataset.originalText;
+    const inputs = document.querySelectorAll('input, select, textarea');
+    
+    // Элементы номера ТЗ
+    const tzInp = document.getElementById('tz_no');
+    const tzTxt = document.getElementById('tz_no_text');
+
+    inputs.forEach(el => {
+        if(enable) {
+            if(el.tagName === 'SELECT' && el.options && el.selectedIndex >= 0) {
+                if(!el.dataset.originalText) el.dataset.originalText = el.options[el.selectedIndex].text;
+                if(el.value.includes('Выбор') || el.value === '' || el.value.includes('--')) {
+                    el.options[el.selectedIndex].text = 'Нет';
                 }
             }
-        });
+        } else {
+            if(el.tagName === 'SELECT' && el.dataset.originalText && el.options && el.selectedIndex >= 0) {
+                el.options[el.selectedIndex].text = el.dataset.originalText;
+                delete el.dataset.originalText;
+            }
+        }
+    });
 
-        const imgText = document.getElementById('img_text');
-        if(imgText) imgText.style.display = enable ? 'none' : (uploadedImageBase64 ? 'none' : 'block');
-        
-        const upZone = document.getElementById('upload_zone');
-        if(upZone) upZone.style.border = enable ? 'none' : '3px dashed #cbd5e1';
-    } catch (e) {
-        console.error("Ошибка при подготовке текста:", e);
-        // Даже если есть ошибка, печать не остановится
+    // Меняем поле ввода на текст, чтобы номер не уплывал в PDF
+    if(enable) {
+        if(tzInp && tzTxt) {
+            tzTxt.innerText = tzInp.value || '000-00'; // Копируем текст
+            tzInp.style.display = 'none';              // Прячем поле
+            tzTxt.style.display = 'inline-block';      // Показываем ровный текст
+        }
+    } else {
+        if(tzInp && tzTxt) {
+            tzInp.style.display = 'inline-block';      // Возвращаем поле обратно
+            tzTxt.style.display = 'none';              // Прячем текст
+        }
     }
+
+    const imgText = document.getElementById('img_text');
+    if(imgText) imgText.style.display = enable ? 'none' : (uploadedImageBase64 ? 'none' : 'block');
+    
+    const upZone = document.getElementById('upload_zone');
+    if(upZone) upZone.style.border = enable ? 'none' : '3px dashed #cbd5e1';
 }
 
 function deleteFromArchive(i) {
@@ -856,6 +867,7 @@ function mockRegister() {
     }
     alert("Заявка на регистрацию отправлена администратору! (Тестовый режим)");
 }
+
 
 
 
