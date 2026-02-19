@@ -57,61 +57,20 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* === РЕЖИМ ПЕЧАТИ И PDF (ЧИСТЫЙ ЛИСТ) === */
-/* === НАСТРОЙКИ ПЕЧАТИ И PDF === */
+/* --- ЖЕСТКИЕ ПРАВИЛА ДЛЯ ПРИНТЕРА --- */
         @media print {
-            @page { 
-                margin: 10mm; /* Отступы сверху и снизу 10 мм */
-                size: A4;
+            body * { visibility: hidden; } /* Прячем весь фон и меню */
+            #print-root, #print-root * { visibility: visible; } /* Показываем только ТЗ */
+            #print-root { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
             }
-
-            body { 
-                background: white; 
-                -webkit-print-color-adjust: exact; 
-            }
-
-            /* Скрываем лишнее: кнопки, плюсики админа, крестики */
-            .home-card, .footer-btns, .close-x, .admin-add-btn, .no-print, #loader { 
-                display: none !important; 
-            }
-            
-            .document-sheet { 
-                box-shadow: none; padding: 0; margin: 0; width: 100%; border: none; 
-            }
-            
-            /* Управление разрывами страниц: строки не режутся пополам */
-            table, tr, td { 
-                page-break-inside: avoid !important; 
-                break-inside: avoid !important;
-            }
-            
-            /* Раздел "Эскиз" всегда начинаем с новой страницы, если он не влезает */
-            tr.section-title:nth-last-of-type(1) {
-                page-break-before: auto; 
-            }
-
-            /* --- ГЛАВНОЕ: РАМОЧКИ ОСТАЮТСЯ --- */
-            input, select, textarea { 
-                border: 2px solid #cbd5e1 !important; /* Красивая рамочка */
-                background: white !important; 
-                color: black !important;
-                font-weight: bold;
-                box-shadow: none !important;
-                appearance: none !important; /* Убираем стрелку выпадающего списка */
-                -webkit-appearance: none !important;
-                padding-right: 5px !important; /* Чтобы текст не наезжал */
-            }
-
-            /* Если поле пустое или "Нет" - делаем текст серым или черным по желанию */
-            ::placeholder { color: transparent; }
-            
-            /* Картинка эскиза растягивается */
-            #upload_zone { border: none !important; }
-            #img_text { display: none !important; }
-            #preview_img { 
-                max-width: 100% !important; 
-                max-height: 900px !important; 
-                display: block !important; 
-            }
+            .spec-table { width: 100% !important; border-collapse: collapse; }
+            tr { page-break-inside: avoid !important; } /* Запрет резать строки пополам */
+            .page-break-row { page-break-before: always !important; } /* Прыжок на новый лист */
+            .no-print { display: none !important; }
         }
     </style>
 </head>
@@ -122,6 +81,7 @@
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
