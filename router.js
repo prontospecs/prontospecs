@@ -1,11 +1,11 @@
 /**
  * ======================================================
- * PRONTO SPECS CLOUD ENGINE | FINAL VERSION 
+ * PRONTO SPECS CLOUD ENGINE | FINAL VERSION 3.0
  * ======================================================
  */
 
 // ======================================================
-// 1. ИНИЦИАЛИЗАЦИЯ И ЖИВАЯ СИНХРОНИЗАЦИЯ
+// 1. ИНИЦИАЛИЗАЦИЯ И СИСТЕМНЫЕ ФУНКЦИИ
 // ======================================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -38,10 +38,6 @@ function hideLoader() {
     }
 }
 
-// ======================================================
-// 2. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И СИСТЕМНЫЕ ФУНКЦИИ
-// ======================================================
-
 let uploadedImageBase64 = null; 
 let currentManageKey = null;    
 
@@ -61,9 +57,7 @@ function applyTheme() {
 }
 
 function syncToCloud() {
-    if (typeof db !== 'undefined') {
-        db.ref('settings').set(APP_CONFIG);
-    }
+    if (typeof db !== 'undefined') db.ref('settings').set(APP_CONFIG);
 }
 
 function navigate(view) {
@@ -71,7 +65,6 @@ function navigate(view) {
     if (!app) return;
 
     app.innerHTML = ''; 
-
     if (view === 'portal') app.innerHTML = portalView();
     else if (view === 'login') app.innerHTML = loginView();
     else if (view === 'register') app.innerHTML = registerView();
@@ -88,7 +81,7 @@ function navigate(view) {
 }
 
 // ======================================================
-// 3. ЛОГИКА АДМИНИСТРАТОРА И СПИСКИ
+// 2. АДМИНКА И СПИСКИ
 // ======================================================
 
 function openManageMenu(key, selectId) {
@@ -147,7 +140,7 @@ function renderSelect(id, configKey) {
 }
 
 // ======================================================
-// 4. HTML ШАБЛОНЫ (ВИЗУАЛ)
+// 3. HTML ШАБЛОНЫ (ВИЗУАЛ)
 // ======================================================
 
 const modalsHTML = `
@@ -205,7 +198,7 @@ const portalView = () => `
                 </div>
                 <h3 style="margin:0 0 5px 0; color:var(--text); font-size:22px;">PRODUCTION SPECS</h3>
                 <div style="font-size:14px; font-weight:bold; color:var(--pronto); margin-bottom:10px;">(fridge)</div>
-                <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий для холодильного оборудования. Создание, печать и экспорт в PDF.</p>
+                <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий.</p>
             </div>
             <div style="border:2px dashed #cbd5e1; border-radius:15px; padding:25px; cursor:not-allowed; opacity:0.6; background: #f8fafc;">
                 <div style="font-size:40px; margin-bottom:15px;">🚀</div>
@@ -223,7 +216,6 @@ const loginView = () => `
             <h2 style="margin:0; color:var(--pronto);">ВХОД</h2>
             <div style="width:50px;"></div>
         </div>
-        <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Войдите, если у вас уже есть аккаунт.</p>
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
             <input type="text" id="auth_login" placeholder="Ваш логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
@@ -245,23 +237,17 @@ const registerView = () => `
             <h2 style="margin:0; color:var(--pronto);">РЕГИСТРАЦИЯ</h2>
             <div style="width:50px;"></div>
         </div>
-        <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Создайте новый аккаунт (потребуется одобрение).</p>
         <div style="text-align: left;">
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ЛОГИН:</label>
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
             <input type="text" id="reg_login" placeholder="Новый логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ПАРОЛЬ:</label>
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
             <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
             <button onclick="mockRegister()" class="btn" style="width:100%; margin-bottom:15px; background:#3b82f6;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
-            <div style="text-align:center; margin-top:10px;">
-                <span style="color:#64748b; font-size:14px;">Уже есть аккаунт? </span>
-                <a href="#" onclick="navigate('login')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Войти</a>
-            </div>
         </div>
     </div>
 `;
 
 const homeView = () => {
-    // Тихонько подтягиваем архив из базы (синхронизация)
     const s = getSettings();
     if (s.username && typeof db !== 'undefined') {
         db.ref('users/' + s.username + '/archive').once('value').then(snap => {
@@ -276,10 +262,6 @@ const homeView = () => {
         <div class="subtitle">SPECS</div>
         <div style="font-size:16px; font-weight:bold; color:var(--pronto); margin-top:-10px; margin-bottom:20px; text-transform:uppercase;">(fridge)</div>
         
-        <div style="text-align:left; background:#f8fafc; padding:25px; border-radius:15px; margin:25px 0; border-left:6px solid var(--pronto); color:#475569; font-size:14px; line-height:1.6;">
-            <p><strong>PRODUCTION SPECS (fridge)</strong> — цифровой модуль компании PRONTO.</p>
-        </div>
-
         <button onclick="createNewTZ()" class="btn" style="height:85px; width:100%; font-size:22px; margin-bottom:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">+ СОЗДАТЬ ТЗ</button>
         
         <div style="display:flex; gap:10px; margin-bottom:20px;">
@@ -341,12 +323,9 @@ const settingsView = () => {
             ${isAdmin ? `
                 <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
                     <h4 style="margin-top:0; text-align:center;">БЕЗОПАСНОСТЬ</h4>
-                    <button onclick="document.getElementById('changePassModal').style.display='flex'" class="btn" style="background:orange; width:100%; margin-bottom:20px;">СМЕНИТЬ СИСТЕМНЫЙ ПАРОЛЬ</button>
-                    
+                    <button onclick="document.getElementById('changePassModal').style.display='flex'" class="btn" style="background:orange; width:100%; margin-bottom:20px;">СМЕНИТЬ ПАРОЛЬ АДМИНА</button>
                     <h4 style="margin-top:20px; text-align:center; color:#3b82f6;">ЗАЯВКИ НА РЕГИСТРАЦИЮ</h4>
-                    <div id="pending_users_list" style="background:#f8fafc; border-radius:10px; padding:15px; min-height:50px; text-align:center; color:#64748b; font-size:14px; border: 1px solid #cbd5e1;">
-                        Загрузка заявок...
-                    </div>
+                    <div id="pending_users_list" style="background:#f8fafc; border-radius:10px; padding:15px; text-align:center; border: 1px solid #cbd5e1;">Загрузка...</div>
                 </div>
             ` : ''}
             <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ</button>
@@ -444,7 +423,7 @@ const templateView = () => `
     </div>`;
 
 // ======================================================
-// 5. ФУНКЦИИ И ОБРАБОТЧИКИ СОБЫТИЙ
+// 4. ОБРАБОТЧИКИ СОБЫТИЙ И ПЕЧАТЬ
 // ======================================================
 
 function populateSelects() {
@@ -532,7 +511,6 @@ function genPDF() {
             const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            
             const imgWidth = 190;
             const pageHeight = 297; 
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -552,43 +530,13 @@ function genPDF() {
             }
 
             pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
-        } catch (err) { 
-            alert("Ошибка при создании PDF."); 
-        } finally { 
+        } catch (err) { alert("Ошибка при создании PDF."); } 
+        finally { 
             if (footer) footer.style.display = 'flex'; 
             if (closeBtn) closeBtn.style.display = 'block';
             prepareForPrint(false);
         }
     }, 150); 
-}
-
-function saveToArchive() {
-    const s = getSettings();
-    if (!s.username) return alert("Ошибка: Вы не авторизованы!");
-
-    const docData = { 
-        tz_no: document.getElementById('tz_no').value || '?', 
-        eq: document.getElementById('equipment_select').value,
-        manager: document.getElementById('manager_name').value,
-        date: new Date().toLocaleDateString(),
-        image: uploadedImageBase64,
-        fields: {} // Создаем пустой мешок для всех значений
-    };
-
-    // 🌪️ Включаем пылесос: собираем данные со ВСЕХ инпутов на странице!
-    document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea').forEach(el => {
-        if (el.id && el.id !== 'file_input') {
-            docData.fields[el.id] = el.value;
-        }
-    });
-
-    const arc = getArchive();
-    arc.unshift(docData); // Добавляем в начало
-    localStorage.setItem('pronto_archive', JSON.stringify(arc)); // Сохраняем локально
-    
-    // Отправляем в Firebase (чтобы было на всех устройствах)
-    if (typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
-    navigate('home');
 }
 
 function prepareForPrint(enable) {
@@ -631,49 +579,6 @@ function prepareForPrint(enable) {
     if(upZone) upZone.style.border = enable ? 'none' : '3px dashed #cbd5e1';
 }
 
-function deleteFromArchive(i) {
-    if(confirm("Удалить проект из архива?")) {
-        const s = getSettings();
-        const arc = getArchive(); 
-        arc.splice(i,1);
-        localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
-        if (s.username && typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
-        navigate('home');
-    }
-}
-
-function editFromArchive(i) {
-    const d = getArchive()[i]; 
-    navigate('template');
-    setTimeout(() => {
-        // Распаковываем данные
-        if (d.fields) {
-            for (let id in d.fields) {
-                const el = document.getElementById(id);
-                if (el) el.value = d.fields[id];
-            }
-        } else {
-            // Защита для старых проектов (до пылесоса)
-            document.getElementById('tz_no').value = d.tz_no || '';
-            document.getElementById('equipment_select').value = d.eq || '';
-            document.getElementById('manager_name').value = d.manager || '';
-        }
-
-        if(d.image) {
-            uploadedImageBase64 = d.image;
-            document.getElementById('preview_img').src = d.image;
-            document.getElementById('preview_img').style.display = 'block';
-            document.getElementById('img_text').style.display = 'none';
-        }
-        checkDualTemp();
-    }, 100);
-}
-
-function createNewTZ() { 
-    uploadedImageBase64 = null; 
-    navigate('template'); 
-}
-
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
     const fileName = `TZ_${tzNo}.pdf`;
@@ -712,11 +617,7 @@ async function sendTZ() {
             const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: `Техническое задание №${tzNo}`,
-                    text: `Отправляю ТЗ №${tzNo} из PRONTO SPECS.`
-                });
+                await navigator.share({ files: [file], title: `ТЗ №${tzNo}`, text: `Отправляю ТЗ №${tzNo}` });
             } else {
                 alert("На этом устройстве нет меню 'Поделиться'. Файл скачан.");
                 pdf.save(fileName);
@@ -731,40 +632,99 @@ async function sendTZ() {
     }, 150);
 }
 
-// --- УМНЫЕ КНОПКИ АРХИВА ---
-function pdfFromArchive(i) {
-    editFromArchive(i);
-    setTimeout(genPDF, 500); 
-}
-
-function printFromArchive(i) {
-    editFromArchive(i);
-    setTimeout(handlePrint, 500);
-}
-
-function sendFromArchiveBtn(i) {
-    editFromArchive(i);
-    setTimeout(sendTZ, 500);
-}
 // ======================================================
-// 6. БОЕВАЯ АВТОРИЗАЦИЯ FIREBASE
+// 5. АРХИВ (ПЫЛЕСОС И УМНЫЕ КНОПКИ)
+// ======================================================
+
+function createNewTZ() { 
+    uploadedImageBase64 = null; 
+    navigate('template'); 
+}
+
+function saveToArchive() {
+    const s = getSettings();
+    if (!s.username) return alert("Ошибка: Вы не авторизованы!");
+
+    const docData = { 
+        tz_no: document.getElementById('tz_no').value || '?', 
+        eq: document.getElementById('equipment_select').value,
+        manager: document.getElementById('manager_name').value,
+        date: new Date().toLocaleDateString(),
+        image: uploadedImageBase64,
+        fields: {} 
+    };
+
+    const allInputs = document.querySelectorAll('#print-root input, #print-root select, #print-root textarea');
+    allInputs.forEach(el => {
+        if (el.id && el.id !== 'file_input') docData.fields[el.id] = el.value;
+    });
+
+    console.log("📦 Сохраняем:", docData);
+
+    const arc = getArchive();
+    arc.unshift(docData); 
+    localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
+    if (typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
+    navigate('home');
+}
+
+function editFromArchive(i) {
+    const d = getArchive()[i]; 
+    navigate('template');
+    
+    setTimeout(() => {
+        if (d.fields) {
+            for (let id in d.fields) {
+                const el = document.getElementById(id);
+                if (el) el.value = d.fields[id];
+            }
+        } else {
+            const tz = document.getElementById('tz_no'); if(tz) tz.value = d.tz_no || '';
+            const eq = document.getElementById('equipment_select'); if(eq) eq.value = d.eq || '';
+            const man = document.getElementById('manager_name'); if(man) man.value = d.manager || '';
+        }
+
+        if(d.image) {
+            uploadedImageBase64 = d.image;
+            const img = document.getElementById('preview_img');
+            if(img) { img.src = d.image; img.style.display = 'block'; }
+            const txt = document.getElementById('img_text');
+            if(txt) txt.style.display = 'none';
+        }
+        checkDualTemp();
+    }, 150); 
+}
+
+function deleteFromArchive(i) {
+    if(confirm("Удалить проект из архива?")) {
+        const s = getSettings();
+        const arc = getArchive(); 
+        arc.splice(i,1);
+        localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
+        if (s.username && typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
+        navigate('home');
+    }
+}
+
+function pdfFromArchive(i) { editFromArchive(i); setTimeout(genPDF, 500); }
+function printFromArchive(i) { editFromArchive(i); setTimeout(handlePrint, 500); }
+function sendFromArchiveBtn(i) { editFromArchive(i); setTimeout(sendTZ, 500); }
+
+// ======================================================
+// 6. FIREBASE (ВХОД И РЕГИСТРАЦИЯ)
 // ======================================================
 
 function mockRegister() {
     const login = document.getElementById('reg_login').value.trim();
     const pass = document.getElementById('reg_pass').value.trim();
-
     if (login === '' || pass === '') return alert("Введите логин и пароль!");
 
     db.ref('users/' + login).once('value').then((snapshot) => {
         if (snapshot.exists()) {
             alert("Этот логин уже занят! Придумайте другой.");
         } else {
-            db.ref('users/' + login).set({
-                password: pass,
-                role: 'participant',
-                status: 'pending' 
-            }).then(() => {
+            db.ref('users/' + login).set({ password: pass, role: 'participant', status: 'pending' })
+            .then(() => {
                 alert("Успешно! Ваша заявка отправлена администратору на одобрение.");
                 navigate('portal'); 
             }).catch((err) => alert("Ошибка соединения с базой: " + err.message));
@@ -775,16 +735,10 @@ function mockRegister() {
 function mockLogin() {
     const login = document.getElementById('auth_login').value.trim();
     const pass = document.getElementById('auth_pass').value.trim();
-
     if (login === '' || pass === '') return alert("Введите логин и пароль!");
 
-    // --- 👑 СЕКРЕТНЫЙ МАСТЕР-КЛЮЧ СОЗДАТЕЛЯ ---
     if (login === 'admin' && pass === '777') {
-        localStorage.setItem('pronto_settings', JSON.stringify({
-            role: 'admin', 
-            theme: getSettings().theme,
-            username: 'SuperAdmin' 
-        }));
+        localStorage.setItem('pronto_settings', JSON.stringify({ role: 'admin', theme: getSettings().theme, username: 'SuperAdmin' }));
         alert("Секретный вход! Добро пожаловать в панель управления.");
         return navigate('settings'); 
     }
@@ -794,37 +748,21 @@ function mockLogin() {
         
         const user = snapshot.val();
         if (user.password !== pass) return alert("Неверный пароль!");
-        if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором. Пожалуйста, подождите.");
+        if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором.");
 
-// 4. Всё отлично! Сохраняем в память браузера
         const s = getSettings();
-        localStorage.setItem('pronto_settings', JSON.stringify({
-            role: user.role, 
-            theme: s.theme,
-            username: login 
-        }));
+        localStorage.setItem('pronto_settings', JSON.stringify({ role: user.role, theme: s.theme, username: login }));
 
-        // ЗАГРУЖАЕМ АРХИВ ИЗ FIREBASE
-        if (user.archive) {
-            localStorage.setItem('pronto_archive', JSON.stringify(user.archive));
-        } else {
-            localStorage.removeItem('pronto_archive'); // Если архив пуст
-        }
+        if (user.archive) localStorage.setItem('pronto_archive', JSON.stringify(user.archive));
+        else localStorage.removeItem('pronto_archive');
         
         alert(`Добро пожаловать, ${login}!`);
         navigate('home'); 
-
-    }).catch((err) => alert("Ошибка при входе: " + err.message));
-}
-        
-        alert(`Добро пожаловать, ${login}!`);
-        navigate('home'); 
-
     }).catch((err) => alert("Ошибка при входе: " + err.message));
 }
 
 // ======================================================
-// 7. ПАНЕЛЬ АДМИНИСТРАТОРА (ОДОБРЕНИЕ ПОЛЬЗОВАТЕЛЕЙ)
+// 7. ПАНЕЛЬ АДМИНИСТРАТОРА (ОДОБРЕНИЕ ЗАЯВОК)
 // ======================================================
 
 function loadPendingUsers() {
@@ -833,10 +771,7 @@ function loadPendingUsers() {
     if (!listDiv) return;
 
     db.ref('users').once('value').then(snapshot => {
-        if (!snapshot.exists()) {
-            listDiv.innerHTML = "Пока нет новых заявок";
-            return;
-        }
+        if (!snapshot.exists()) { listDiv.innerHTML = "Пока нет новых заявок"; return; }
         
         const users = snapshot.val();
         let html = '';
@@ -854,7 +789,6 @@ function loadPendingUsers() {
                 `;
             }
         }
-        
         listDiv.innerHTML = html === '' ? "Пока нет новых заявок" : html;
     });
 }
@@ -862,20 +796,13 @@ function loadPendingUsers() {
 function approveUser(login) {
     if(confirm(`Одобрить доступ для пользователя ${login}?`)) {
         db.ref('users/' + login).update({ status: 'approved' })
-            .then(() => {
-                alert(`Пользователь ${login} успешно одобрен!`);
-                loadPendingUsers(); 
-            });
+            .then(() => { alert(`Пользователь ${login} успешно одобрен!`); loadPendingUsers(); });
     }
 }
 
 function rejectUser(login) {
     if(confirm(`Удалить заявку от ${login}? Это действие нельзя отменить.`)) {
         db.ref('users/' + login).remove()
-            .then(() => {
-                alert('Заявка удалена.');
-                loadPendingUsers(); 
-            });
+            .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
     }
 }
-
