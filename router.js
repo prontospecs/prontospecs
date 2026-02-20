@@ -646,20 +646,24 @@ function saveToArchive() {
     if (!s.username) return alert("Ошибка: Вы не авторизованы!");
 
     const docData = { 
-        tz_no: document.getElementById('tz_no').value || '?', 
-        eq: document.getElementById('equipment_select').value,
-        manager: document.getElementById('manager_name').value,
+        tz_no: document.getElementById('tz_no') ? document.getElementById('tz_no').value : '?', 
+        eq: document.getElementById('equipment_select') ? document.getElementById('equipment_select').value : '',
+        manager: document.getElementById('manager_name') ? document.getElementById('manager_name').value : '',
         date: new Date().toLocaleDateString(),
         image: uploadedImageBase64,
-        fields: {} 
+        fields: {} // 🎒 ВОТ НАШ МЕШОК ДЛЯ ЦИФР
     };
 
-    const allInputs = document.querySelectorAll('#print-root input, #print-root select, #print-root textarea');
+    // 🌪️ ПЫЛЕСОС 3.0: Ищет абсолютно все поля ввода внутри документа
+    const allInputs = document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea');
     allInputs.forEach(el => {
-        if (el.id && el.id !== 'file_input') docData.fields[el.id] = el.value;
+        if (el.id && el.id !== 'file_input') {
+            docData.fields[el.id] = el.value;
+        }
     });
 
-    console.log("📦 Сохраняем:", docData);
+    // 🚨 ДАТЧИК СЛЕЖЕНИЯ: Выведет в консоль (F12) всё, что смог собрать пылесос!
+    console.log("📦 СОБРАНО ДЛЯ АРХИВА:", docData);
 
     const arc = getArchive();
     arc.unshift(docData); 
@@ -672,16 +676,20 @@ function editFromArchive(i) {
     const d = getArchive()[i]; 
     navigate('template');
     
+    // Ждем 200 миллисекунд, чтобы бланк точно нарисовался на экране
     setTimeout(() => {
-        if (d.fields) {
+        // Если мешок с цифрами есть — распаковываем его
+        if (d.fields && Object.keys(d.fields).length > 0) {
+            console.log("📂 РАСПАКОВКА АРХИВА:", d.fields);
             for (let id in d.fields) {
                 const el = document.getElementById(id);
                 if (el) el.value = d.fields[id];
             }
         } else {
-            const tz = document.getElementById('tz_no'); if(tz) tz.value = d.tz_no || '';
-            const eq = document.getElementById('equipment_select'); if(eq) eq.value = d.eq || '';
-            const man = document.getElementById('manager_name'); if(man) man.value = d.manager || '';
+            // Если открыли старый проект (где мешка еще не было)
+            if(document.getElementById('tz_no')) document.getElementById('tz_no').value = d.tz_no || '';
+            if(document.getElementById('equipment_select')) document.getElementById('equipment_select').value = d.eq || '';
+            if(document.getElementById('manager_name')) document.getElementById('manager_name').value = d.manager || '';
         }
 
         if(d.image) {
@@ -692,7 +700,7 @@ function editFromArchive(i) {
             if(txt) txt.style.display = 'none';
         }
         checkDualTemp();
-    }, 150); 
+    }, 200); 
 }
 
 function deleteFromArchive(i) {
@@ -806,3 +814,4 @@ function rejectUser(login) {
             .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
     }
 }
+
