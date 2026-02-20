@@ -261,6 +261,14 @@ const registerView = () => `
 `;
 
 const homeView = () => {
+    // Тихонько подтягиваем архив из базы (синхронизация)
+    const s = getSettings();
+    if (s.username && typeof db !== 'undefined') {
+        db.ref('users/' + s.username + '/archive').once('value').then(snap => {
+            if (snap.exists()) localStorage.setItem('pronto_archive', JSON.stringify(snap.val()));
+        });
+    }
+
     const archive = getArchive();
     return `
     <div class="home-card fade-in">
@@ -270,7 +278,6 @@ const homeView = () => {
         
         <div style="text-align:left; background:#f8fafc; padding:25px; border-radius:15px; margin:25px 0; border-left:6px solid var(--pronto); color:#475569; font-size:14px; line-height:1.6;">
             <p><strong>PRODUCTION SPECS (fridge)</strong> — цифровой модуль компании PRONTO.</p>
-            <p>Система предназначена для мгновенной синхронизации технических заданий на холодильное оборудование.</p>
         </div>
 
         <button onclick="createNewTZ()" class="btn" style="height:85px; width:100%; font-size:22px; margin-bottom:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">+ СОЗДАТЬ ТЗ</button>
@@ -294,9 +301,9 @@ const homeView = () => {
                     </div>
                     <div class="archive-actions" style="margin-top:15px; display:flex; justify-content:flex-end; gap:8px;">
                         <button onclick="editFromArchive(${i})" class="btn-mini" style="background:#10b981;" title="Открыть">📂</button>
-                        <button onclick="alert('Генерация PDF из архива...')" class="btn-mini" style="background:#3b82f6;" title="PDF">📄</button>
-                        <button onclick="alert('Печать из архива...')" class="btn-mini" style="background:#64748b;" title="Печать">🖨️</button>
-                        <button onclick="sendFromArchive(${i})" class="btn-mini" style="background:#8b5cf6;" title="Отправить">📤</button>
+                        <button onclick="pdfFromArchive(${i})" class="btn-mini" style="background:#3b82f6;" title="PDF">📄</button>
+                        <button onclick="printFromArchive(${i})" class="btn-mini" style="background:#64748b;" title="Печать">🖨️</button>
+                        <button onclick="sendFromArchiveBtn(${i})" class="btn-mini" style="background:#8b5cf6;" title="Отправить">📤</button>
                         <button onclick="deleteFromArchive(${i})" class="btn-mini" style="background:#ef4444;" title="Удалить">🗑️</button>
                     </div>
                 </div>
@@ -556,15 +563,31 @@ function genPDF() {
 }
 
 function saveToArchive() {
-    const arc = getArchive();
-    arc.unshift({ 
+    const s = getSettings();
+    if (!s.username) return alert("Ошибка: Вы не авторизованы!");
+
+    const docData = { 
         tz_no: document.getElementById('tz_no').value || '?', 
         eq: document.getElementById('equipment_select').value,
         manager: document.getElementById('manager_name').value,
         date: new Date().toLocaleDateString(),
-        image: uploadedImageBase64
+        image: uploadedImageBase64,
+        fields: {} // Создаем пустой мешок для всех значений
+    };
+
+    // 🌪️ Включаем пылесос: собираем данные со ВСЕХ инпутов на странице!
+    document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea').forEach(el => {
+        if (el.id && el.id !== 'file_input') {
+            docData.fields[el.id] = el.value;
+        }
     });
-    localStorage.setItem('pronto_archive', JSON.stringify(arc));
+
+    const arc = getArchive();
+    arc.unshift(docData); // Добавляем в начало
+    localStorage.setItem('pronto_archive', JSON.stringify(arc)); // Сохраняем локально
+    
+    // Отправляем в Firebase (чтобы было на всех устройствах)
+    if (typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
     navigate('home');
 }
 
@@ -610,9 +633,11 @@ function prepareForPrint(enable) {
 
 function deleteFromArchive(i) {
     if(confirm("Удалить проект из архива?")) {
+        const s = getSettings();
         const arc = getArchive(); 
         arc.splice(i,1);
         localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
+        if (s.username && typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
         navigate('home');
     }
 }
@@ -621,15 +646,26 @@ function editFromArchive(i) {
     const d = getArchive()[i]; 
     navigate('template');
     setTimeout(() => {
-        document.getElementById('tz_no').value = d.tz_no;
-        document.getElementById('equipment_select').value = d.eq;
-        document.getElementById('manager_name').value = d.manager || '';
+        // Распаковываем данные
+        if (d.fields) {
+            for (let id in d.fields) {
+                const el = document.getElementById(id);
+                if (el) el.value = d.fields[id];
+            }
+        } else {
+            // Защита для старых проектов (до пылесоса)
+            document.getElementById('tz_no').value = d.tz_no || '';
+            document.getElementById('equipment_select').value = d.eq || '';
+            document.getElementById('manager_name').value = d.manager || '';
+        }
+
         if(d.image) {
             uploadedImageBase64 = d.image;
             document.getElementById('preview_img').src = d.image;
             document.getElementById('preview_img').style.display = 'block';
             document.getElementById('img_text').style.display = 'none';
         }
+        checkDualTemp();
     }, 100);
 }
 
@@ -654,7 +690,6 @@ async function sendTZ() {
             const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            
             const imgWidth = 190;
             const pageHeight = 297; 
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -683,7 +718,7 @@ async function sendTZ() {
                     text: `Отправляю ТЗ №${tzNo} из PRONTO SPECS.`
                 });
             } else {
-                alert("На этом устройстве нет меню 'Поделиться'. Файл будет просто скачан.");
+                alert("На этом устройстве нет меню 'Поделиться'. Файл скачан.");
                 pdf.save(fileName);
             }
         } catch (err) { 
@@ -696,10 +731,21 @@ async function sendTZ() {
     }, 150);
 }
 
-function sendFromArchive(index) {
-    alert("Чтобы отправить ТЗ в мессенджер, сначала откройте его (зеленая кнопка 📂), а затем нажмите 'ОТПРАВИТЬ' внутри документа.");
+// --- УМНЫЕ КНОПКИ АРХИВА ---
+function pdfFromArchive(i) {
+    editFromArchive(i);
+    setTimeout(genPDF, 500); 
 }
 
+function printFromArchive(i) {
+    editFromArchive(i);
+    setTimeout(handlePrint, 500);
+}
+
+function sendFromArchiveBtn(i) {
+    editFromArchive(i);
+    setTimeout(sendTZ, 500);
+}
 // ======================================================
 // 6. БОЕВАЯ АВТОРИЗАЦИЯ FIREBASE
 // ======================================================
@@ -750,12 +796,26 @@ function mockLogin() {
         if (user.password !== pass) return alert("Неверный пароль!");
         if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором. Пожалуйста, подождите.");
 
+// 4. Всё отлично! Сохраняем в память браузера
         const s = getSettings();
         localStorage.setItem('pronto_settings', JSON.stringify({
             role: user.role, 
             theme: s.theme,
             username: login 
         }));
+
+        // ЗАГРУЖАЕМ АРХИВ ИЗ FIREBASE
+        if (user.archive) {
+            localStorage.setItem('pronto_archive', JSON.stringify(user.archive));
+        } else {
+            localStorage.removeItem('pronto_archive'); // Если архив пуст
+        }
+        
+        alert(`Добро пожаловать, ${login}!`);
+        navigate('home'); 
+
+    }).catch((err) => alert("Ошибка при входе: " + err.message));
+}
         
         alert(`Добро пожаловать, ${login}!`);
         navigate('home'); 
@@ -818,3 +878,4 @@ function rejectUser(login) {
             });
     }
 }
+
