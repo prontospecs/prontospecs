@@ -196,7 +196,7 @@ const portalView = () => `
                         <line x1="9" y1="12" x2="9" y2="15"></line>
                     </svg>
                 </div>
-                <h3 style="margin:0 0 5px 0; color:var(--text); font-size:22px;">PRODUCTION SPECS</h3>
+              <h3 class="fridge-title" style="margin:0 0 5px 0; color:var(--text); font-size:22px;">PRODUCTION SPECS</h3>
                 <div style="font-size:14px; font-weight:bold; color:var(--pronto); margin-bottom:10px;">(fridge)</div>
                 <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий.</p>
             </div>
@@ -219,13 +219,11 @@ const loginView = () => `
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
             <input type="text" id="auth_login" placeholder="Ваш логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
-            <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
-            <button onclick="mockLogin()" class="btn" style="width:100%; margin-bottom:15px; background:#10b981;">ВОЙТИ</button>
-            <div style="text-align:center; margin-top:10px;">
-                <span style="color:#64748b; font-size:14px;">Нет аккаунта? </span>
-                <a href="#" onclick="navigate('register')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Зарегистрироваться</a>
-            </div>
+<label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
+<div style="position:relative; margin-bottom:25px;">
+    <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
+    <span onclick="document.getElementById('auth_pass').type = document.getElementById('auth_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
+</div>
         </div>
     </div>
 `;
@@ -240,10 +238,11 @@ const registerView = () => `
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
             <input type="text" id="reg_login" placeholder="Новый логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
-            <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; margin-bottom:25px; border:2px solid #e2e8f0; border-radius:8px;">
-            <button onclick="mockRegister()" class="btn" style="width:100%; margin-bottom:15px; background:#3b82f6;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
-        </div>
+<label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
+<div style="position:relative; margin-bottom:25px;">
+    <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
+    <span onclick="document.getElementById('reg_pass').type = document.getElementById('reg_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
+</div>
     </div>
 `;
 
@@ -412,7 +411,12 @@ const templateView = () => `
                 </td></tr>
             </tbody>
         </table>
+</table>
 
+        <div style="display:flex; justify-content:space-between; margin-top:40px; margin-bottom:20px; font-weight:bold; font-size:16px; color:black;">
+            <div>ЗАКАЗЧИК: _____________________</div>
+            <div>ИСПОЛНИТЕЛЬ: _____________________</div>
+        </div>
         <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" onclick="saveToArchive()" style="background:#10b981; color:white; font-weight:bold; flex:1;">В АРХИВ</button>
             <button class="btn btn-secondary" onclick="handlePrint()" style="flex:1;">ПЕЧАТЬ</button>
@@ -812,8 +816,85 @@ function rejectUser(login) {
     if(confirm(`Удалить заявку от ${login}? Это действие нельзя отменить.`)) {
         db.ref('users/' + login).remove()
             .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
+        
+async function sendTZ() {
+    const tzNo = document.getElementById('tz_no').value || "DOC";
+    const fileName = `TZ_${tzNo}.pdf`;
+    const el = document.querySelector('.document-sheet');
+    const footer = document.querySelector('.footer-btns');
+    const closeBtn = document.querySelector('.close-x');
+    
+    // Смена текста кнопки
+    const btns = footer ? footer.querySelectorAll('.btn') : [];
+    let sendBtn = null;
+    btns.forEach(b => { if(b.innerText.includes('ОТПРАВИТЬ')) sendBtn = b; });
+    const originalText = sendBtn ? sendBtn.innerText : 'ОТПРАВИТЬ';
+
+    prepareForPrint(true);
+    if (footer) footer.style.display = 'none';
+    if (closeBtn) closeBtn.style.display = 'none';
+    if (sendBtn) sendBtn.innerText = 'ОТПРАВКА...';
+
+    setTimeout(async () => {
+        try {
+            const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+            const imgWidth = 190;
+            const pageHeight = 297; 
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 10; 
+            const sliceHeight = pageHeight - 20; 
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= sliceHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight + 10; 
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight); 
+                heightLeft -= sliceHeight;
+            }
+
+            const pdfBlob = pdf.output('blob'); 
+
+            // === ОТПРАВКА В ТЕЛЕГРАМ ===
+            const BOT_TOKEN = 'ТВОЙ_ТОКЕН_БОТА'; // Впиши свой Токен
+            const CHAT_ID = 'ТВОЙ_CHAT_ID';       // Впиши свой ID чата
+
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('document', pdfBlob, fileName);
+            
+            const manager = document.getElementById('manager_name') ? document.getElementById('manager_name').value : 'Не указан';
+            formData.append('caption', `Новое ТЗ №${tzNo}\nМенеджер: ${manager}`);
+
+            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("Успешно отправлено в Telegram!");
+            } else {
+                alert("Ошибка при отправке в Telegram. Проверь ключи.");
+            }
+
+        } catch (err) { 
+            alert("Ошибка при отправке: " + err); 
+        } finally { 
+            if (footer) footer.style.display = 'flex'; 
+            if (closeBtn) closeBtn.style.display = 'block';
+            if (sendBtn) sendBtn.innerText = originalText;
+            prepareForPrint(false);
+        }
+    }, 150);
+}
     }
 }
+
 
 
 
