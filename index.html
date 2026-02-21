@@ -9,8 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
- <style>
+<style>
     :root { --pronto: #2b6cb0; --bg: #f1f5f9; --text: #1e293b; --white: #ffffff; --border: #cbd5e1; }
     body.dark-theme { --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155; }
     body.dark-theme .fridge-title { color: #3b82f6 !important; }
@@ -46,7 +45,62 @@
 
     /* КНОПКИ */
     .footer-btns { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; display: flex; gap: 10px; justify-content: center; z-index: 100; border-top: 1px solid #ccc; }
-    .btn { border: none; padding: 12px 2
+    .btn { border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: var(--pronto); }
+    .btn-mini { padding: 8px 12px; font-size: 14px; border-radius: 6px; border: none; color: white; cursor: pointer; }
+    .close-x { font-size: 30px; cursor: pointer; color: #ccc; background: none; border: none; }
+
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; }
+    .modal-content { background: white; padding: 30px; border-radius: 15px; width: 400px; text-align: center; }
+    
+    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .spinner { width: 50px; height: 50px; border: 5px solid #eee; border-top: 5px solid var(--pronto); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* === УМНАЯ ПЕЧАТЬ И PDF === */
+    @media print {
+        body * { visibility: hidden; }
+        #print-root, #print-root * { visibility: visible; }
+        #print-root { position: absolute; left: 0; top: 0; width: 100%; height: auto !important; }
+        
+        /* Убираем пустые листы в конце */
+        html, body { height: auto !important; overflow: visible !important; }
+        
+        /* Настройки страниц */
+        #pdf-page-1, #pdf-page-2 { 
+            page-break-after: always !important; 
+            page-break-inside: avoid !important;
+            height: 290mm !important; /* Четко под А4 */
+        }
+        #pdf-page-2:last-child { page-break-after: auto !important; }
+
+        .no-print { display: none !important; }
+        .top-info-grid { display: flex !important; justify-content: space-between !important; background: transparent !important; border: none !important; }
+        .top-info-grid > div { flex: 1 !important; margin-right: 15px !important; }
+    }
+
+    /* === СПЕЦИАЛЬНО ДЛЯ PDF РЕЖИМА === */
+    body.pdf-mode { background: #ffffff !important; }
+    body.pdf-mode .document-sheet { box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+    
+    body.pdf-mode input, 
+    body.pdf-mode textarea, 
+    body.pdf-mode select { 
+        border: none !important; 
+        background: transparent !important; 
+        padding: 0 !important;
+        appearance: none !important;
+    }
+
+    /* Распорка для подписей */
+    body.pdf-mode #pdf-page-2 {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    body.pdf-mode #signature-box {
+        margin-top: auto !important;
+        padding-bottom: 20px !important;
+    }
+</style>
 </head>
 <body>
     <div id="loader"><div class="spinner"></div></div>
@@ -55,6 +109,7 @@
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
