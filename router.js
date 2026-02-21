@@ -411,7 +411,7 @@ const templateView = () => `
                 
           <tr class="pdf-spacer" style="display:none;">
     <td colspan="3" style="border:none; background:white; padding:0;">
-        <div style="display:block; width:100%; height:200px;"></div>
+        <div style="display:block; width:100%; height:100px;"></div>
     </td>
 </tr>
 <tr class="section-title page-break-print"><td colspan="3">9. ЭСКИЗ И ПРИМЕЧАНИЯ</td></tr>
@@ -825,6 +825,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
