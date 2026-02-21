@@ -523,27 +523,31 @@ function genPDF() {
 
     setTimeout(async () => {
         try {
-            const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+         const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            const imgWidth = 190;
-            const pageHeight = 297; 
+            
+            const margin = 10; // Отступ 10 мм со всех сторон
+            const imgWidth = 210 - (margin * 2); // 190 мм рабочей ширины
+            const pageHeight = 297;
+            const usableHeight = pageHeight - (margin * 2); // 277 мм рабочей высоты
+            
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             let heightLeft = imgHeight;
-            let position = 10; 
-            const sliceHeight = pageHeight - 20; 
+            let position = margin; // Начинаем рисовать с отступом 10 мм сверху
 
-            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-            heightLeft -= sliceHeight;
+            // Первая страница
+            pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+            heightLeft -= usableHeight;
 
-            while (heightLeft >= 0) {
-                position = heightLeft - imgHeight + 10; 
+            // Последующие страницы (если ТЗ длинное)
+            while (heightLeft > 0) {
+                position -= usableHeight; // Сдвигаем картинку ровно на одну рабочую область вверх
                 pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight); 
-                heightLeft -= sliceHeight;
+                pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight); 
+                heightLeft -= usableHeight;
             }
-
             pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
         } catch (err) { alert("Ошибка при создании PDF."); } 
         finally { 
@@ -819,24 +823,28 @@ async function sendTZ() {
             const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            const imgWidth = 190;
-            const pageHeight = 297; 
+            
+            const margin = 10; // Отступ 10 мм со всех сторон
+            const imgWidth = 210 - (margin * 2); // 190 мм рабочей ширины
+            const pageHeight = 297;
+            const usableHeight = pageHeight - (margin * 2); // 277 мм рабочей высоты
+            
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             let heightLeft = imgHeight;
-            let position = 10; 
-            const sliceHeight = pageHeight - 20; 
+            let position = margin; // Начинаем рисовать с отступом 10 мм сверху
 
-            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-            heightLeft -= sliceHeight;
+            // Первая страница
+            pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+            heightLeft -= usableHeight;
 
-            while (heightLeft >= 0) {
-                position = heightLeft - imgHeight + 10; 
+            // Последующие страницы (если ТЗ длинное)
+            while (heightLeft > 0) {
+                position -= usableHeight; // Сдвигаем картинку ровно на одну рабочую область вверх
                 pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight); 
-                heightLeft -= sliceHeight;
+                pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight); 
+                heightLeft -= usableHeight;
             }
-
             // Просто скачиваем файл на компьютер (самый надежный способ без ботов)
             pdf.save(fileName);
             
@@ -855,6 +863,7 @@ async function sendTZ() {
 }
     }
 }
+
 
 
 
