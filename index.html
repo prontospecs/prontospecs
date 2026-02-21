@@ -57,40 +57,43 @@
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
     /* === УМНАЯ ПЕЧАТЬ И PDF === */
-    @media print {
-        body * { visibility: hidden; }
-        #print-root, #print-root * { visibility: visible; }
-        #print-root { position: absolute; left: 0; top: 0; width: 100%; height: auto !important; }
-        
-        /* Убираем пустые листы в конце */
-        html, body { height: auto !important; overflow: visible !important; }
-        
-        /* Настройки страниц */
-        #pdf-page-1, #pdf-page-2 { 
-            page-break-after: always !important; 
-            page-break-inside: avoid !important;
-            height: 290mm !important; /* Четко под А4 */
-        }
-        #pdf-page-2:last-child { page-break-after: auto !important; }
-
-        .no-print { display: none !important; }
-        .top-info-grid { display: flex !important; justify-content: space-between !important; background: transparent !important; border: none !important; }
-        .top-info-grid > div { flex: 1 !important; margin-right: 15px !important; }
-    }
-
-    /* === СПЕЦИАЛЬНО ДЛЯ PDF РЕЖИМА === */
-    body.pdf-mode { background: #ffffff !important; }
-    body.pdf-mode .document-sheet { box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+/* --- ЧИСТАЯ ПЕЧАТЬ С АВТО-МАСШТАБОМ 80% --- */
+@media print {
+    body * { visibility: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
     
-    body.pdf-mode input, 
-    body.pdf-mode textarea, 
-    body.pdf-mode select { 
-        border: none !important; 
-        background: transparent !important; 
-        padding: 0 !important;
-        appearance: none !important;
+    #print-root, #print-root * { visibility: visible; } 
+    
+    #print-root { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        /* Тот самый масштаб 80%, который ты просила */
+        zoom: 0.8; 
+        -moz-transform: scale(0.8); /* Для Firefox */
+        -moz-transform-origin: 0 0;
     }
 
+    @page { margin: 10mm auto; size: auto; }
+    
+    html, body { height: auto !important; overflow: visible !important; }
+
+    .spec-table { width: 100% !important; border-collapse: collapse; }
+    .no-print { display: none !important; }
+    
+    .top-info-grid { 
+        display: flex !important; 
+        justify-content: space-between !important; 
+        width: 100% !important; 
+        margin-bottom: 20px !important; 
+    }
+    .top-info-grid > div { flex: 1 !important; margin-right: 15px !important; }
+}
+
+/* Применяем тот же масштаб для режима генерации PDF */
+body.pdf-mode #print-root {
+    zoom: 0.8;
+}
     /* Распорка для подписей */
     body.pdf-mode #pdf-page-2 {
         display: flex !important;
@@ -109,6 +112,7 @@
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
