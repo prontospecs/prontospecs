@@ -555,45 +555,13 @@ function genPDF() {
 }
 
 function prepareForPrint(enable) {
+    // Включаем или выключаем наш идеальный режим
+    if (enable) document.body.classList.add('pdf-mode');
+    else document.body.classList.remove('pdf-mode');
+
     const inputs = document.querySelectorAll('input, select, textarea');
     const tzInp = document.getElementById('tz_no');
-    const tzTxt = document.getElementById('tz_no_text');
-
-    inputs.forEach(el => {
-        if(enable) {
-            if(el.tagName === 'SELECT' && el.options && el.selectedIndex >= 0) {
-                if(!el.dataset.originalText) el.dataset.originalText = el.options[el.selectedIndex].text;
-                if(el.value.includes('Выбор') || el.value === '' || el.value.includes('--')) {
-                    el.options[el.selectedIndex].text = 'Нет';
-                }
-            }
-        } else {
-            if(el.tagName === 'SELECT' && el.dataset.originalText && el.options && el.selectedIndex >= 0) {
-                el.options[el.selectedIndex].text = el.dataset.originalText;
-                delete el.dataset.originalText;
-            }
-        }
-    });
-
-    if(enable) {
-        if(tzInp && tzTxt) {
-            tzTxt.innerText = tzInp.value || '000-00';
-            tzInp.style.display = 'none';
-            tzTxt.style.display = 'inline-block';
-        }
-    } else {
-        if(tzInp && tzTxt) {
-            tzInp.style.display = 'inline-block';
-            tzTxt.style.display = 'none';
-        }
-    }
-
-    const imgText = document.getElementById('img_text');
-    if(imgText) imgText.style.display = enable ? 'none' : (uploadedImageBase64 ? 'none' : 'block');
-    const upZone = document.getElementById('upload_zone');
-    if(upZone) upZone.style.border = enable ? 'none' : '3px dashed #cbd5e1';
-}
-
+    // ... и дальше идет весь твой старый код этой функции
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
     const fileName = `TZ_${tzNo}.pdf`;
@@ -887,6 +855,7 @@ async function sendTZ() {
 }
     }
 }
+
 
 
 
