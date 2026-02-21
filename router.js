@@ -532,7 +532,7 @@ function prepareForPrint(enable, isPdf = true) {
         if (p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            p2.style.minHeight = '1350px'; // Высота листа под масштаб 0.8
+            p2.style.minHeight = '1250px'; // Высота листа под масштаб 0.8
             sig.style.marginTop = 'auto'; 
         }
         if (tzInp && tzText) {
@@ -848,6 +848,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
