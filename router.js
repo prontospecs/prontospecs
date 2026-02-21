@@ -518,14 +518,12 @@ function handlePrint() {
 }
 
 function prepareForPrint(enable) {
-    // Включаем или выключаем наш идеальный режим
     if (enable) document.body.classList.add('pdf-mode');
     else document.body.classList.remove('pdf-mode');
 
     const tzInp = document.getElementById('tz_no');
     const tzText = document.getElementById('tz_no_text');
     
-    // Прячем поле ввода и показываем обычный текст
     if (enable) {
         if (tzInp && tzText) {
             tzText.innerText = tzInp.value;
@@ -539,6 +537,7 @@ function prepareForPrint(enable) {
         }
     }
 }
+
 function genPDF() {
     const page1 = document.getElementById('pdf-page-1');
     const page2 = document.getElementById('pdf-page-2');
@@ -605,8 +604,6 @@ function saveToArchive() {
         }
     });
 
-    console.log("📦 СОБРАНО ДЛЯ АРХИВА:", docData);
-
     const arc = getArchive();
     arc.unshift(docData); 
     localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
@@ -620,7 +617,6 @@ function editFromArchive(i) {
     
     setTimeout(() => {
         if (d.fields && Object.keys(d.fields).length > 0) {
-            console.log("📂 РАСПАКОВКА АРХИВА:", d.fields);
             for (let id in d.fields) {
                 const el = document.getElementById(id);
                 if (el) el.value = d.fields[id];
@@ -765,14 +761,6 @@ function rejectUser(login) {
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
     const fileName = `TZ_${tzNo}.pdf`;
-    const el = document.querySelector('.document-sheet');
-    const footer = document.querySelector('.footer-btns');
-    const closeBtn = document.querySelector('.close-x');
-    
-    const btns = footer ? footer.querySelectorAll('.btn') : [];
-   async function sendTZ() {
-    const tzNo = document.getElementById('tz_no').value || "DOC";
-    const fileName = `TZ_${tzNo}.pdf`;
     const page1 = document.getElementById('pdf-page-1');
     const page2 = document.getElementById('pdf-page-2');
     const footer = document.querySelector('.footer-btns');
@@ -818,10 +806,3 @@ async function sendTZ() {
         }
     }, 150);
 }
-
-
-
-
-
-
-
