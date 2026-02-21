@@ -422,7 +422,6 @@ const templateView = () => `
                 </td></tr>
             </tbody>
         </table>
-</table>
 
         <div style="display:flex; justify-content:space-between; margin-top:40px; margin-bottom:20px; font-weight:bold; font-size:16px; color:black;">
             <div>ЗАКАЗЧИК: _____________________</div>
@@ -512,63 +511,30 @@ function handlePrint() {
     }, 100);
 }
 
-function genPDF() {
-    const el = document.querySelector('.document-sheet');
-    const footer = document.querySelector('.footer-btns');
-    const closeBtn = document.querySelector('.close-x');
-    
-    prepareForPrint(true);
-    if (footer) footer.style.display = 'none';
-    if (closeBtn) closeBtn.style.display = 'none';
-
-    setTimeout(async () => {
-        try {
-         const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            
-            const margin = 10; // Отступ 10 мм со всех сторон
-            const imgWidth = 210 - (margin * 2); // 190 мм рабочей ширины
-            const pageHeight = 297;
-            const usableHeight = pageHeight - (margin * 2); // 277 мм рабочей высоты
-            
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            let heightLeft = imgHeight;
-            let position = margin; // Начинаем рисовать с отступом 10 мм сверху
-
-            // Первая страница
-            pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-            heightLeft -= usableHeight;
-
-            // Последующие страницы (если ТЗ длинное)
-            while (heightLeft > 0) {
-                position -= usableHeight; // Сдвигаем картинку ровно на одну рабочую область вверх
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight); 
-                heightLeft -= usableHeight;
-            }
-            pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
-        } catch (err) { alert("Ошибка при создании PDF."); } 
-        finally { 
-            if (footer) footer.style.display = 'flex'; 
-            if (closeBtn) closeBtn.style.display = 'block';
-            prepareForPrint(false);
-        }
-    }, 150); 
-}
-
 function prepareForPrint(enable) {
     // Включаем или выключаем наш идеальный режим
     if (enable) document.body.classList.add('pdf-mode');
     else document.body.classList.remove('pdf-mode');
 
-    const inputs = document.querySelectorAll('input, select, textarea');
     const tzInp = document.getElementById('tz_no');
-    // ... и дальше идет весь твой старый код этой функции
-async function sendTZ() {
-    const tzNo = document.getElementById('tz_no').value || "DOC";
-    const fileName = `TZ_${tzNo}.pdf`;
+    const tzText = document.getElementById('tz_no_text');
+    
+    // Прячем поле ввода и показываем обычный текст
+    if (enable) {
+        if (tzInp && tzText) {
+            tzText.innerText = tzInp.value;
+            tzInp.style.display = 'none';
+            tzText.style.display = 'inline-block';
+        }
+    } else {
+        if (tzInp && tzText) {
+            tzInp.style.display = 'inline-block';
+            tzText.style.display = 'none';
+        }
+    }
+}
+
+function genPDF() {
     const el = document.querySelector('.document-sheet');
     const footer = document.querySelector('.footer-btns');
     const closeBtn = document.querySelector('.close-x');
@@ -582,41 +548,34 @@ async function sendTZ() {
             const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            const imgWidth = 190;
-            const pageHeight = 297; 
+            
+            const margin = 10; 
+            const imgWidth = 210 - (margin * 2); 
+            const pageHeight = 297;
+            const usableHeight = pageHeight - (margin * 2); 
+            
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             let heightLeft = imgHeight;
-            let position = 10; 
-            const sliceHeight = pageHeight - 20; 
+            let position = margin; 
 
-            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-            heightLeft -= sliceHeight;
+            pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+            heightLeft -= usableHeight;
 
-            while (heightLeft >= 0) {
-                position = heightLeft - imgHeight + 10; 
+            while (heightLeft > 0) {
+                position -= usableHeight; 
                 pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 10, position - 20, imgWidth, imgHeight); 
-                heightLeft -= sliceHeight;
+                pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight); 
+                heightLeft -= usableHeight;
             }
-
-            const pdfBlob = pdf.output('blob'); 
-            const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: `ТЗ №${tzNo}`, text: `Отправляю ТЗ №${tzNo}` });
-            } else {
-                alert("На этом устройстве нет меню 'Поделиться'. Файл скачан.");
-                pdf.save(fileName);
-            }
-        } catch (err) { 
-            if (err.name !== 'AbortError') alert("Ошибка при отправке: " + err); 
-        } finally { 
+            pdf.save(`TZ_${document.getElementById('tz_no').value || 'DOC'}.pdf`);
+        } catch (err) { alert("Ошибка при создании PDF."); } 
+        finally { 
             if (footer) footer.style.display = 'flex'; 
             if (closeBtn) closeBtn.style.display = 'block';
             prepareForPrint(false);
         }
-    }, 150);
+    }, 150); 
 }
 
 // ======================================================
@@ -638,10 +597,9 @@ function saveToArchive() {
         manager: document.getElementById('manager_name') ? document.getElementById('manager_name').value : '',
         date: new Date().toLocaleDateString(),
         image: uploadedImageBase64,
-        fields: {} // 🎒 ВОТ НАШ МЕШОК ДЛЯ ЦИФР
+        fields: {}
     };
 
-    // 🌪️ ПЫЛЕСОС 3.0: Ищет абсолютно все поля ввода внутри документа
     const allInputs = document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea');
     allInputs.forEach(el => {
         if (el.id && el.id !== 'file_input') {
@@ -649,7 +607,6 @@ function saveToArchive() {
         }
     });
 
-    // 🚨 ДАТЧИК СЛЕЖЕНИЯ: Выведет в консоль (F12) всё, что смог собрать пылесос!
     console.log("📦 СОБРАНО ДЛЯ АРХИВА:", docData);
 
     const arc = getArchive();
@@ -663,9 +620,7 @@ function editFromArchive(i) {
     const d = getArchive()[i]; 
     navigate('template');
     
-    // Ждем 200 миллисекунд, чтобы бланк точно нарисовался на экране
     setTimeout(() => {
-        // Если мешок с цифрами есть — распаковываем его
         if (d.fields && Object.keys(d.fields).length > 0) {
             console.log("📂 РАСПАКОВКА АРХИВА:", d.fields);
             for (let id in d.fields) {
@@ -673,7 +628,6 @@ function editFromArchive(i) {
                 if (el) el.value = d.fields[id];
             }
         } else {
-            // Если открыли старый проект (где мешка еще не было)
             if(document.getElementById('tz_no')) document.getElementById('tz_no').value = d.tz_no || '';
             if(document.getElementById('equipment_select')) document.getElementById('equipment_select').value = d.eq || '';
             if(document.getElementById('manager_name')) document.getElementById('manager_name').value = d.manager || '';
@@ -714,7 +668,6 @@ function mockRegister() {
     const pass = document.getElementById('reg_pass').value.trim();
     if (login === '' || pass === '') return alert("Введите логин и пароль!");
 
-    // Магия: заменяем спецсимволы, чтобы Firebase не ругался
     const safeLogin = login.replace(/[.#$\[\]]/g, '_');
 
     db.ref('users/' + safeLogin).once('value').then((snapshot) => {
@@ -745,7 +698,6 @@ function mockLogin() {
         return navigate('settings'); 
     }
 
-    // Тот же самый хак для входа
     const safeLogin = login.replace(/[.#$\[\]]/g, '_');
 
     db.ref('users/' + safeLogin).once('value').then((snapshot) => {
@@ -809,7 +761,9 @@ function rejectUser(login) {
     if(confirm(`Удалить заявку от ${login}? Это действие нельзя отменить.`)) {
         db.ref('users/' + login).remove()
             .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
-        
+    }
+}
+
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
     const fileName = `TZ_${tzNo}.pdf`;
@@ -817,7 +771,6 @@ async function sendTZ() {
     const footer = document.querySelector('.footer-btns');
     const closeBtn = document.querySelector('.close-x');
     
-    // Меняем текст кнопки при создании
     const btns = footer ? footer.querySelectorAll('.btn') : [];
     let sendBtn = null;
     btns.forEach(b => { if(b.innerText.includes('ОТПРАВИТЬ')) sendBtn = b; });
@@ -834,31 +787,27 @@ async function sendTZ() {
             const imgData = canvas.toDataURL('image/png');
             const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
             
-            const margin = 10; // Отступ 10 мм со всех сторон
-            const imgWidth = 210 - (margin * 2); // 190 мм рабочей ширины
+            const margin = 10; 
+            const imgWidth = 210 - (margin * 2); 
             const pageHeight = 297;
-            const usableHeight = pageHeight - (margin * 2); // 277 мм рабочей высоты
+            const usableHeight = pageHeight - (margin * 2); 
             
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             let heightLeft = imgHeight;
-            let position = margin; // Начинаем рисовать с отступом 10 мм сверху
+            let position = margin; 
 
-            // Первая страница
             pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
             heightLeft -= usableHeight;
 
-            // Последующие страницы (если ТЗ длинное)
             while (heightLeft > 0) {
-                position -= usableHeight; // Сдвигаем картинку ровно на одну рабочую область вверх
+                position -= usableHeight; 
                 pdf.addPage();
                 pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight); 
                 heightLeft -= usableHeight;
             }
-            // Просто скачиваем файл на компьютер (самый надежный способ без ботов)
-            pdf.save(fileName);
             
-            // Выводим подсказку для пользователя
+            pdf.save(fileName);
             alert(`Готово! Файл ${fileName} скачан.\n\nТеперь просто открой нужный чат в Telegram и перетащи этот файл туда мышкой.`);
 
         } catch (err) { 
@@ -871,14 +820,3 @@ async function sendTZ() {
         }
     }, 150);
 }
-    }
-}
-
-
-
-
-
-
-
-
-
