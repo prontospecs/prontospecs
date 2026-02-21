@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BUSINESS PROPOSAL</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <style>
+        :root { --pronto: #eab308; --bg: #f8fafc; --text: #1e293b; --white: #ffffff; --border: #cbd5e1; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        #app { max-width: 950px; margin: 0 auto; width: 100%; }
+
+        .home-card { background: var(--white); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 0 auto; }
+        .btn { border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: var(--pronto); width: 100%; }
+        .btn-mini { padding: 8px 12px; font-size: 14px; border-radius: 6px; border: none; color: #1e293b; background: #e2e8f0; cursor: pointer; }
+        input { width: 100%; border: 2px solid #cbd5e1; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: bold; background: white; margin-bottom: 15px; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script src="../config.js"></script>
+    
+    <script src="router.js"></script>
+</body>
+</html>
