@@ -142,7 +142,6 @@ function renderSelect(id, configKey) {
 // ======================================================
 // 3. HTML ШАБЛОНЫ (ВИЗУАЛ)
 // ======================================================
-
 const modalsHTML = `
     <div id="loginModal" class="modal" style="display:none">
         <div class="modal-content">
@@ -176,8 +175,21 @@ const modalsHTML = `
             </div>
         </div>
     </div>
-`;
 
+    <div id="printReminderModal" class="modal" style="display:none; z-index: 1000;">
+        <div class="modal-content" style="border: 3px solid var(--pronto); box-shadow: 0 0 50px rgba(0,0,0,0.5);">
+            <h2 style="color:red; font-weight:900; margin-top:0;">⚠️ ВНИМАНИЕ!</h2>
+            <p style="font-size:18px; font-weight:bold; margin:20px 0;">
+                В открывшемся окне печати ОБЯЗАТЕЛЬНО установите:<br>
+                <span style="background:yellow; padding:5px; font-size:24px; color:black;">МАСШТАБ: 80%</span>
+            </p>
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeModals()" class="btn btn-secondary" style="flex:1; background:#64748b;">ОТМЕНА</button>
+                <button onclick="startFinalPrint()" class="btn" style="flex:1; background:#10b981; font-size:18px;">ПЕЧАТАТЬ</button>
+            </div>
+        </div>
+    </div>
+`;
 const portalView = () => `
     <div class="home-card fade-in" style="max-width: 800px; text-align: center;">
         <h1 class="main-title" style="font-size: 48px;">PRONTO</h1>
@@ -512,11 +524,21 @@ function handleFile(input) {
     }
 }
 
-// --- 1. ПЕЧАТЬ ---
+// 1. Кнопка "ПЕЧАТЬ" на листе теперь просто открывает напоминание
 function handlePrint() {
-    prepareForPrint(true);
+    document.getElementById('printReminderModal').style.display = 'flex';
+}
+
+// 2. А вот эта функция срабатывает, когда менеджер нажал "ПЕЧАТАТЬ" уже в нашем окошке
+function startFinalPrint() {
+    closeModals(); // Закрываем наше напоминание
+    prepareForPrint(true); // Готовим документ (скрываем кнопки и т.д.)
+    
     setTimeout(() => {
-        window.print();
+        window.print(); // Открываем системное окно печати
+        
+        // Когда менеджер закроет системное окно (нажмет Печать или Отмена)
+        // возвращаем интерфейс сайта в норму через полсекунды
         setTimeout(() => prepareForPrint(false), 500);
     }, 150);
 }
@@ -824,6 +846,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
