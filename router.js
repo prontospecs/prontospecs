@@ -526,26 +526,39 @@ function prepareForPrint(enable, isPdf = true) {
     const tzText = document.getElementById('tz_no_text');
     const p2 = document.getElementById('pdf-page-2');
     const sig = document.getElementById('signature-box');
+    const footer = document.querySelector('.footer-btns');
+    const closeBtn = document.querySelector('.close-x');
     
     if (enable) {
-        // Одинаковая магия и для принтера, и для PDF
+        // Прячем всё лишнее
+        if (footer) footer.style.display = 'none';
+        if (closeBtn) closeBtn.style.display = 'none';
+
+        // Растягиваем вторую страницу и прижимаем подписи
         if (p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            p2.style.minHeight = '1250px'; // Высота листа под масштаб 0.8
+            p2.style.minHeight = '1250px'; 
             sig.style.marginTop = 'auto'; 
         }
+        
+        // Меняем инпут на текст для печати
         if (tzInp && tzText) {
             tzText.innerText = tzInp.value;
             tzInp.style.display = 'none';
             tzText.style.display = 'inline-block';
         }
     } else {
+        // Возвращаем как было
+        if (footer) footer.style.display = 'flex';
+        if (closeBtn) closeBtn.style.display = 'block';
+        
         if (p2 && sig) {
             p2.style.display = 'block';
             p2.style.minHeight = 'auto';
             sig.style.marginTop = '40px'; 
         }
+        
         if (tzInp && tzText) {
             tzInp.style.display = 'inline-block';
             tzText.style.display = 'none';
@@ -848,6 +861,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
