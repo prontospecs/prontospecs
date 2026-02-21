@@ -561,7 +561,7 @@ function prepareForPrint(enable, isPdf = true) {
             tzInp.style.display = 'none';
             tzText.style.display = 'inline-block';
         }
-    } else {
+    } 
         document.body.classList.remove('pdf-mode');
         // Возвращаем как было для сайта
         if (footer) footer.style.display = 'flex';
@@ -848,6 +848,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
