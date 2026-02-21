@@ -69,6 +69,31 @@
     .top-info-grid { display: flex !important; justify-content: space-between !important; width: 100% !important; margin-bottom: 20px !important; }
     .top-info-grid > div { flex: 1 !important; margin-right: 15px !important; }
 }
+        /* === РЕЖИМ PDF (Один в один как печать) === */
+body.pdf-mode { background: #ffffff !important; color: #000000 !important; }
+body.pdf-mode .document-sheet { box-shadow: none !important; padding: 10px !important; margin: 0 !important; color: #000000 !important; }
+body.pdf-mode .top-info-grid { 
+    display: flex !important; 
+    justify-content: space-between !important; 
+    background: transparent !important; 
+    border: none !important; 
+    padding: 0 !important;
+}
+body.pdf-mode .top-info-grid > div { flex: 1 !important; margin-right: 15px !important; }
+body.pdf-mode .no-print { display: none !important; }
+
+/* Убираем рамки у полей ввода, чтобы выглядело как простой текст */
+body.pdf-mode input, 
+body.pdf-mode textarea, 
+body.pdf-mode select { 
+    border: none !important; 
+    background: transparent !important; 
+    color: #000000 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    appearance: none !important; 
+    -webkit-appearance: none !important;
+}
     </style>
 </head>
 <body>
@@ -78,6 +103,7 @@
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
