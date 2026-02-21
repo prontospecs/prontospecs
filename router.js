@@ -519,27 +519,39 @@ function handlePrint() {
 }
 
 function prepareForPrint(enable, isPdf = true) {
-    const root = document.getElementById('print-root');
-    const p1 = document.getElementById('pdf-page-1');
+    if (enable) document.body.classList.add('pdf-mode');
+    else document.body.classList.remove('pdf-mode');
+
+    const tzInp = document.getElementById('tz_no');
+    const tzText = document.getElementById('tz_no_text');
     const p2 = document.getElementById('pdf-page-2');
     const sig = document.getElementById('signature-box');
-    const footer = document.querySelector('.footer-btns');
-    const closeBtn = document.querySelector('.close-x');
-
+    
     if (enable) {
-        document.body.classList.add('pdf-mode');
-        // Прячем всё лишнее, что может создавать пустые листы
-        if (footer) footer.style.display = 'none';
-        if (closeBtn) closeBtn.style.display = 'none';
-
-        // Магия для PDF: прижимаем подписи, но СТРОГО ограничиваем высоту
-        if (isPdf && p2 && sig) {
+        // Одинаковая магия и для принтера, и для PDF
+        if (p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            p2.style.height = '1000px'; // Фиксированная высота одного листа А4
-            p2.style.overflow = 'hidden'; // Запрещаем выходить за границы
+            p2.style.minHeight = '1350px'; // Высота листа под масштаб 0.8
             sig.style.marginTop = 'auto'; 
         }
+        if (tzInp && tzText) {
+            tzText.innerText = tzInp.value;
+            tzInp.style.display = 'none';
+            tzText.style.display = 'inline-block';
+        }
+    } else {
+        if (p2 && sig) {
+            p2.style.display = 'block';
+            p2.style.minHeight = 'auto';
+            sig.style.marginTop = '40px'; 
+        }
+        if (tzInp && tzText) {
+            tzInp.style.display = 'inline-block';
+            tzText.style.display = 'none';
+        }
+    }
+}
 
         // Прячем инпуты, показываем текст
         const tzInp = document.getElementById('tz_no');
@@ -836,6 +848,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
