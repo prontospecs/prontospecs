@@ -510,31 +510,31 @@ function handleFile(input) {
 }
 
 function handlePrint() {
-    prepareForPrint(true);
+    // Передаем 'false', чтобы сказать: "Это обычная печать, не ломай высоту!"
+    prepareForPrint(true, false); 
     setTimeout(() => {
         window.print();
-        setTimeout(() => prepareForPrint(false), 500);
+        setTimeout(() => prepareForPrint(false, false), 500);
     }, 100);
 }
 
-function prepareForPrint(enable) {
+function prepareForPrint(enable, isPdf = true) {
     if (enable) document.body.classList.add('pdf-mode');
     else document.body.classList.remove('pdf-mode');
 
     const tzInp = document.getElementById('tz_no');
     const tzText = document.getElementById('tz_no_text');
     
-    // Элементы для магии с подписями
     const p2 = document.getElementById('pdf-page-2');
     const sig = document.getElementById('signature-box');
     
     if (enable) {
-        // Растягиваем вторую страницу на высоту А4 и прижимаем подписи к низу
-        if(p2 && sig) {
+        // Растягиваем страницу и прижимаем подписи ТОЛЬКО если это генерация PDF
+        if(isPdf && p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            p2.style.minHeight = '1050px'; // Высота листа
-            sig.style.marginTop = 'auto'; // Отталкиваем в самый низ
+            p2.style.minHeight = '1050px'; 
+            sig.style.marginTop = 'auto'; 
         }
         if (tzInp && tzText) {
             tzText.innerText = tzInp.value;
@@ -542,7 +542,7 @@ function prepareForPrint(enable) {
             tzText.style.display = 'inline-block';
         }
     } else {
-        // Возвращаем компактный вид для сайта
+        // Возвращаем всё обратно для сайта
         if(p2 && sig) {
             p2.style.display = 'block';
             p2.style.minHeight = 'auto';
@@ -554,7 +554,6 @@ function prepareForPrint(enable) {
         }
     }
 }
-
 function genPDF() {
     const page1 = document.getElementById('pdf-page-1');
     const page2 = document.getElementById('pdf-page-2');
@@ -823,4 +822,5 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
