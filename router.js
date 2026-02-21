@@ -219,11 +219,18 @@ const loginView = () => `
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
             <input type="text" id="auth_login" placeholder="Ваш логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-<label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
-<div style="position:relative; margin-bottom:25px;">
-    <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
-    <span onclick="document.getElementById('auth_pass').type = document.getElementById('auth_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
-</div>
+            
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
+            <div style="position:relative; margin-bottom:25px;">
+                <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
+                <span onclick="document.getElementById('auth_pass').type = document.getElementById('auth_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
+            </div>
+            
+            <button onclick="mockLogin()" class="btn" style="width:100%; margin-bottom:15px; background:#10b981;">ВОЙТИ</button>
+            <div style="text-align:center; margin-top:10px;">
+                <span style="color:#64748b; font-size:14px;">Нет аккаунта? </span>
+                <a href="#" onclick="navigate('register')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Зарегистрироваться</a>
+            </div>
         </div>
     </div>
 `;
@@ -238,11 +245,15 @@ const registerView = () => `
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
             <input type="text" id="reg_login" placeholder="Новый логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-<label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
-<div style="position:relative; margin-bottom:25px;">
-    <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
-    <span onclick="document.getElementById('reg_pass').type = document.getElementById('reg_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
-</div>
+            
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
+            <div style="position:relative; margin-bottom:25px;">
+                <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
+                <span onclick="document.getElementById('reg_pass').type = document.getElementById('reg_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
+            </div>
+            
+            <button onclick="mockRegister()" class="btn" style="width:100%; margin-bottom:15px; background:#3b82f6;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+        </div>
     </div>
 `;
 
@@ -876,6 +887,7 @@ async function sendTZ() {
 }
     }
 }
+
 
 
 
