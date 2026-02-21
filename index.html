@@ -59,52 +59,43 @@
     /* === УМНАЯ ПЕЧАТЬ И PDF === */
 /* --- ЧИСТАЯ ПЕЧАТЬ С АВТО-МАСШТАБОМ 80% --- */
 /* --- ИСПРАВЛЕННАЯ ПЕЧАТЬ И PDF (ЦЕНТРИРОВАНИЕ) --- */
-@media print {
-    body * { visibility: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    #print-root, #print-root * { visibility: visible; }
-    
-    #print-root { 
-        position: absolute; 
-        left: 0; 
-        right: 0;
-        top: 0; 
-        width: 100%;
-        margin: 0 auto;
-        transform: scale(0.85); /* Чуть увеличим масштаб для лучшего заполнения */
-        transform-origin: top center; /* Центрируем при масштабировании */
+/* === ИСПРАВЛЕННАЯ ПЕЧАТЬ И PDF (БЕЗ НАЛОЖЕНИЙ) === */
+    @media print {
+        body * { visibility: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #print-root, #print-root * { visibility: visible; }
+        
+        #print-root { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+        @page { margin: 10mm; size: A4 portrait; }
+        html, body { height: auto !important; overflow: visible !important; background: white !important; }
+
+        /* Естественное уменьшение вместо ломучего масштаба */
+        .spec-table td { padding: 6px !important; font-size: 12px !important; }
+        .section-title td { padding: 8px !important; font-size: 11px !important; }
+        input, select, textarea { font-size: 12px !important; }
+        
+        /* Правильный разрыв страниц */
+        #pdf-page-1 { page-break-after: always !important; page-break-inside: avoid !important; margin-bottom: 20px; }
+        #pdf-page-2 { page-break-inside: avoid !important; }
+        .no-print { display: none !important; }
     }
 
-    @page { margin: 10mm 0; size: auto; }
-    html, body { height: auto !important; overflow: visible !important; background: white !important; }
+    /* Настройки для генерации PDF */
+    body.pdf-mode #print-root { width: 100%; padding: 0; background: white; }
+    body.pdf-mode .spec-table td { padding: 6px; font-size: 12px; }
+    body.pdf-mode .section-title td { padding: 8px; font-size: 11px; }
 
-    #pdf-page-1, #pdf-page-2 { 
-        page-break-after: always !important; 
-        page-break-inside: avoid !important;
-        height: 1250px !important; /* Подобрано под масштаб 0.85 */
+    /* Распорка: заставляет подписи всегда падать в самый низ 2-го листа */
+    #pdf-page-2 {
         display: flex !important;
         flex-direction: column !important;
-        position: relative;
+        min-height: 250mm !important; /* Высота листа A4 */
     }
-}
-
-/* Настройки для PDF режима (JS) */
-body.pdf-mode #print-root {
-    transform: scale(0.85);
-    transform-origin: top center;
-    width: 100%;
-}
-
-body.pdf-mode #pdf-page-2 {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 1250px !important;
-}
-
-body.pdf-mode #signature-box {
-    margin-top: auto !important; /* Выталкивает подписи вниз */
-    padding-bottom: 60px !important;
-    width: 100%;
-}
+    #signature-box {
+        margin-top: auto !important; 
+        padding-top: 30px !important;
+        padding-bottom: 20px !important;
+        width: 100%;
+    }
 </style>
 </head>
 <body>
@@ -114,6 +105,7 @@ body.pdf-mode #signature-box {
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
