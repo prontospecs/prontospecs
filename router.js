@@ -350,10 +350,10 @@ const templateView = () => `
         <div id="pdf-page-1">
             <div class="doc-header">
                 <div style="flex-grow:1;">
-                    <div style="display:flex; align-items:center;">
-                        <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right:15px;">SPECS №</span>
-                        <input type="text" id="tz_no" style="width:250px; font-size:32px; border:none; font-weight:900; margin:0; padding:0; line-height:1; vertical-align:middle; background:transparent;" placeholder="000-00">
-                        <span id="tz_no_text" style="display:none; width:250px; font-size:32px; font-weight:900; margin:0; padding:0; line-height:1;"></span>
+                    <div style="display:flex; align-items:center; gap: 15px; padding-bottom: 5px;">
+                        <span style="font-weight:900; color:var(--pronto); font-size:32px;">SPECS №</span>
+                        <input type="text" id="tz_no" style="width:200px; font-size:32px; border:none; font-weight:900; margin:0; padding:2px; line-height:normal; background:transparent;" placeholder="000-00">
+                        <span id="tz_no_text" style="display:none; font-size:32px; font-weight:900; margin:0; padding:2px; line-height:normal;"></span>
                     </div>
                     <div style="margin-top:10px;">
                         <b style="font-size:16px;">МЕНЕДЖЕР:</b> 
@@ -398,7 +398,13 @@ const templateView = () => `
                     <tr><td>4.10</td><td>Колеса (торм.)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_10', 'wheels')} <input type="number" id="val_4_10" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
                     <tr><td>4.11</td><td>Колеса (б/торм)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_11', 'wheels')} <input type="number" id="val_4_11" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
                     <tr><td>4.12</td><td>Вентиляция</td><td>${renderSelect('val_4_12', 'ventilation')}</td></tr>
-                    
+                </tbody>
+            </table>
+        </div> 
+        
+        <div id="pdf-page-2" style="margin-top: 20px;">
+            <table class="spec-table">
+                <tbody>
                     <tr class="section-title"><td colspan="3">5. ТЕМПЕРАТУРА</td></tr>
                     <tr><td>5.1</td><td>Режим</td><td><div style="display:flex; align-items:center; gap:10px;"><span>t° :</span> <input type="text" id="val_5_1" style="width:90px; text-align:center;"> <div id="dual_temp_zone" style="display:none; align-items:center; gap:5px;"><span>/ t° :</span> <input type="text" id="val_5_1_2" style="width:90px; text-align:center;"></div></div></td></tr>
                     
@@ -410,11 +416,7 @@ const templateView = () => `
 
                     <tr class="section-title"><td colspan="3">8. СРОК СЛУЖБЫ</td></tr>
                     <tr><td>8.1</td><td>Расчетный срок</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_8_1" style="width:60px; text-align:center; font-weight:bold;"> <span>лет</span></div></td></tr>
-                </tbody>
-            </table>
-        </div> <div id="pdf-page-2" style="margin-top: 20px;">
-            <table class="spec-table">
-                <tbody>
+                    
                     <tr class="section-title page-break-print"><td colspan="3">9. ЭСКИЗ И ПРИМЕЧАНИЯ</td></tr>
                     <tr><td colspan="3">
                         <div style="display:grid; grid-template-columns: 1fr 300px; gap:20px; min-height:250px;">
@@ -429,11 +431,13 @@ const templateView = () => `
                 </tbody>
             </table>
 
-<div id="signature-box" style="display:flex; justify-content:space-between; margin-top:40px; margin-bottom:20px; font-weight:bold; font-size:16px; color:black;">
-    <div>ЗАКАЗЧИК: _____________________</div>
-    <div>ИСПОЛНИТЕЛЬ: _____________________</div>
-</div>
-        </div> <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
+            <div id="signature-box" style="display:flex; justify-content:space-between; margin-top:40px; margin-bottom:20px; font-weight:bold; font-size:16px; color:black;">
+                <div>ЗАКАЗЧИК: _____________________</div>
+                <div>ИСПОЛНИТЕЛЬ: _____________________</div>
+            </div>
+        </div> 
+        
+        <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" onclick="saveToArchive()" style="background:#10b981; color:white; font-weight:bold; flex:1;">В АРХИВ</button>
             <button class="btn btn-secondary" onclick="handlePrint()" style="flex:1;">ПЕЧАТЬ</button>
             <button class="btn" onclick="genPDF()" style="background:#2b6cb0; color:white; flex:1;">PDF</button>
@@ -441,7 +445,6 @@ const templateView = () => `
         </div>
         ${modalsHTML}
     </div>`;
-
 // ======================================================
 // 4. ОБРАБОТЧИКИ СОБЫТИЙ И ПЕЧАТЬ
 // ======================================================
@@ -821,6 +824,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
