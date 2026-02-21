@@ -519,35 +519,49 @@ function handlePrint() {
 }
 
 function prepareForPrint(enable, isPdf = true) {
-    if (enable) document.body.classList.add('pdf-mode');
-    else document.body.classList.remove('pdf-mode');
-
-    const tzInp = document.getElementById('tz_no');
-    const tzText = document.getElementById('tz_no_text');
-    
+    const root = document.getElementById('print-root');
+    const p1 = document.getElementById('pdf-page-1');
     const p2 = document.getElementById('pdf-page-2');
     const sig = document.getElementById('signature-box');
-    
+    const footer = document.querySelector('.footer-btns');
+    const closeBtn = document.querySelector('.close-x');
+
     if (enable) {
-        // Растягиваем страницу и прижимаем подписи ТОЛЬКО если это генерация PDF
-        if(isPdf && p2 && sig) {
+        document.body.classList.add('pdf-mode');
+        // Прячем всё лишнее, что может создавать пустые листы
+        if (footer) footer.style.display = 'none';
+        if (closeBtn) closeBtn.style.display = 'none';
+
+        // Магия для PDF: прижимаем подписи, но СТРОГО ограничиваем высоту
+        if (isPdf && p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            p2.style.minHeight = '1050px'; 
+            p2.style.height = '1000px'; // Фиксированная высота одного листа А4
+            p2.style.overflow = 'hidden'; // Запрещаем выходить за границы
             sig.style.marginTop = 'auto'; 
         }
+
+        // Прячем инпуты, показываем текст
+        const tzInp = document.getElementById('tz_no');
+        const tzText = document.getElementById('tz_no_text');
         if (tzInp && tzText) {
             tzText.innerText = tzInp.value;
             tzInp.style.display = 'none';
             tzText.style.display = 'inline-block';
         }
     } else {
-        // Возвращаем всё обратно для сайта
-        if(p2 && sig) {
+        document.body.classList.remove('pdf-mode');
+        // Возвращаем как было для сайта
+        if (footer) footer.style.display = 'flex';
+        if (closeBtn) closeBtn.style.display = 'block';
+        if (p2 && sig) {
             p2.style.display = 'block';
-            p2.style.minHeight = 'auto';
+            p2.style.height = 'auto';
+            p2.style.overflow = 'visible';
             sig.style.marginTop = '40px'; 
         }
+        const tzInp = document.getElementById('tz_no');
+        const tzText = document.getElementById('tz_no_text');
         if (tzInp && tzText) {
             tzInp.style.display = 'inline-block';
             tzText.style.display = 'none';
@@ -822,5 +836,6 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
