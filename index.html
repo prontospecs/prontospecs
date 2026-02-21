@@ -94,6 +94,9 @@ body.pdf-mode select {
     appearance: none !important; 
     -webkit-appearance: none !important;
 }
+        /* Перенос 9 пункта на новую страницу (PDF и Печать) */
+body.pdf-mode .pdf-spacer { display: table-row !important; }
+@media print { .page-break-print { page-break-before: always !important; break-before: page !important; } }
     </style>
 </head>
 <body>
@@ -103,6 +106,7 @@ body.pdf-mode select {
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
