@@ -714,11 +714,18 @@ function mockRegister() {
     const pass = document.getElementById('reg_pass').value.trim();
     if (login === '' || pass === '') return alert("Введите логин и пароль!");
 
-    db.ref('users/' + login).once('value').then((snapshot) => {
+    // Магия: заменяем спецсимволы, чтобы Firebase не ругался
+    const safeLogin = login.replace(/[.#$\[\]]/g, '_');
+
+    db.ref('users/' + safeLogin).once('value').then((snapshot) => {
         if (snapshot.exists()) {
             alert("Этот логин уже занят! Придумайте другой.");
         } else {
-            db.ref('users/' + login).set({ password: pass, role: 'participant', status: 'pending' })
+            db.ref('users/' + safeLogin).set({ 
+                password: pass, 
+                role: 'participant', 
+                status: 'pending' 
+            })
             .then(() => {
                 alert("Успешно! Ваша заявка отправлена администратору на одобрение.");
                 navigate('portal'); 
@@ -738,7 +745,10 @@ function mockLogin() {
         return navigate('settings'); 
     }
 
-    db.ref('users/' + login).once('value').then((snapshot) => {
+    // Тот же самый хак для входа
+    const safeLogin = login.replace(/[.#$\[\]]/g, '_');
+
+    db.ref('users/' + safeLogin).once('value').then((snapshot) => {
         if (!snapshot.exists()) return alert("Такого пользователя не существует!");
         
         const user = snapshot.val();
@@ -746,7 +756,7 @@ function mockLogin() {
         if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором.");
 
         const s = getSettings();
-        localStorage.setItem('pronto_settings', JSON.stringify({ role: user.role, theme: s.theme, username: login }));
+        localStorage.setItem('pronto_settings', JSON.stringify({ role: user.role, theme: s.theme, username: safeLogin }));
 
         if (user.archive) localStorage.setItem('pronto_archive', JSON.stringify(user.archive));
         else localStorage.removeItem('pronto_archive');
@@ -863,6 +873,7 @@ async function sendTZ() {
 }
     }
 }
+
 
 
 
