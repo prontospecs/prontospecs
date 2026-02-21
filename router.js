@@ -350,8 +350,8 @@ const templateView = () => `
         <div id="pdf-page-1">
             <div class="doc-header">
                 <div style="flex-grow:1;">
-                    <div style="display:flex; align-items:center; gap: 15px; padding-bottom: 5px;">
-                        <span style="font-weight:900; color:var(--pronto); font-size:32px;">SPECS №</span>
+                   <div style="display:flex; align-items:center; padding-bottom: 5px;">
+    <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right: 20px;">SPECS №</span>
                         <input type="text" id="tz_no" style="width:200px; font-size:32px; border:none; font-weight:900; margin:0; padding:2px; line-height:normal; background:transparent;" placeholder="000-00">
                         <span id="tz_no_text" style="display:none; font-size:32px; font-weight:900; margin:0; padding:2px; line-height:normal;"></span>
                     </div>
@@ -538,7 +538,7 @@ function prepareForPrint(enable) {
         if (p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            p2.style.minHeight = '1250px'; 
+            // Строчку с minHeight отсюда убрали
             sig.style.marginTop = 'auto'; 
         }
         if (tzInp && tzText) {
@@ -824,6 +824,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
