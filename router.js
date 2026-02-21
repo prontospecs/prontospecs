@@ -824,7 +824,7 @@ async function sendTZ() {
     const footer = document.querySelector('.footer-btns');
     const closeBtn = document.querySelector('.close-x');
     
-    // Смена текста кнопки
+    // Меняем текст кнопки при создании
     const btns = footer ? footer.querySelectorAll('.btn') : [];
     let sendBtn = null;
     btns.forEach(b => { if(b.innerText.includes('ОТПРАВИТЬ')) sendBtn = b; });
@@ -833,7 +833,7 @@ async function sendTZ() {
     prepareForPrint(true);
     if (footer) footer.style.display = 'none';
     if (closeBtn) closeBtn.style.display = 'none';
-    if (sendBtn) sendBtn.innerText = 'ОТПРАВКА...';
+    if (sendBtn) sendBtn.innerText = 'СОЗДАНИЕ PDF...';
 
     setTimeout(async () => {
         try {
@@ -858,32 +858,14 @@ async function sendTZ() {
                 heightLeft -= sliceHeight;
             }
 
-            const pdfBlob = pdf.output('blob'); 
-
-            // === ОТПРАВКА В ТЕЛЕГРАМ ===
-            const BOT_TOKEN = 'ТВОЙ_ТОКЕН_БОТА'; // Впиши свой Токен
-            const CHAT_ID = 'ТВОЙ_CHAT_ID';       // Впиши свой ID чата
-
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('document', pdfBlob, fileName);
+            // Просто скачиваем файл на компьютер (самый надежный способ без ботов)
+            pdf.save(fileName);
             
-            const manager = document.getElementById('manager_name') ? document.getElementById('manager_name').value : 'Не указан';
-            formData.append('caption', `Новое ТЗ №${tzNo}\nМенеджер: ${manager}`);
-
-            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                alert("Успешно отправлено в Telegram!");
-            } else {
-                alert("Ошибка при отправке в Telegram. Проверь ключи.");
-            }
+            // Выводим подсказку для пользователя
+            alert(`Готово! Файл ${fileName} скачан.\n\nТеперь просто открой нужный чат в Telegram и перетащи этот файл туда мышкой.`);
 
         } catch (err) { 
-            alert("Ошибка при отправке: " + err); 
+            alert("Ошибка при создании: " + err); 
         } finally { 
             if (footer) footer.style.display = 'flex'; 
             if (closeBtn) closeBtn.style.display = 'block';
@@ -894,6 +876,7 @@ async function sendTZ() {
 }
     }
 }
+
 
 
 
