@@ -10,94 +10,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <style>
-        :root { --pronto: #2b6cb0; --bg: #f1f5f9; --text: #1e293b; --white: #ffffff; --border: #cbd5e1; }
-        body.dark-theme { --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155; }
-        body.dark-theme .fridge-title { color: #3b82f6 !important; }
-        
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); padding-bottom: 100px; }
-        #app { max-width: 950px; margin: 20px auto; width: 96%; }
+ <style>
+    :root { --pronto: #2b6cb0; --bg: #f1f5f9; --text: #1e293b; --white: #ffffff; --border: #cbd5e1; }
+    body.dark-theme { --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155; }
+    body.dark-theme .fridge-title { color: #3b82f6 !important; }
+    
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); padding-bottom: 100px; }
+    #app { max-width: 950px; margin: 20px auto; width: 96%; }
 
-        /* ИНТЕРФЕЙС */
-        .home-card { background: var(--white); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .main-title { font-size: 50px; font-weight: 900; color: var(--pronto); line-height: 1; margin: 0; }
-        .subtitle { font-size: 40px; font-weight: 900; color: #3b82f6; margin-bottom: 30px; line-height: 1; }
+    /* ИНТЕРФЕЙС */
+    .home-card { background: var(--white); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .main-title { font-size: 50px; font-weight: 900; color: var(--pronto); line-height: 1; margin: 0; }
+    .subtitle { font-size: 40px; font-weight: 900; color: #3b82f6; margin-bottom: 30px; line-height: 1; }
 
-        /* АРХИВ */
-        .archive-item { background: var(--white); border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; border-radius: 12px; }
-        .archive-content { display: flex; gap: 15px; align-items: center; }
-        .archive-thumb { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; background: #eee; border: 1px solid #ddd; }
-        .archive-actions { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; justify-content: flex-end; }
+    /* АРХИВ */
+    .archive-item { background: var(--white); border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; border-radius: 12px; }
+    .archive-content { display: flex; gap: 15px; align-items: center; }
+    .archive-thumb { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; background: #eee; border: 1px solid #ddd; }
+    .archive-actions { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; justify-content: flex-end; }
 
-        /* ЛИСТ ТЗ */
-        .document-sheet { background: white; padding: 40px; border-radius: 4px; box-shadow: 0 0 40px rgba(0,0,0,0.15); color: black; }
-        .doc-header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--pronto); padding-bottom: 15px; margin-bottom: 20px; }
-        .top-info-grid { display: grid; grid-template-columns: 2.2fr 0.7fr 0.7fr; gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; }
+    /* ЛИСТ ТЗ */
+    .document-sheet { background: white; padding: 40px; border-radius: 4px; box-shadow: 0 0 40px rgba(0,0,0,0.15); color: black; }
+    .doc-header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--pronto); padding-bottom: 15px; margin-bottom: 20px; }
+    .top-info-grid { display: grid; grid-template-columns: 2.2fr 0.7fr 0.7fr; gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; }
 
-        /* ТАБЛИЦА */
-        .spec-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-        .spec-table td { border: 1px solid #94a3b8; padding: 8px; vertical-align: middle; color: black; }
-        .section-title td { background: #e0f2fe; font-weight: bold; color: #0369a1; text-transform: uppercase; font-size: 11px; padding: 10px; }
+    /* ТАБЛИЦА */
+    .spec-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    .spec-table td { border: 1px solid #94a3b8; padding: 8px; vertical-align: middle; color: black; }
+    .section-title td { background: #e0f2fe; font-weight: bold; color: #0369a1; text-transform: uppercase; font-size: 11px; padding: 10px; }
 
-        /* ПОЛЯ ВВОДА */
-        input, select, textarea { width: 100%; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px; font-size: 14px; font-weight: bold; font-family: inherit; background: white; }
-        textarea { resize: none; }
+    /* ПОЛЯ ВВОДА */
+    input, select, textarea { width: 100%; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px; font-size: 14px; font-weight: bold; font-family: inherit; background: white; }
+    textarea { resize: none; }
 
-        /* КНОПКИ */
-        .footer-btns { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; display: flex; gap: 10px; justify-content: center; z-index: 100; border-top: 1px solid #ccc; }
-        .btn { border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: var(--pronto); }
-        .btn-mini { padding: 8px 12px; font-size: 14px; border-radius: 6px; border: none; color: white; cursor: pointer; }
-        .close-x { font-size: 30px; cursor: pointer; color: #ccc; background: none; border: none; }
-
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 400px; text-align: center; }
-        
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #eee; border-top: 5px solid var(--pronto); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* === РЕЖИМ ПЕЧАТИ И PDF (ЧИСТЫЙ ЛИСТ) === */
-/* --- ЧИСТАЯ ПЕЧАТЬ (БЕЗ РАЗРЫВОВ) --- */
-      @media print {
-    body * { visibility: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
-    #print-root, #print-root * { visibility: visible; } 
-    #print-root { position: absolute; left: 0; top: 0; width: 100%; }
-    @page { margin: 10mm auto; }
-    .spec-table { width: 100% !important; border-collapse: collapse; }
-    .no-print { display: none !important; }
-    .top-info-grid { display: flex !important; justify-content: space-between !important; width: 100% !important; margin-bottom: 20px !important; }
-    .top-info-grid > div { flex: 1 !important; margin-right: 15px !important; }
-}
-        /* === РЕЖИМ PDF (Один в один как печать) === */
-body.pdf-mode { background: #ffffff !important; color: #000000 !important; }
-body.pdf-mode .document-sheet { box-shadow: none !important; padding: 10px !important; margin: 0 !important; color: #000000 !important; }
-body.pdf-mode .top-info-grid { 
-    display: flex !important; 
-    justify-content: space-between !important; 
-    background: transparent !important; 
-    border: none !important; 
-    padding: 0 !important;
-}
-body.pdf-mode .top-info-grid > div { flex: 1 !important; margin-right: 15px !important; }
-body.pdf-mode .no-print { display: none !important; }
-
-/* Убираем рамки у полей ввода, чтобы выглядело как простой текст */
-body.pdf-mode input, 
-body.pdf-mode textarea, 
-body.pdf-mode select { 
-    border: none !important; 
-    background: transparent !important; 
-    color: #000000 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    appearance: none !important; 
-    -webkit-appearance: none !important;
-}
-        /* Перенос 9 пункта на новую страницу (PDF и Печать) */
-body.pdf-mode .pdf-spacer { display: table-row !important; }
-@media print { .page-break-print { page-break-before: always !important; break-before: page !important; } }
-    </style>
+    /* КНОПКИ */
+    .footer-btns { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; display: flex; gap: 10px; justify-content: center; z-index: 100; border-top: 1px solid #ccc; }
+    .btn { border: none; padding: 12px 2
 </head>
 <body>
     <div id="loader"><div class="spinner"></div></div>
@@ -106,6 +55,7 @@ body.pdf-mode .pdf-spacer { display: table-row !important; }
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
