@@ -196,6 +196,7 @@ const portalView = () => `
         <div class="subtitle" style="font-size: 24px; margin-bottom: 5px;">SPECS</div>
         <p style="color:#64748b; margin-bottom: 40px;">Единая платформа для всех сервисов компании</p>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; text-align: left;">
+            
             <div style="border:2px solid #cbd5e1; border-radius:15px; padding:25px; cursor:pointer; transition:0.3s; background: white;" 
                  onmouseover="this.style.borderColor='var(--pronto)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
                  onmouseout="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'" 
@@ -212,11 +213,23 @@ const portalView = () => `
                 <div style="font-size:14px; font-weight:bold; color:var(--pronto); margin-bottom:10px;">(fridge)</div>
                 <p style="font-size:13px; color:#64748b; margin:0;">Генератор технических заданий.</p>
             </div>
-            <div style="border:2px dashed #cbd5e1; border-radius:15px; padding:25px; cursor:not-allowed; opacity:0.6; background: #f8fafc;">
-                <div style="font-size:40px; margin-bottom:15px;">🚀</div>
-                <h3 style="margin:0 0 10px 0; color:var(--text);">NEW APP</h3>
-                <p style="font-size:13px; color:#64748b; margin:0;">Следующее приложение в разработке...</p>
+
+            <div style="border:2px solid #cbd5e1; border-radius:15px; padding:25px; cursor:pointer; transition:0.3s; background: white;" 
+                 onmouseover="this.style.borderColor='#eab308'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
+                 onmouseout="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'" 
+                 onclick="window.location.href='./kp-app/index.html'">
+                
+                <div style="margin-bottom:15px;">
+                    <div style="width:55px; height:55px; background: radial-gradient(circle, #fef08a 0%, #eab308 70%, #ca8a04 100%); border-radius:50%; display:flex; align-items:center; justify-content:center; border: 3px solid #a16207; box-shadow: inset 0 0 8px rgba(255,255,255,0.8), 0 5px 10px rgba(0,0,0,0.15);">
+                        <span style="color:#854d0e; font-weight:900; font-size:32px; font-family:sans-serif; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">$</span>
+                    </div>
+                </div>
+
+                <h3 style="margin:0 0 5px 0; color:var(--text); font-size:22px;">BUSINESS PROPOSAL</h3>
+                <div style="font-size:14px; font-weight:bold; color:#eab308; margin-bottom:10px;">(commercial)</div>
+                <p style="font-size:13px; color:#64748b; margin:0;">Конструктор коммерческих предложений и база товаров.</p>
             </div>
+
         </div>
     </div>
 `;
@@ -846,6 +859,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
