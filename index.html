@@ -58,7 +58,7 @@
 
     /* === УМНАЯ ПЕЧАТЬ И PDF === */
 /* --- ЧИСТАЯ ПЕЧАТЬ С АВТО-МАСШТАБОМ 80% --- */
-/* --- ИСПРАВЛЕННАЯ ПЕЧАТЬ И PDF --- */
+/* --- ИСПРАВЛЕННАЯ ПЕЧАТЬ И PDF (ЦЕНТРИРОВАНИЕ) --- */
 @media print {
     body * { visibility: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #print-root, #print-root * { visibility: visible; }
@@ -66,42 +66,44 @@
     #print-root { 
         position: absolute; 
         left: 0; 
+        right: 0;
         top: 0; 
         width: 100%;
-        /* Используем масштаб через трансформацию - это надежнее для PDF */
-        transform: scale(0.8);
-        transform-origin: top left;
-        width: 125%; /* Компенсируем уменьшение, чтобы заполнить ширину */
+        margin: 0 auto;
+        transform: scale(0.85); /* Чуть увеличим масштаб для лучшего заполнения */
+        transform-origin: top center; /* Центрируем при масштабировании */
     }
 
-    @page { margin: 0; size: auto; }
-    html, body { height: 100% !important; overflow: visible !important; }
+    @page { margin: 10mm 0; size: auto; }
+    html, body { height: auto !important; overflow: visible !important; background: white !important; }
 
     #pdf-page-1, #pdf-page-2 { 
         page-break-after: always !important; 
-        height: 1350px !important; /* Высота с учетом масштаба 0.8 */
+        page-break-inside: avoid !important;
+        height: 1250px !important; /* Подобрано под масштаб 0.85 */
+        display: flex !important;
+        flex-direction: column !important;
         position: relative;
     }
-    
-    .no-print { display: none !important; }
 }
 
 /* Настройки для PDF режима (JS) */
 body.pdf-mode #print-root {
-    transform: scale(0.8);
-    transform-origin: top left;
-    width: 125%;
+    transform: scale(0.85);
+    transform-origin: top center;
+    width: 100%;
 }
 
 body.pdf-mode #pdf-page-2 {
     display: flex !important;
     flex-direction: column !important;
-    min-height: 1350px !important; 
+    min-height: 1250px !important;
 }
 
 body.pdf-mode #signature-box {
-    margin-top: auto !important;
-    padding-bottom: 50px !important;
+    margin-top: auto !important; /* Выталкивает подписи вниз */
+    padding-bottom: 60px !important;
+    width: 100%;
 }
 </style>
 </head>
@@ -112,6 +114,7 @@ body.pdf-mode #signature-box {
     <script src="router.js"></script>
 </body>
 </html>
+
 
 
 
