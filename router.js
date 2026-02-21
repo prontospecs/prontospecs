@@ -409,7 +409,8 @@ const templateView = () => `
                 <tr class="section-title"><td colspan="3">8. СРОК СЛУЖБЫ</td></tr>
                 <tr><td>8.1</td><td>Расчетный срок</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_8_1" style="width:60px; text-align:center; font-weight:bold;"> <span>лет</span></div></td></tr>
                 
-                <tr class="section-title"><td colspan="3">9. ЭСКИЗ И ПРИМЕЧАНИЯ</td></tr>
+            <tr class="pdf-spacer" style="display:none;"><td colspan="3" style="border:none; height:350px; background:white;"></td></tr>
+                <tr class="section-title page-break-print"><td colspan="3">9. ЭСКИЗ И ПРИМЕЧАНИЯ</td></tr>
                 <tr><td colspan="3">
                     <div style="display:grid; grid-template-columns: 1fr 300px; gap:20px; min-height:250px;">
                         <textarea id="val_9_1" style="width:100%; resize:none; padding:10px; border:1px solid #cbd5e1; border-radius:10px;" placeholder="Примечание..."></textarea>
@@ -820,3 +821,4 @@ async function sendTZ() {
         }
     }, 150);
 }
+
