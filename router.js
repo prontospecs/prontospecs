@@ -429,10 +429,10 @@ const templateView = () => `
                 </tbody>
             </table>
 
-            <div style="display:flex; justify-content:space-between; margin-top:40px; margin-bottom:20px; font-weight:bold; font-size:16px; color:black;">
-                <div>ЗАКАЗЧИК: _____________________</div>
-                <div>ИСПОЛНИТЕЛЬ: _____________________</div>
-            </div>
+<div id="signature-box" style="display:flex; justify-content:space-between; margin-top:40px; margin-bottom:20px; font-weight:bold; font-size:16px; color:black;">
+    <div>ЗАКАЗЧИК: _____________________</div>
+    <div>ИСПОЛНИТЕЛЬ: _____________________</div>
+</div>
         </div> <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" onclick="saveToArchive()" style="background:#10b981; color:white; font-weight:bold; flex:1;">В АРХИВ</button>
             <button class="btn btn-secondary" onclick="handlePrint()" style="flex:1;">ПЕЧАТЬ</button>
@@ -524,13 +524,30 @@ function prepareForPrint(enable) {
     const tzInp = document.getElementById('tz_no');
     const tzText = document.getElementById('tz_no_text');
     
+    // Элементы для магии с подписями
+    const p2 = document.getElementById('pdf-page-2');
+    const sig = document.getElementById('signature-box');
+    
     if (enable) {
+        // Растягиваем вторую страницу на высоту А4 и прижимаем подписи к низу
+        if(p2 && sig) {
+            p2.style.display = 'flex';
+            p2.style.flexDirection = 'column';
+            p2.style.minHeight = '1050px'; // Высота листа
+            sig.style.marginTop = 'auto'; // Отталкиваем в самый низ
+        }
         if (tzInp && tzText) {
             tzText.innerText = tzInp.value;
             tzInp.style.display = 'none';
             tzText.style.display = 'inline-block';
         }
     } else {
+        // Возвращаем компактный вид для сайта
+        if(p2 && sig) {
+            p2.style.display = 'block';
+            p2.style.minHeight = 'auto';
+            sig.style.marginTop = '40px'; 
+        }
         if (tzInp && tzText) {
             tzInp.style.display = 'inline-block';
             tzText.style.display = 'none';
@@ -806,3 +823,4 @@ async function sendTZ() {
         }
     }, 150);
 }
+
