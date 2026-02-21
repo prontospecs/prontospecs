@@ -509,6 +509,7 @@ function handleFile(input) {
     }
 }
 
+// --- 1. ПЕЧАТЬ ---
 function handlePrint() {
     prepareForPrint(true);
     setTimeout(() => {
@@ -516,6 +517,8 @@ function handlePrint() {
         setTimeout(() => prepareForPrint(false), 500);
     }, 150);
 }
+
+// --- 2. ПОДГОТОВКА (ИСПОЛНИТЕЛЬНАЯ) ---
 function prepareForPrint(enable) {
     const tzInp = document.getElementById('tz_no');
     const tzText = document.getElementById('tz_no_text');
@@ -532,8 +535,8 @@ function prepareForPrint(enable) {
         if (p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            p2.style.minHeight = '1250px'; // Создаем высоту под лист А4
-            sig.style.marginTop = 'auto';  // Выталкиваем подписи в самый низ
+            p2.style.minHeight = '1250px'; 
+            sig.style.marginTop = 'auto'; 
         }
         if (tzInp && tzText) {
             tzText.innerText = tzInp.value;
@@ -557,39 +560,12 @@ function prepareForPrint(enable) {
     }
 }
 
-        // Прячем инпуты, показываем текст
-        const tzInp = document.getElementById('tz_no');
-        const tzText = document.getElementById('tz_no_text');
-        if (tzInp && tzText) {
-            tzText.innerText = tzInp.value;
-            tzInp.style.display = 'none';
-            tzText.style.display = 'inline-block';
-        }
-    } 
-        document.body.classList.remove('pdf-mode');
-        // Возвращаем как было для сайта
-        if (footer) footer.style.display = 'flex';
-        if (closeBtn) closeBtn.style.display = 'block';
-        if (p2 && sig) {
-            p2.style.display = 'block';
-            p2.style.height = 'auto';
-            p2.style.overflow = 'visible';
-            sig.style.marginTop = '40px'; 
-        }
-        const tzInp = document.getElementById('tz_no');
-        const tzText = document.getElementById('tz_no_text');
-        if (tzInp && tzText) {
-            tzInp.style.display = 'inline-block';
-            tzText.style.display = 'none';
-        }
-    }
-}
-
+// --- 3. ГЕНЕРАЦИЯ PDF ---
 async function genPDF() {
     const page1 = document.getElementById('pdf-page-1');
     const page2 = document.getElementById('pdf-page-2');
     
-    prepareForPrint(true); // Включаем режим подготовки
+    prepareForPrint(true);
 
     setTimeout(async () => {
         try {
@@ -597,12 +573,10 @@ async function genPDF() {
             const margin = 10; 
             const imgWidth = 210 - (margin * 2); 
 
-            // Снимаем страницу 1
             const canvas1 = await html2canvas(page1, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgHeight1 = (canvas1.height * imgWidth) / canvas1.width;
             pdf.addImage(canvas1.toDataURL('image/png'), 'PNG', margin, margin, imgWidth, imgHeight1);
 
-            // Снимаем страницу 2
             pdf.addPage();
             const canvas2 = await html2canvas(page2, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgHeight2 = (canvas2.height * imgWidth) / canvas2.width;
@@ -612,9 +586,9 @@ async function genPDF() {
         } catch (err) { 
             alert("Ошибка при создании PDF."); 
         } finally { 
-            prepareForPrint(false); // Возвращаем всё как было
+            prepareForPrint(false);
         }
-    }, 250); // Даем браузеру время «растянуть» страницы
+    }, 250);
 }
 // ======================================================
 // 5. АРХИВ (ПЫЛЕСОС И УМНЫЕ КНОПКИ)
@@ -847,6 +821,7 @@ async function sendTZ() {
         }
     }, 150);
 }
+
 
 
 
