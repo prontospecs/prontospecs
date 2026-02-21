@@ -391,7 +391,7 @@ const templateView = () => `
                 <tr><td>5.1</td><td>Режим</td><td><div style="display:flex; align-items:center; gap:10px;"><span>t° :</span> <input type="text" id="val_5_1" style="width:90px; text-align:center;"> <div id="dual_temp_zone" style="display:none; align-items:center; gap:5px;"><span>/ t° :</span> <input type="text" id="val_5_1_2" style="width:90px; text-align:center;"></div></div></td></tr>
                 
                 <tr class="section-title"><td colspan="3">6. СРЕДА</td></tr>
-                <tr><td>6.1</td><td>Условия</td><td><div style="display:flex; align-items:center; gap:5px;"><span>+</span> <input type="number" id="val_6_1" style="width:50px; text-align:center;"> <span>/</span> <input type="number" id="val_6_2" style="width:50px; text-align:center;"> <span>%</span></div></td></tr>
+                <tr><td>6.1</td><td>Условия эксплуотации</td><td><div style="display:flex; align-items:center; gap:5px;"><span>+</span> <input type="number" id="val_6_1" style="width:50px; text-align:center;"> <span>/</span> <input type="number" id="val_6_2" style="width:50px; text-align:center;"> <span>%</span></div></td></tr>
 
                 <tr class="section-title"><td colspan="3">7. ГАРАНТИЯ</td></tr>
                 <tr><td>7.1</td><td>Срок гарантии</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_7_1" style="width:60px; text-align:center; font-weight:bold;"> <span>мес.</span></div></td></tr>
@@ -814,4 +814,5 @@ function rejectUser(login) {
             .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
     }
 }
+
 
