@@ -368,15 +368,22 @@ const settingsView = () => {
         ${modalsHTML}
     </div>`;
 };
-
 const templateView = () => `
+    <style>
+        @media print {
+            #signature-box {
+                margin-top: 650px !important; 
+            }
+        }
+    </style>
+
     <div class="document-sheet fade-in" id="print-root">
         
         <div id="pdf-page-1">
             <div class="doc-header">
                 <div style="flex-grow:1;">
-                   <div style="display:flex; align-items:center; padding-bottom: 5px;">
-    <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right: 20px;">SPECS №</span>
+                    <div style="display:flex; align-items:center; padding-bottom: 5px;">
+    <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right: 20px;">SPECS (ТЗ) №</span>
                         <input type="text" id="tz_no" style="width:200px; font-size:32px; border:none; font-weight:900; margin:0; padding:2px; line-height:normal; background:transparent;" placeholder="000-00">
                         <span id="tz_no_text" style="display:none; font-size:32px; font-weight:900; margin:0; padding:2px; line-height:normal;"></span>
                     </div>
@@ -398,9 +405,9 @@ const templateView = () => `
                 <thead><tr><th width="45">№</th><th>ПАРАМЕТР</th><th>ТЕХНИЧЕСКИЕ ТРЕБОВАНИЯ</th></tr></thead>
                 <tbody>
                     <tr class="section-title"><td colspan="3">1. ГАБАРИТНЫЕ РАЗМЕРЫ (мм)</td></tr>
-                    <tr><td>1.1</td><td>Высота (H)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="h" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
-                    <tr><td>1.2</td><td>Ширина (W)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="w" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
-                    <tr><td>1.3</td><td>Глубина (D)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="d" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
+                    <tr><td>1.1</td><td>Длина (L)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="h" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
+                    <tr><td>1.2</td><td>Ширина|Глубина (W|D)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="w" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
+                    <tr><td>1.3</td><td>Высота (H)</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="d" style="width:70px; text-align:center;"> <span>мм</span></div></td></tr>
                     <tr><td>1.4</td><td>Допуск</td><td><div style="display:flex; align-items:center; gap:5px;"><span>±</span><input type="number" id="val_1_4" style="width:50px; text-align:center;"> <span>мм</span></div></td></tr>
                     
                     <tr class="section-title"><td colspan="3">2. ИСПОЛНЕНИЕ</td></tr>
@@ -417,12 +424,11 @@ const templateView = () => `
                     <tr><td>4.4</td><td>Двери</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_4', 'doorTypes')} <input type="number" id="val_4_4" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
                     <tr><td>4.5</td><td>Ящики / Салазки</td><td><div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">${renderSelect('sel_4_5', 'drawerTypes')}${renderSelect('val_4_5_slides', 'slideTypes')}</div></td></tr>
                     <tr><td>4.6</td><td>Полки</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_6', 'shelfTypes')} <input type="number" id="val_4_6" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                    <tr><td>4.7</td><td>Нагрузка</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_4_7" style="width:60px; text-align:center;"> <span>кг</span></div></td></tr>
+                    <tr><td>4.7</td><td>Нагрузка</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_4_7" style="width:60px; text-align:center;" value="15"> <span>кг</span></div></td></tr>
                     <tr><td>4.8</td><td>Подсветка</td><td>${renderSelect('val_4_8', 'lighting')}</td></tr>
                     <tr><td>4.9</td><td>Ножки</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_9', 'legs')} <input type="number" id="val_4_9" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                    <tr><td>4.10</td><td>Колеса (торм.)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_10', 'wheels')} <input type="number" id="val_4_10" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                    <tr><td>4.11</td><td>Колеса (б/торм)</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_11', 'wheels')} <input type="number" id="val_4_11" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
-                    <tr><td>4.12</td><td>Вентиляция</td><td>${renderSelect('val_4_12', 'ventilation')}</td></tr>
+                    <tr><td>4.10</td><td>Колеса</td><td><div style="display:flex; align-items:center; gap:5px;">${renderSelect('sel_4_10', 'wheels')} <input type="number" id="val_4_10" style="width:50px; text-align:center;"> <span>шт.</span></div></td></tr>
+                    <tr><td>4.11</td><td>Вентиляция</td><td>${renderSelect('val_4_12', 'ventilation')}</td></tr>
                 </tbody>
             </table>
         </div> 
@@ -438,11 +444,8 @@ const templateView = () => `
 
                     <tr class="section-title"><td colspan="3">7. ГАРАНТИЯ</td></tr>
                     <tr><td>7.1</td><td>Срок гарантии</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_7_1" style="width:60px; text-align:center; font-weight:bold;"> <span>мес.</span></div></td></tr>
-
-                    <tr class="section-title"><td colspan="3">8. СРОК СЛУЖБЫ</td></tr>
-                    <tr><td>8.1</td><td>Расчетный срок</td><td><div style="display:flex; align-items:center; gap:5px;"><input type="number" id="val_8_1" style="width:60px; text-align:center; font-weight:bold;"> <span>лет</span></div></td></tr>
                     
-                    <tr class="section-title page-break-print"><td colspan="3">9. ЭСКИЗ И ПРИМЕЧАНИЯ</td></tr>
+                    <tr class="section-title page-break-print"><td colspan="3">8. ЭСКИЗ И ПРИМЕЧАНИЯ</td></tr>
                     <tr><td colspan="3">
                         <div style="display:grid; grid-template-columns: 1fr 300px; gap:20px; min-height:250px;">
                             <textarea id="val_9_1" style="width:100%; resize:none; padding:10px; border:1px solid #cbd5e1; border-radius:10px;" placeholder="Примечание..."></textarea>
@@ -469,7 +472,8 @@ const templateView = () => `
             <button class="btn" onclick="sendTZ()" style="background:#8b5cf6; color:white; font-weight:bold; flex:1;">ОТПРАВИТЬ</button>
         </div>
         ${modalsHTML}
-    </div>`;
+    </div>
+`;
 // ======================================================
 // 4. ОБРАБОТЧИКИ СОБЫТИЙ И ПЕЧАТЬ
 // ======================================================
@@ -480,12 +484,12 @@ function populateSelects() {
         'val_4_1': 'tabletops', 'val_4_1_mat': 'tabletopMaterials', 'sel_4_2': 'gnTypes', 
         'sel_4_4': 'doorTypes', 'sel_4_5': 'drawerTypes', 'val_4_5_slides': 'slideTypes', 
         'sel_4_6': 'shelfTypes', 'val_4_8': 'lighting', 'sel_4_9': 'legs', 'sel_4_10': 'wheels', 
-        'sel_4_11': 'wheels', 'val_4_12': 'ventilation' 
+        'val_4_12': 'ventilation' 
     };
     for (let id in map) {
         const el = document.getElementById(id);
         if (el) {
-            el.innerHTML = '<option disabled selected>-- Выбор --</option>';
+            el.innerHTML = '<option disabled selected>--   --</option>';
             const list = APP_CONFIG[map[id]] || [];
             list.forEach(v => el.add(new Option(v, v)));
         }
@@ -537,21 +541,17 @@ function handleFile(input) {
     }
 }
 
-// 1. Кнопка "ПЕЧАТЬ" на листе теперь просто открывает напоминание
 function handlePrint() {
     document.getElementById('printReminderModal').style.display = 'flex';
 }
 
-// 2. А вот эта функция срабатывает, когда менеджер нажал "ПЕЧАТАТЬ" уже в нашем окошке
 function startFinalPrint() {
-    closeModals(); // Закрываем наше напоминание
-    prepareForPrint(true); // Готовим документ (скрываем кнопки и т.д.)
+    closeModals(); 
+    prepareForPrint(true); 
     
     setTimeout(() => {
-        window.print(); // Открываем системное окно печати
+        window.print(); 
         
-        // Когда менеджер закроет системное окно (нажмет Печать или Отмена)
-        // возвращаем интерфейс сайта в норму через полсекунды
         setTimeout(() => prepareForPrint(false), 500);
     }, 150);
 }
@@ -573,7 +573,6 @@ function prepareForPrint(enable) {
         if (p2 && sig) {
             p2.style.display = 'flex';
             p2.style.flexDirection = 'column';
-            // Строчку с minHeight отсюда убрали
             sig.style.marginTop = 'auto'; 
         }
         if (tzInp && tzText) {
@@ -728,10 +727,6 @@ function mockRegister() {
             })
             .then(() => {
                 alert("Успешно! Ваша заявка отправлена администратору на одобрение.");
-                
-                // ВЫЗЫВАЕМ НАШЕ УВЕДОМЛЕНИЕ В TELEGRAM СРАЗУ ПОСЛЕ УСПЕШНОЙ ЗАПИСИ В БАЗУ
-                sendTelegramNotification(login);
-                
                 navigate('portal'); 
             }).catch((err) => alert("Ошибка соединения с базой: " + err.message));
         }
@@ -804,14 +799,14 @@ function loadPendingUsers() {
 function approveUser(login) {
     if(confirm(`Одобрить доступ для пользователя ${login}?`)) {
         db.ref('users/' + login).update({ status: 'approved' })
-            .then(() => { alert(`Пользователь ${login} успешно одобрен!`); loadPendingUsers(); });
+        .then(() => { alert(`Пользователь ${login} успешно одобрен!`); loadPendingUsers(); });
     }
 }
 
 function rejectUser(login) {
     if(confirm(`Удалить заявку от ${login}? Это действие нельзя отменить.`)) {
         db.ref('users/' + login).remove()
-            .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
+        .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
     }
 }
 
@@ -844,7 +839,7 @@ async function sendTZ() {
             const imgHeight1 = (canvas1.height * imgWidth) / canvas1.width;
             pdf.addImage(canvas1.toDataURL('image/png'), 'PNG', margin, margin, imgWidth, imgHeight1);
 
-            // Снимаем вторую страницу (Пункт 9 и подписи)
+            // Снимаем вторую страницу (Пункт 8 Эскиз и подписи)
             pdf.addPage();
             const canvas2 = await html2canvas(page2, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgHeight2 = (canvas2.height * imgWidth) / canvas2.width;
@@ -863,38 +858,3 @@ async function sendTZ() {
         }
     }, 150);
 }
-
-// ======================================================
-// 8. TELEGRAM УВЕДОМЛЕНИЯ
-// ======================================================
-function sendTelegramNotification(newLogin) {
-    // ВНИМАНИЕ: Вставь сюда свои данные (обязательно оставь кавычки вокруг них!)
-    const token = '8380106587:AAFBNMaO-h0NuCYSL2XbjN_OUo6iQLt7gyo'; 
-    const chatId = '7639231500'; 
-
-    if (token === '8380106587:AAFBNMaO-h0NuCYSL2XbjN_OUo6iQLt7gyo') {
-        console.log("Токен Telegram не настроен. Уведомление не отправлено.");
-        return;
-    }
-
-    const text = `🚨 Новая заявка на портале!\nПользователь: <b>${newLogin}</b> ждет одобрения.\nЗайдите в панель администратора.`;
-    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=HTML`;
-    
-    fetch(url)
-        .then(response => console.log("Уведомление в Telegram успешно улетело!"))
-        .catch(err => console.error("Ошибка отправки в Telegram:", err));
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
