@@ -332,7 +332,12 @@ const homeView = () => {
 const settingsView = () => {
     const s = getSettings();
     const isAdmin = s.role === 'admin';
-    if (isAdmin) setTimeout(loadPendingUsers, 100);
+    if (isAdmin) {
+        setTimeout(() => {
+            loadAllUsers();
+            loadAllProjectsForAdmin();
+        }, 100);
+    }
 
     return `
     <div class="home-card fade-in">
@@ -355,15 +360,26 @@ const settingsView = () => {
                     <option value="admin" ${isAdmin?'selected':''}>Администратор</option>
                 </select>
             </div>
+            
             ${isAdmin ? `
                 <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
+                    <h4 style="margin-top:0; text-align:center; color:var(--pronto);">УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ</h4>
+                    <div id="all_users_list" style="background:#f8fafc; border-radius:10px; padding:15px; text-align:center; border: 1px solid #cbd5e1; max-height:300px; overflow-y:auto;">Загрузка...</div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
+                    <h4 style="margin-top:0; text-align:center; color:var(--pronto);">БАЗА ВСЕХ ПРОЕКТОВ (ТЗ)</h4>
+                    <input type="text" id="admin_search" onkeyup="searchAllProjects()" placeholder="🔍 Поиск по № ТЗ или Менеджеру..." style="width:100%; padding:12px; border-radius:8px; border:2px solid #cbd5e1; margin-bottom:15px;">
+                    <div id="admin_projects_list" style="background:#f8fafc; border-radius:10px; padding:15px; border: 1px solid #cbd5e1; max-height:400px; overflow-y:auto;">Идет поиск в базе...</div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
                     <h4 style="margin-top:0; text-align:center;">БЕЗОПАСНОСТЬ</h4>
-                    <button onclick="document.getElementById('changePassModal').style.display='flex'" class="btn" style="background:orange; width:100%; margin-bottom:20px;">СМЕНИТЬ ПАРОЛЬ АДМИНА</button>
-                    <h4 style="margin-top:20px; text-align:center; color:#3b82f6;">ЗАЯВКИ НА РЕГИСТРАЦИЮ</h4>
-                    <div id="pending_users_list" style="background:#f8fafc; border-radius:10px; padding:15px; text-align:center; border: 1px solid #cbd5e1;">Загрузка...</div>
+                    <button onclick="document.getElementById('changePassModal').style.display='flex'" class="btn" style="background:orange; width:100%;">СМЕНИТЬ ПАРОЛЬ АДМИНА</button>
                 </div>
             ` : ''}
-            <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ</button>
+
+            <button onclick="saveSettings()" class="btn btn-secondary" style="width:100%; height:60px; font-size:18px;">СОХРАНИТЬ И ВЫЙТИ</button>
         </div>
         ${modalsHTML}
     </div>`;
@@ -768,46 +784,143 @@ function mockLogin() {
 // 7. ПАНЕЛЬ АДМИНИСТРАТОРА (ОДОБРЕНИЕ ЗАЯВОК)
 // ======================================================
 
-function loadPendingUsers() {
+// ======================================================
+// 7. ПАНЕЛЬ АДМИНА: УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ И БАЗА ТЗ
+// ======================================================
+
+function loadAllUsers() {
     if (typeof db === 'undefined') return;
-    const listDiv = document.getElementById('pending_users_list');
+    const listDiv = document.getElementById('all_users_list');
     if (!listDiv) return;
 
     db.ref('users').once('value').then(snapshot => {
-        if (!snapshot.exists()) { listDiv.innerHTML = "Пока нет новых заявок"; return; }
+        if (!snapshot.exists()) { listDiv.innerHTML = "Пользователей нет"; return; }
         
         const users = snapshot.val();
         let html = '';
         
         for (let login in users) {
-            if (users[login].status === 'pending') {
-                html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:10px; text-align:left;">
-                        <b style="color:var(--text); font-size:16px;">👤 ${login}</b>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px 10px; font-weight:bold;">✓ Одобрить</button>
-                            <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px 10px; font-weight:bold;">✕ Отказ</button>
-                        </div>
-                    </div>
+            const u = users[login];
+            let statusColor = u.status === 'pending' ? '#eab308' : (u.status === 'banned' ? '#ef4444' : '#10b981');
+            let statusText = u.status === 'pending' ? 'Ожидает' : (u.status === 'banned' ? 'В бане' : 'Активен');
+            
+            let btns = '';
+            if (u.status === 'pending') {
+                btns = `
+                    <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px; font-weight:bold;">✓ Одобрить</button>
+                    <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px; font-weight:bold;">✕ Отказ</button>
+                `;
+            } else if (u.status === 'approved') {
+                btns = `<button onclick="banUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px; font-weight:bold;">🚫 Забанить</button>`;
+            } else if (u.status === 'banned') {
+                btns = `
+                    <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px; font-weight:bold;">🔄 Разбанить</button>
+                    <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#64748b; padding:5px; font-weight:bold;">🗑️ Удалить</button>
                 `;
             }
+
+            html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:10px; text-align:left;">
+                    <div>
+                        <b style="color:var(--text); font-size:16px;">👤 ${login}</b><br>
+                        <span style="font-size:12px; color:${statusColor}; font-weight:bold;">${statusText}</span>
+                    </div>
+                    <div style="display:flex; gap:5px; flex-direction:column; align-items:flex-end;">
+                        ${btns}
+                    </div>
+                </div>
+            `;
         }
-        listDiv.innerHTML = html === '' ? "Пока нет новых заявок" : html;
+        listDiv.innerHTML = html === '' ? "Нет пользователей" : html;
     });
 }
 
 function approveUser(login) {
-    if(confirm(`Одобрить доступ для пользователя ${login}?`)) {
-        db.ref('users/' + login).update({ status: 'approved' })
-        .then(() => { alert(`Пользователь ${login} успешно одобрен!`); loadPendingUsers(); });
+    if(confirm(`Одобрить/разбанить пользователя ${login}?`)) {
+        db.ref('users/' + login).update({ status: 'approved' }).then(() => loadAllUsers());
     }
 }
 
 function rejectUser(login) {
-    if(confirm(`Удалить заявку от ${login}? Это действие нельзя отменить.`)) {
-        db.ref('users/' + login).remove()
-        .then(() => { alert('Заявка удалена.'); loadPendingUsers(); });
+    if(confirm(`Полностью удалить аккаунт ${login}? Это действие нельзя отменить.`)) {
+        db.ref('users/' + login).remove().then(() => loadAllUsers());
     }
+}
+
+function banUser(login) {
+    if(confirm(`Заблокировать ${login}? Он больше не сможет войти в систему.`)) {
+        db.ref('users/' + login).update({ status: 'banned' }).then(() => loadAllUsers());
+    }
+}
+
+// --- ГЛОБАЛЬНЫЙ ПОИСК ПО ПРОЕКТАМ ---
+let allAdminProjects = [];
+
+function loadAllProjectsForAdmin() {
+    if (typeof db === 'undefined') return;
+    const listDiv = document.getElementById('admin_projects_list');
+    
+    db.ref('users').once('value').then(snap => {
+        allAdminProjects = [];
+        if (!snap.exists()) {
+            if(listDiv) listDiv.innerHTML = "База пуста.";
+            return;
+        }
+        const users = snap.val();
+        for (let login in users) {
+            if (users[login].archive && Array.isArray(users[login].archive)) {
+                users[login].archive.forEach(proj => {
+                   allAdminProjects.push({ ...proj, _owner: login }); 
+                });
+            }
+        }
+        // Свежие проекты сверху
+        allAdminProjects.reverse();
+        searchAllProjects(); 
+    });
+}
+
+function searchAllProjects() {
+    const query = document.getElementById('admin_search').value.toLowerCase();
+    const listDiv = document.getElementById('admin_projects_list');
+    if (!listDiv) return;
+
+    const filtered = allAdminProjects.filter(p => {
+        const tz = (p.tz_no || '').toLowerCase();
+        const man = (p.manager || '').toLowerCase();
+        return tz.includes(query) || man.includes(query);
+    });
+
+    if (filtered.length === 0) {
+        listDiv.innerHTML = '<p style="text-align:center; color:#94a3b8; margin:20px 0;">Проекты не найдены.</p>';
+        return;
+    }
+
+    let html = '';
+    // Выводим максимум 30 результатов, чтобы не вешать страницу
+    filtered.slice(0, 30).forEach(item => {
+        html += `
+            <div class="archive-item" style="margin-bottom:10px; padding:15px; border-left:4px solid var(--pronto); text-align:left;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <b style="font-size:18px; color:var(--text);">№ ${item.tz_no || 'Без номера'}</b>
+                        <div style="font-size:14px; font-weight:bold; margin-top:3px; color:var(--pronto);">${item.eq || 'Не указано'}</div>
+                        <div style="font-size:12px; color:#64748b; margin-top:5px;">Менеджер: ${item.manager || '—'} | Дата: ${item.date || '—'}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:10px; background:#e2e8f0; padding:4px 8px; border-radius:5px; color:#475569; font-weight:bold; text-transform:uppercase;">
+                            АВТОР: ${item._owner}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    if (filtered.length > 30) {
+        html += `<p style="text-align:center; font-size:12px; color:#64748b; margin-top:10px;">Показано 30 совпадений из ${filtered.length}. Уточните поиск.</p>`;
+    }
+    listDiv.innerHTML = html;
 }
 
 async function sendTZ() {
