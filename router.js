@@ -897,32 +897,67 @@ function searchAllProjects() {
     }
 
     let html = '';
-    // Выводим максимум 30 результатов, чтобы не вешать страницу
-    filtered.slice(0, 30).forEach(item => {
+    filtered.slice(0, 30).forEach((item, idx) => {
+        // Находим реальный индекс в массиве allAdminProjects для функции просмотра
+        const realIdx = allAdminProjects.indexOf(item);
         html += `
             <div class="archive-item" style="margin-bottom:10px; padding:15px; border-left:4px solid var(--pronto); text-align:left;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1;">
                         <b style="font-size:18px; color:var(--text);">№ ${item.tz_no || 'Без номера'}</b>
                         <div style="font-size:14px; font-weight:bold; margin-top:3px; color:var(--pronto);">${item.eq || 'Не указано'}</div>
-                        <div style="font-size:12px; color:#64748b; margin-top:5px;">Менеджер: ${item.manager || '—'} | Дата: ${item.date || '—'}</div>
+                        <div style="font-size:12px; color:#64748b; margin-top:5px;">Менеджер: ${item.manager || '—'} | Автор: ${item._owner}</div>
                     </div>
-                    <div style="text-align:right;">
-                        <span style="font-size:10px; background:#e2e8f0; padding:4px 8px; border-radius:5px; color:#475569; font-weight:bold; text-transform:uppercase;">
-                            АВТОР: ${item._owner}
-                        </span>
-                    </div>
+                    <button onclick="viewProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#3b82f6; padding:10px;" title="Просмотреть">📂 ОТКРЫТЬ</button>
                 </div>
             </div>
         `;
     });
     
-    if (filtered.length > 30) {
-        html += `<p style="text-align:center; font-size:12px; color:#64748b; margin-top:10px;">Показано 30 совпадений из ${filtered.length}. Уточните поиск.</p>`;
-    }
     listDiv.innerHTML = html;
 }
+function viewProjectAsAdmin(idx) {
+    const d = allAdminProjects[idx];
+    if (!d) return;
 
+    navigate('template');
+
+    setTimeout(() => {
+        // Заполняем поля
+        if (d.fields) {
+            for (let id in d.fields) {
+                const el = document.getElementById(id);
+                if (el) el.value = d.fields[id];
+            }
+        }
+        
+        // Фото
+        if (d.image) {
+            uploadedImageBase64 = d.image;
+            const img = document.getElementById('preview_img');
+            if (img) { img.src = d.image; img.style.display = 'block'; }
+            const txt = document.getElementById('img_text');
+            if (txt) txt.style.display = 'none';
+        }
+
+        // --- МАГИЯ БЛОКИРОВКИ ---
+        // 1. Отключаем все инпуты, селекторы и текстареа
+        const allInputs = document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea');
+        allInputs.forEach(el => {
+            el.disabled = true;
+            el.style.backgroundColor = '#f1f5f9'; // Делаем серым, чтобы было видно "только чтение"
+        });
+
+        // 2. Скрываем кнопку "В архив", чтобы админ случайно не перезаписал
+        const saveBtn = document.querySelector('button[onclick="saveToArchive()"]');
+        if (saveBtn) saveBtn.style.display = 'none';
+
+        // 3. Скрываем кнопки "+" в таблице
+        document.querySelectorAll('.admin-add-btn').forEach(btn => btn.style.display = 'none');
+        
+        checkDualTemp();
+    }, 300);
+}
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
     const fileName = `TZ_${tzNo}.pdf`;
