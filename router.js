@@ -481,8 +481,10 @@ const templateView = () => `
             </div>
         </div> 
         
-        <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn" onclick="saveToArchive()" style="background:#10b981; color:white; font-weight:bold; flex:1;">В АРХИВ</button>
+  <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" onclick="saveToArchive()" style="background:#10b981; color:white; font-weight:bold; flex:1;">
+                ${window.currentEditIndex !== null && window.currentEditIndex !== undefined ? '💾 СОХРАНИТЬ ИЗМЕНЕНИЯ' : '📥 В АРХИВ'}
+            </button>
             <button class="btn btn-secondary" onclick="handlePrint()" style="flex:1;">ПЕЧАТЬ</button>
             <button class="btn" onclick="genPDF()" style="background:#2b6cb0; color:white; flex:1;">PDF</button>
             <button class="btn" onclick="sendTZ()" style="background:#8b5cf6; color:white; font-weight:bold; flex:1;">ОТПРАВИТЬ</button>
@@ -646,40 +648,109 @@ async function genPDF() {
 // ======================================================
 // 5. АРХИВ (ПЫЛЕСОС И УМНЫЕ КНОПКИ)
 // ======================================================
-
 function createNewTZ() { 
     uploadedImageBase64 = null; 
+    window.currentEditIndex = null; // ГАРАНТИЯ: Режим создания
     navigate('template'); 
 }
 
-function saveToArchive() {
-    const s = getSettings();
-    if (!s.username) return alert("Ошибка: Вы не авторизованы!");
+async function saveToArchive() {
+    try {
+        const s = getSettings();
+        if (!s.username) return alert("Ошибка: Вы не авторизованы!");
 
-    const docData = { 
-        tz_no: document.getElementById('tz_no') ? document.getElementById('tz_no').value : '?', 
-        eq: document.getElementById('equipment_select') ? document.getElementById('equipment_select').value : '',
-        manager: document.getElementById('manager_name') ? document.getElementById('manager_name').value : '',
-        date: new Date().toLocaleDateString(),
-        image: uploadedImageBase64,
-        fields: {}
-    };
+        const tzInput = document.getElementById('tz_no');
+        const currentTzNo = tzInput ? tzInput.value.trim() : '';
 
-    const allInputs = document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea');
-    allInputs.forEach(el => {
-        if (el.id && el.id !== 'file_input') {
-            docData.fields[el.id] = el.value;
+        if (currentTzNo === '' || currentTzNo === '?') {
+            return alert("⚠️ Ошибка: Укажите номер ТЗ перед сохранением!");
         }
-    });
 
-    const arc = getArchive();
-    arc.unshift(docData); 
-    localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
-    if (typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
-    navigate('home');
+        // Читаем режим из бронебойной памяти окна
+        const isEditing = window.currentEditIndex !== null && window.currentEditIndex !== undefined;
+        const arc = getArchive() || [];
+
+        // 1. ГЛОБАЛЬНАЯ ПРОВЕРКА В БАЗЕ ДАННЫХ
+        let tzExistsGlobally = false;
+        let ownerOfTz = null;
+
+        if (typeof db !== 'undefined') {
+            const snap = await db.ref('users').once('value');
+            if (snap.exists()) {
+                const allUsers = snap.val();
+                for (let u in allUsers) {
+                    const uArchive = allUsers[u].archive;
+                    if (uArchive && Array.isArray(uArchive)) {
+                        const found = uArchive.find(p => p && String(p.tz_no).trim() === currentTzNo);
+                        if (found) {
+                            tzExistsGlobally = true;
+                            ownerOfTz = u;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isEditing) {
+            // --- РЕЖИМ: СОХРАНИТЬ ИЗМЕНЕНИЯ ---
+            const originalTzNo = String(arc[window.currentEditIndex].tz_no).trim();
+
+            if (currentTzNo !== originalTzNo) {
+                if (!tzExistsGlobally) {
+                    return alert('⚠️ Ошибка: Вы изменили номер на новый.\n\nВ режиме редактирования нельзя создавать новые ТЗ. Вернитесь на главную и нажмите "+ СОЗДАТЬ ТЗ".');
+                }
+                if (tzExistsGlobally && ownerOfTz !== s.username) {
+                    return alert(`⚠️ Ошибка: Номер ${currentTzNo} уже занят пользователем "${ownerOfTz}"!\nВы не можете перезаписать чужой проект.`);
+                }
+                if (tzExistsGlobally && ownerOfTz === s.username) {
+                    return alert(`⚠️ Ошибка: Проект с номером ${currentTzNo} уже есть в вашем архиве!\nОткройте именно его, чтобы изменить.`);
+                }
+            }
+        } else {
+            // --- РЕЖИМ: СОЗДАТЬ (В АРХИВ) ---
+            if (tzExistsGlobally) {
+                return alert(`⚠️ Ошибка: ТЗ с номером ${currentTzNo} уже существует в базе (автор: ${ownerOfTz})!\n\nНельзя создать дубликат. Откройте его из архива.`);
+            }
+        }
+
+        // 2. ФОРМИРУЕМ ДАННЫЕ
+        const docData = { 
+            tz_no: currentTzNo, 
+            eq: document.getElementById('equipment_select') ? document.getElementById('equipment_select').value : '',
+            manager: document.getElementById('manager_name') ? document.getElementById('manager_name').value : '',
+            date: new Date().toLocaleDateString(),
+            image: typeof uploadedImageBase64 !== 'undefined' ? uploadedImageBase64 : null,
+            fields: {}
+        };
+
+        const allInputs = document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea');
+        allInputs.forEach(el => {
+            if (el.id && el.id !== 'file_input') docData.fields[el.id] = el.value;
+        });
+
+        // 3. СОХРАНЯЕМ И ОБНОВЛЯЕМ БАЗУ
+        if (isEditing) {
+            arc[window.currentEditIndex] = docData; // Перезаписываем
+        } else {
+            arc.unshift(docData); // Создаем новое
+        }
+
+        localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
+        if (typeof db !== 'undefined') {
+            await db.ref('users/' + s.username + '/archive').set(arc);
+        }
+        
+        window.currentEditIndex = null; // Сбрасываем память
+        navigate('home');
+
+    } catch (error) {
+        alert("Системная ошибка при сохранении: " + error.message);
+        console.error(error);
+    }
 }
-
 function editFromArchive(i) {
+    window.currentEditIndex = i; // ГАРАНТИЯ: Режим редактирования
     const d = getArchive()[i]; 
     navigate('template');
     
@@ -706,55 +777,13 @@ function editFromArchive(i) {
     }, 200); 
 }
 
-function deleteFromArchive(i) {
-    if(confirm("Удалить проект из архива?")) {
-        const s = getSettings();
-        const arc = getArchive(); 
-        arc.splice(i,1);
-        localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
-        if (s.username && typeof db !== 'undefined') db.ref('users/' + s.username + '/archive').set(arc);
-        navigate('home');
-    }
-}
-
-function pdfFromArchive(i) { editFromArchive(i); setTimeout(genPDF, 500); }
-function printFromArchive(i) { editFromArchive(i); setTimeout(handlePrint, 500); }
-function sendFromArchiveBtn(i) { editFromArchive(i); setTimeout(sendTZ, 500); }
-
-// ======================================================
-// 6. FIREBASE (ВХОД И РЕГИСТРАЦИЯ)
-// ======================================================
-
-function mockRegister() {
-    const login = document.getElementById('reg_login').value.trim();
-    const pass = document.getElementById('reg_pass').value.trim();
-    if (login === '' || pass === '') return alert("Введите логин и пароль!");
-
-    const safeLogin = login.replace(/[.#$\[\]]/g, '_');
-
-    db.ref('users/' + safeLogin).once('value').then((snapshot) => {
-        if (snapshot.exists()) {
-            alert("Этот логин уже занят! Придумайте другой.");
-        } else {
-            db.ref('users/' + safeLogin).set({ 
-                password: pass, 
-                role: 'participant', 
-                status: 'pending' 
-            })
-            .then(() => {
-                alert("Успешно! Ваша заявка отправлена администратору на одобрение.");
-                navigate('portal'); 
-            }).catch((err) => alert("Ошибка соединения с базой: " + err.message));
-        }
-    });
-}
-
 function mockLogin() {
     const login = document.getElementById('auth_login').value.trim();
     const pass = document.getElementById('auth_pass').value.trim();
     if (login === '' || pass === '') return alert("Введите логин и пароль!");
 
-    if (login === 'admin' && pass === '777') {
+    // --- СЕКРЕТНЫЙ ВХОД АДМИНА (теперь привязан к паролю из настроек) ---
+    if (login === 'admin' && pass === APP_CONFIG.adminPassword) {
         localStorage.setItem('pronto_settings', JSON.stringify({ role: 'admin', theme: getSettings().theme, username: 'SuperAdmin' }));
         alert("Секретный вход! Добро пожаловать в панель управления.");
         return navigate('settings'); 
@@ -767,7 +796,7 @@ function mockLogin() {
         
         const user = snapshot.val();
         if (user.password !== pass) return alert("Неверный пароль!");
-        if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором.");
+        if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором или заблокирован.");
 
         const s = getSettings();
         localStorage.setItem('pronto_settings', JSON.stringify({ role: user.role, theme: s.theme, username: safeLogin }));
