@@ -1,6 +1,6 @@
 /**
  * ======================================================
- * PRONTO SPECS CLOUD ENGINE | FINAL VERSION 3.0
+ * PRONTO SPECS CLOUD ENGINE | FULL READABLE VERSION
  * ======================================================
  */
 
@@ -15,10 +15,10 @@ document.addEventListener("DOMContentLoaded", () => {
         db.ref('settings').on('value', (snapshot) => {
             const cloudData = snapshot.val();
             if (cloudData) {
-                APP_CONFIG = cloudData;
+                window.APP_CONFIG = cloudData;
                 if (document.getElementById('equipment_select')) populateSelects();
             } else {
-                db.ref('settings').set(APP_CONFIG);
+                db.ref('settings').set(window.APP_CONFIG || {});
             }
             hideLoader();
         });
@@ -57,7 +57,9 @@ function applyTheme() {
 }
 
 function syncToCloud() {
-    if (typeof db !== 'undefined') db.ref('settings').set(APP_CONFIG);
+    if (typeof db !== 'undefined' && window.APP_CONFIG) {
+        db.ref('settings').set(window.APP_CONFIG);
+    }
 }
 
 function navigate(view) {
@@ -81,7 +83,7 @@ function navigate(view) {
 }
 
 // ======================================================
-// 2. АДМИНКА И СПИСКИ
+// 2. АДМИНКА И СПИСКИ (НАСТРОЙКИ СЕЛЕКТОРОВ)
 // ======================================================
 
 function openManageMenu(key, selectId) {
@@ -95,14 +97,18 @@ function renderManageList() {
     const modalSelect = document.getElementById('manageListSelect');
     if (!modalSelect) return;
     modalSelect.innerHTML = '';
-    const list = APP_CONFIG[currentManageKey] || [];
-    list.forEach(item => modalSelect.add(new Option(item, item)));
+    
+    if (window.APP_CONFIG && window.APP_CONFIG[currentManageKey]) {
+        const list = window.APP_CONFIG[currentManageKey];
+        list.forEach(item => modalSelect.add(new Option(item, item)));
+    }
 }
 
 function manAdd() {
     const val = prompt("Введите название нового пункта:");
     if (val && val.trim()) {
-        APP_CONFIG[currentManageKey].push(val.trim());
+        if (!window.APP_CONFIG[currentManageKey]) window.APP_CONFIG[currentManageKey] = [];
+        window.APP_CONFIG[currentManageKey].push(val.trim());
         refreshAfterChange();
     }
 }
@@ -113,8 +119,8 @@ function manEdit() {
     if (!oldVal) return;
     const newVal = prompt("Изменить название:", oldVal);
     if (newVal && newVal.trim() && newVal !== oldVal) {
-        const idx = APP_CONFIG[currentManageKey].indexOf(oldVal);
-        APP_CONFIG[currentManageKey][idx] = newVal.trim();
+        const idx = window.APP_CONFIG[currentManageKey].indexOf(oldVal);
+        window.APP_CONFIG[currentManageKey][idx] = newVal.trim();
         refreshAfterChange();
     }
 }
@@ -122,7 +128,7 @@ function manEdit() {
 function manDel() {
     const modalSelect = document.getElementById('manageListSelect');
     if (confirm(`Удалить "${modalSelect.value}"?`)) {
-        APP_CONFIG[currentManageKey] = APP_CONFIG[currentManageKey].filter(v => v !== modalSelect.value);
+        window.APP_CONFIG[currentManageKey] = window.APP_CONFIG[currentManageKey].filter(v => v !== modalSelect.value);
         refreshAfterChange();
     }
 }
@@ -142,6 +148,7 @@ function renderSelect(id, configKey) {
 // ======================================================
 // 3. HTML ШАБЛОНЫ (ВИЗУАЛ)
 // ======================================================
+
 const modalsHTML = `
     <div id="loginModal" class="modal" style="display:none">
         <div class="modal-content">
@@ -190,6 +197,7 @@ const modalsHTML = `
         </div>
     </div>
 `;
+
 const portalView = () => `
     <div class="home-card fade-in" style="max-width: 800px; text-align: center;">
         <h1 class="main-title" style="font-size: 48px;">PRONTO</h1>
@@ -384,6 +392,7 @@ const settingsView = () => {
         ${modalsHTML}
     </div>`;
 };
+
 const templateView = () => `
     <style>
         @media print {
@@ -399,7 +408,7 @@ const templateView = () => `
             <div class="doc-header">
                 <div style="flex-grow:1;">
                     <div style="display:flex; align-items:center; padding-bottom: 5px;">
-    <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right: 20px;">SPECS (ТЗ) №</span>
+                        <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right: 20px;">SPECS (ТЗ) №</span>
                         <input type="text" id="tz_no" style="width:200px; font-size:32px; border:none; font-weight:900; margin:0; padding:2px; line-height:normal; background:transparent;" placeholder="000-00">
                         <span id="tz_no_text" style="display:none; font-size:32px; font-weight:900; margin:0; padding:2px; line-height:normal;"></span>
                     </div>
@@ -481,7 +490,7 @@ const templateView = () => `
             </div>
         </div> 
         
-  <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
+        <div class="footer-btns no-print" style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" onclick="saveToArchive()" style="background:#10b981; color:white; font-weight:bold; flex:1;">
                 ${window.currentEditIndex !== null && window.currentEditIndex !== undefined ? '💾 СОХРАНИТЬ ИЗМЕНЕНИЯ' : '📥 В АРХИВ'}
             </button>
@@ -492,6 +501,7 @@ const templateView = () => `
         ${modalsHTML}
     </div>
 `;
+
 // ======================================================
 // 4. ОБРАБОТЧИКИ СОБЫТИЙ И ПЕЧАТЬ
 // ======================================================
@@ -506,9 +516,9 @@ function populateSelects() {
     };
     for (let id in map) {
         const el = document.getElementById(id);
-        if (el) {
+        if (el && window.APP_CONFIG) {
             el.innerHTML = '<option disabled selected>--   --</option>';
-            const list = APP_CONFIG[map[id]] || [];
+            const list = window.APP_CONFIG[map[id]] || [];
             list.forEach(v => el.add(new Option(v, v)));
         }
     }
@@ -522,27 +532,54 @@ function checkDualTemp() {
     }
 }
 
-function handleRole(el) { if (el.value === 'admin') document.getElementById('loginModal').style.display = 'flex'; }
-function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+function handleRole(el) { 
+    if (el.value === 'admin') {
+        // СРАЗУ отбрасываем селектор назад на "Участник". 
+        // Юзер не станет админом, пока не введет пароль в модальном окне!
+        el.value = 'participant'; 
+        document.getElementById('inputPassword').value = ''; // Очищаем поле от старых попыток
+        document.getElementById('loginModal').style.display = 'flex'; 
+    } 
+}
+
+function closeModals() { 
+    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
+}
 
 function checkLogin() {
-    if (document.getElementById('inputPassword').value === APP_CONFIG.adminPassword) {
-        localStorage.setItem('pronto_settings', JSON.stringify({role: 'admin', theme: getSettings().theme}));
-        closeModals(); navigate('settings');
-    } else alert("Неверно!");
+    const passInp = document.getElementById('inputPassword');
+    
+    if (window.APP_CONFIG && passInp.value === window.APP_CONFIG.adminPassword) {
+        // Пароль верный! Берем текущие настройки, меняем роль на админа и сохраняем
+        const s = getSettings();
+        s.role = 'admin';
+        localStorage.setItem('pronto_settings', JSON.stringify(s));
+        
+        passInp.value = ''; // Заметаем следы (чистим пароль)
+        closeModals(); 
+        navigate('settings'); // Перезагружаем страницу настроек, чтобы появились админ-панели
+    } else {
+        alert("⚠️ Неверный пароль! Доступ запрещен.");
+        passInp.value = ''; // Чистим поле после ошибки
+    }
 }
 
 function saveNewCredentials() {
     const p = document.getElementById('newPassword').value;
     if (p.length < 3) return alert("Пароль слишком короткий!");
-    APP_CONFIG.adminPassword = p; syncToCloud(); closeModals(); alert("Пароль обновлен");
+    if (!window.APP_CONFIG) window.APP_CONFIG = {};
+    window.APP_CONFIG.adminPassword = p; 
+    syncToCloud(); 
+    closeModals(); 
+    alert("Пароль обновлен");
 }
 
 function saveSettings() {
     const r = document.getElementById('role_select').value;
     const t = document.getElementById('theme_select').value;
     localStorage.setItem('pronto_settings', JSON.stringify({role: r, theme: t}));
-    applyTheme(); navigate('home');
+    applyTheme(); 
+    navigate('home');
 }
 
 function handleFile(input) {
@@ -552,7 +589,8 @@ function handleFile(input) {
         r.onload = e => {
             uploadedImageBase64 = e.target.result;
             const img = document.getElementById('preview_img');
-            img.src = e.target.result; img.style.display = 'block';
+            img.src = e.target.result; 
+            img.style.display = 'block';
             document.getElementById('img_text').style.display = 'none';
         };
         r.readAsDataURL(f);
@@ -569,12 +607,10 @@ function startFinalPrint() {
     
     setTimeout(() => {
         window.print(); 
-        
         setTimeout(() => prepareForPrint(false), 500);
     }, 150);
 }
 
-// --- 2. ПОДГОТОВКА (ИСПОЛНИТЕЛЬНАЯ) ---
 function prepareForPrint(enable) {
     const tzInp = document.getElementById('tz_no');
     const tzText = document.getElementById('tz_no_text');
@@ -615,7 +651,6 @@ function prepareForPrint(enable) {
     }
 }
 
-// --- 3. ГЕНЕРАЦИЯ PDF ---
 async function genPDF() {
     const page1 = document.getElementById('pdf-page-1');
     const page2 = document.getElementById('pdf-page-2');
@@ -645,13 +680,31 @@ async function genPDF() {
         }
     }, 250);
 }
+
 // ======================================================
 // 5. АРХИВ (ПЫЛЕСОС И УМНЫЕ КНОПКИ)
 // ======================================================
+
 function createNewTZ() { 
     uploadedImageBase64 = null; 
     window.currentEditIndex = null; // ГАРАНТИЯ: Режим создания
-    navigate('template'); 
+    navigate('template'); // Отрисовываем пустой бланк ТЗ
+    
+    // МАГИЯ: Ждем долю секунды, пока бланк отрисуется, и вставляем логин
+    setTimeout(() => {
+        const s = getSettings();
+        const managerInput = document.getElementById('manager_name');
+        
+        // Если поле найдено и пользователь авторизован, вписываем его логин
+        if (managerInput && s.username) {
+            managerInput.value = s.username;
+            managerInput.readOnly = true;
+            // Опционально: можно сделать поле "Только для чтения", 
+            // чтобы менеджер не мог стереть свое имя и вписать чужое.
+            // Если захочешь жесткий контроль - раскомментируй строчку ниже:
+            // managerInput.readOnly = true; 
+        }
+    }, 100);
 }
 
 async function saveToArchive() {
@@ -666,11 +719,15 @@ async function saveToArchive() {
             return alert("⚠️ Ошибка: Укажите номер ТЗ перед сохранением!");
         }
 
-        // Читаем режим из бронебойной памяти окна
         const isEditing = window.currentEditIndex !== null && window.currentEditIndex !== undefined;
         const arc = getArchive() || [];
 
-        // 1. ГЛОБАЛЬНАЯ ПРОВЕРКА В БАЗЕ ДАННЫХ
+        let tzChanged = false;
+        if (isEditing) {
+            const originalTzNo = String(arc[window.currentEditIndex].tz_no).trim();
+            tzChanged = (currentTzNo !== originalTzNo);
+        }
+
         let tzExistsGlobally = false;
         let ownerOfTz = null;
 
@@ -692,29 +749,13 @@ async function saveToArchive() {
             }
         }
 
-        if (isEditing) {
-            // --- РЕЖИМ: СОХРАНИТЬ ИЗМЕНЕНИЯ ---
-            const originalTzNo = String(arc[window.currentEditIndex].tz_no).trim();
-
-            if (currentTzNo !== originalTzNo) {
-                if (!tzExistsGlobally) {
-                    return alert('⚠️ Ошибка: Вы изменили номер на новый.\n\nВ режиме редактирования нельзя создавать новые ТЗ. Вернитесь на главную и нажмите "+ СОЗДАТЬ ТЗ".');
-                }
-                if (tzExistsGlobally && ownerOfTz !== s.username) {
-                    return alert(`⚠️ Ошибка: Номер ${currentTzNo} уже занят пользователем "${ownerOfTz}"!\nВы не можете перезаписать чужой проект.`);
-                }
-                if (tzExistsGlobally && ownerOfTz === s.username) {
-                    return alert(`⚠️ Ошибка: Проект с номером ${currentTzNo} уже есть в вашем архиве!\nОткройте именно его, чтобы изменить.`);
-                }
-            }
-        } else {
-            // --- РЕЖИМ: СОЗДАТЬ (В АРХИВ) ---
-            if (tzExistsGlobally) {
-                return alert(`⚠️ Ошибка: ТЗ с номером ${currentTzNo} уже существует в базе (автор: ${ownerOfTz})!\n\nНельзя создать дубликат. Откройте его из архива.`);
-            }
+        if (isEditing && tzChanged && tzExistsGlobally) {
+            return alert(`⚠️ Ошибка: Номер ${currentTzNo} уже существует в базе (автор: ${ownerOfTz})!\n\nВыберите другой номер.`);
+        }
+        if (!isEditing && tzExistsGlobally) {
+            return alert(`⚠️ Ошибка: ТЗ с номером ${currentTzNo} уже существует в базе (автор: ${ownerOfTz})!`);
         }
 
-        // 2. ФОРМИРУЕМ ДАННЫЕ
         const docData = { 
             tz_no: currentTzNo, 
             eq: document.getElementById('equipment_select') ? document.getElementById('equipment_select').value : '',
@@ -729,11 +770,10 @@ async function saveToArchive() {
             if (el.id && el.id !== 'file_input') docData.fields[el.id] = el.value;
         });
 
-        // 3. СОХРАНЯЕМ И ОБНОВЛЯЕМ БАЗУ
-        if (isEditing) {
-            arc[window.currentEditIndex] = docData; // Перезаписываем
+        if (isEditing && !tzChanged) {
+            arc[window.currentEditIndex] = docData;
         } else {
-            arc.unshift(docData); // Создаем новое
+            arc.unshift(docData);
         }
 
         localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
@@ -741,7 +781,7 @@ async function saveToArchive() {
             await db.ref('users/' + s.username + '/archive').set(arc);
         }
         
-        window.currentEditIndex = null; // Сбрасываем память
+        window.currentEditIndex = null;
         navigate('home');
 
     } catch (error) {
@@ -749,8 +789,9 @@ async function saveToArchive() {
         console.error(error);
     }
 }
+
 function editFromArchive(i) {
-    window.currentEditIndex = i; // ГАРАНТИЯ: Режим редактирования
+    window.currentEditIndex = i;
     const d = getArchive()[i]; 
     navigate('template');
     
@@ -773,45 +814,196 @@ function editFromArchive(i) {
             const txt = document.getElementById('img_text');
             if(txt) txt.style.display = 'none';
         }
+        
         checkDualTemp();
-    }, 200); 
+        
+        const tzInput = document.getElementById('tz_no');
+        const saveBtn = document.querySelector('button[onclick="saveToArchive()"]');
+        
+        if (tzInput && saveBtn) {
+            const originalTz = tzInput.value.trim();
+            
+            tzInput.addEventListener('input', function() {
+                if (this.value.trim() === originalTz) {
+                    saveBtn.innerHTML = '💾 СОХРАНИТЬ ИЗМЕНЕНИЯ';
+                } else {
+                    saveBtn.innerHTML = '📥 СОХРАНИТЬ КАК НОВЫЙ';
+                }
+            });
+        }
+    }, 200);
 }
 
-function mockLogin() {
-    const login = document.getElementById('auth_login').value.trim();
-    const pass = document.getElementById('auth_pass').value.trim();
-    if (login === '' || pass === '') return alert("Введите логин и пароль!");
-
-    // --- СЕКРЕТНЫЙ ВХОД АДМИНА (теперь привязан к паролю из настроек) ---
-    if (login === 'admin' && pass === APP_CONFIG.adminPassword) {
-        localStorage.setItem('pronto_settings', JSON.stringify({ role: 'admin', theme: getSettings().theme, username: 'SuperAdmin' }));
-        alert("Секретный вход! Добро пожаловать в панель управления.");
-        return navigate('settings'); 
+function deleteFromArchive(i) {
+    if (!confirm('⚠️ Вы уверены, что хотите НАВСЕГДА удалить этот проект?')) return;
+    
+    const s = getSettings();
+    let arc = getArchive() || [];
+    arc.splice(i, 1); 
+    
+    localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
+    
+    if (typeof db !== 'undefined' && s.username) {
+        db.ref('users/' + s.username + '/archive').set(arc);
     }
+    
+    navigate('home');
+}
 
-    const safeLogin = login.replace(/[.#$\[\]]/g, '_');
+function pdfFromArchive(i) {
+    editFromArchive(i); 
+    setTimeout(() => {
+        genPDF(); 
+    }, 500);
+}
 
-    db.ref('users/' + safeLogin).once('value').then((snapshot) => {
-        if (!snapshot.exists()) return alert("Такого пользователя не существует!");
+function printFromArchive(i) {
+    editFromArchive(i);
+    setTimeout(() => {
+        handlePrint(); 
+    }, 500);
+}
+
+function sendFromArchiveBtn(i) {
+    editFromArchive(i);
+    setTimeout(() => {
+        sendTZ(); 
+    }, 500);
+}
+
+// ======================================================
+// 6. FIREBASE (ВХОД И РЕГИСТРАЦИЯ)
+// ======================================================
+
+async function mockRegister() {
+    try {
+        const loginInp = document.getElementById('reg_login');
+        const passInp = document.getElementById('reg_pass');
+        
+        if (!loginInp || !passInp) return alert("Системная ошибка: поля ввода не найдены!");
+
+        const login = loginInp.value.trim();
+        const pass = passInp.value.trim();
+        
+        if (login === '' || pass === '') {
+            return alert("⚠️ Пожалуйста, введите логин и пароль!");
+        }
+
+        if (typeof db === 'undefined') {
+            return alert("⚠️ Ошибка: Нет подключения к облачной базе данных (Firebase).");
+        }
+
+        const safeLogin = login.replace(/[.#$\[\]]/g, '_');
+
+        const btn = document.querySelector('button[onclick="mockRegister()"]');
+        if (btn) {
+            btn.innerText = 'ОТПРАВКА...';
+            btn.disabled = true;
+        }
+
+        const snapshot = await db.ref('users/' + safeLogin).once('value');
+        
+        if (snapshot.exists()) {
+            alert("⚠️ Этот логин уже занят! Придумайте другой.");
+        } else {
+            await db.ref('users/' + safeLogin).set({ 
+                password: pass, 
+                role: 'participant', 
+                status: 'pending' 
+            });
+            alert("✅ Успешно! Ваша заявка отправлена администратору на одобрение.");
+            navigate('portal'); 
+        }
+
+        if (btn) {
+            btn.innerText = 'ЗАРЕГИСТРИРОВАТЬСЯ';
+            btn.disabled = false;
+        }
+
+    } catch (error) {
+        alert("Системная ошибка при регистрации: " + error.message);
+        console.error(error);
+        const btn = document.querySelector('button[onclick="mockRegister()"]');
+        if (btn) {
+            btn.innerText = 'ЗАРЕГИСТРИРОВАТЬСЯ';
+            btn.disabled = false;
+        }
+    }
+}
+
+async function mockLogin() {
+    try {
+        const loginInp = document.getElementById('auth_login');
+        const passInp = document.getElementById('auth_pass');
+        
+        if (!loginInp || !passInp) return alert("Системная ошибка: поля ввода не найдены!");
+
+        const login = loginInp.value.trim();
+        const pass = passInp.value.trim();
+
+        if (login === '' || pass === '') {
+            return alert("⚠️ Введите логин и пароль!");
+        }
+
+        if (typeof db === 'undefined') {
+            return alert("⚠️ Ошибка: Нет подключения к облачной базе данных!");
+        }
+
+        const btn = document.querySelector('button[onclick="mockLogin()"]');
+        if (btn) {
+            btn.innerText = 'ВХОД...';
+            btn.disabled = true;
+        }
+
+        const safeLogin = login.replace(/[.#$\[\]]/g, '_');
+        const snapshot = await db.ref('users/' + safeLogin).once('value');
+
+        if (!snapshot.exists()) {
+            if (btn) { btn.innerText = 'ВОЙТИ'; btn.disabled = false; }
+            return alert("⚠️ Такого пользователя не существует!");
+        }
         
         const user = snapshot.val();
-        if (user.password !== pass) return alert("Неверный пароль!");
-        if (user.status !== 'approved') return alert("Ваш аккаунт еще не одобрен администратором или заблокирован.");
+        
+        if (user.password !== pass) {
+            if (btn) { btn.innerText = 'ВОЙТИ'; btn.disabled = false; }
+            return alert("⚠️ Неверный пароль!");
+        }
+
+        if (user.role !== 'admin' && user.status !== 'approved') {
+            if (btn) { btn.innerText = 'ВОЙТИ'; btn.disabled = false; }
+            return alert("⚠️ Ваш аккаунт еще не одобрен администратором или заблокирован.");
+        }
 
         const s = getSettings();
         localStorage.setItem('pronto_settings', JSON.stringify({ role: user.role, theme: s.theme, username: safeLogin }));
 
-        if (user.archive) localStorage.setItem('pronto_archive', JSON.stringify(user.archive));
-        else localStorage.removeItem('pronto_archive');
+        if (user.archive) {
+            localStorage.setItem('pronto_archive', JSON.stringify(user.archive));
+        } else {
+            localStorage.removeItem('pronto_archive');
+        }
         
-        alert(`Добро пожаловать, ${login}!`);
-        navigate('home'); 
-    }).catch((err) => alert("Ошибка при входе: " + err.message));
-}
+        if (btn) { btn.innerText = 'ВОЙТИ'; btn.disabled = false; }
 
-// ======================================================
-// 7. ПАНЕЛЬ АДМИНИСТРАТОРА (ОДОБРЕНИЕ ЗАЯВОК)
-// ======================================================
+        if (user.role === 'admin') {
+            alert("Секретный вход! Добро пожаловать в панель управления.");
+            navigate('settings'); 
+        } else {
+            alert(`Добро пожаловать, ${login}!`);
+            navigate('home'); 
+        }
+
+    } catch (error) {
+        alert("Системная ошибка при входе: " + error.message);
+        console.error(error);
+        const btn = document.querySelector('button[onclick="mockLogin()"]');
+        if (btn) {
+            btn.innerText = 'ВОЙТИ';
+            btn.disabled = false;
+        }
+    }
+}
 
 // ======================================================
 // 7. ПАНЕЛЬ АДМИНА: УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ И БАЗА ТЗ
@@ -822,6 +1014,9 @@ function loadAllUsers() {
     const listDiv = document.getElementById('all_users_list');
     if (!listDiv) return;
 
+    // Узнаем, кто сейчас сидит за экраном
+    const currentAdminLogin = getSettings().username;
+
     db.ref('users').once('value').then(snapshot => {
         if (!snapshot.exists()) { listDiv.innerHTML = "Пользователей нет"; return; }
         
@@ -830,22 +1025,44 @@ function loadAllUsers() {
         
         for (let login in users) {
             const u = users[login];
-            let statusColor = u.status === 'pending' ? '#eab308' : (u.status === 'banned' ? '#ef4444' : '#10b981');
-            let statusText = u.status === 'pending' ? 'Ожидает' : (u.status === 'banned' ? 'В бане' : 'Активен');
             
+            // Защита от старых юзеров без статуса (если статуса нет, считаем его активным)
+            const safeStatus = u.status || 'approved'; 
+
+            let statusColor = safeStatus === 'pending' ? '#eab308' : (safeStatus === 'banned' ? '#ef4444' : '#10b981');
+            let statusText = safeStatus === 'pending' ? 'Ожидает' : (safeStatus === 'banned' ? 'В бане' : 'Активен');
+            
+            // Если это админ, подсвечиваем его короной
+            if (u.role === 'admin') {
+                statusText = '👑 Администратор';
+                statusColor = '#8b5cf6';
+            }
+
             let btns = '';
-            if (u.status === 'pending') {
-                btns = `
-                    <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px; font-weight:bold;">✓ Одобрить</button>
-                    <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px; font-weight:bold;">✕ Отказ</button>
-                `;
-            } else if (u.status === 'approved') {
-                btns = `<button onclick="banUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px; font-weight:bold;">🚫 Забанить</button>`;
-            } else if (u.status === 'banned') {
-                btns = `
-                    <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px; font-weight:bold;">🔄 Разбанить</button>
-                    <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#64748b; padding:5px; font-weight:bold;">🗑️ Удалить</button>
-                `;
+
+            // --- БРОНЯ 1: Запрет на самовыпил ---
+            if (login === currentAdminLogin) {
+                btns = `<span style="font-size:12px; color:#64748b; font-weight:bold; padding:5px;">👤 Это вы</span>`;
+            
+            // --- БРОНЯ 2: Запрет на бан других админов ---
+            } else if (u.role === 'admin') {
+                btns = `<span style="font-size:12px; color:#8b5cf6; font-weight:bold; padding:5px;">🛡️ Защита</span>`;
+            
+            // --- ОБЫЧНЫЕ ПОЛЬЗОВАТЕЛИ ---
+            } else {
+                if (safeStatus === 'pending') {
+                    btns = `
+                        <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px; font-weight:bold;">✓ Одобрить</button>
+                        <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px; font-weight:bold;">✕ Отказ</button>
+                    `;
+                } else if (safeStatus === 'approved') {
+                    btns = `<button onclick="banUser('${login}')" class="btn-mini" style="background:#ef4444; padding:5px; font-weight:bold;">🚫 Забанить</button>`;
+                } else if (safeStatus === 'banned') {
+                    btns = `
+                        <button onclick="approveUser('${login}')" class="btn-mini" style="background:#10b981; padding:5px; font-weight:bold;">🔄 Разбанить</button>
+                        <button onclick="rejectUser('${login}')" class="btn-mini" style="background:#64748b; padding:5px; font-weight:bold;">🗑️ Удалить</button>
+                    `;
+                }
             }
 
             html += `
@@ -871,18 +1088,19 @@ function approveUser(login) {
 }
 
 function rejectUser(login) {
+    if (login === getSettings().username) return alert("❌ Вы не можете удалить сами себя!");
     if(confirm(`Полностью удалить аккаунт ${login}? Это действие нельзя отменить.`)) {
         db.ref('users/' + login).remove().then(() => loadAllUsers());
     }
 }
 
 function banUser(login) {
+    if (login === getSettings().username) return alert("❌ Вы не можете забанить сами себя!");
     if(confirm(`Заблокировать ${login}? Он больше не сможет войти в систему.`)) {
         db.ref('users/' + login).update({ status: 'banned' }).then(() => loadAllUsers());
     }
 }
 
-// --- ГЛОБАЛЬНЫЙ ПОИСК ПО ПРОЕКТАМ ---
 let allAdminProjects = [];
 
 function loadAllProjectsForAdmin() {
@@ -903,7 +1121,6 @@ function loadAllProjectsForAdmin() {
                 });
             }
         }
-        // Свежие проекты сверху
         allAdminProjects.reverse();
         searchAllProjects(); 
     });
@@ -927,7 +1144,6 @@ function searchAllProjects() {
 
     let html = '';
     filtered.slice(0, 30).forEach((item, idx) => {
-        // Находим реальный индекс в массиве allAdminProjects для функции просмотра
         const realIdx = allAdminProjects.indexOf(item);
         html += `
             <div class="archive-item" style="margin-bottom:10px; padding:15px; border-left:4px solid var(--pronto); text-align:left;">
@@ -937,7 +1153,10 @@ function searchAllProjects() {
                         <div style="font-size:14px; font-weight:bold; margin-top:3px; color:var(--pronto);">${item.eq || 'Не указано'}</div>
                         <div style="font-size:12px; color:#64748b; margin-top:5px;">Менеджер: ${item.manager || '—'} | Автор: ${item._owner}</div>
                     </div>
-                    <button onclick="viewProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#3b82f6; padding:10px;" title="Просмотреть">📂 ОТКРЫТЬ</button>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="viewProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#3b82f6; padding:10px;" title="Просмотреть">📂 ОТКРЫТЬ</button>
+                        <button onclick="deleteProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#ef4444; padding:10px;" title="Удалить">🗑️</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -945,6 +1164,7 @@ function searchAllProjects() {
     
     listDiv.innerHTML = html;
 }
+
 function viewProjectAsAdmin(idx) {
     const d = allAdminProjects[idx];
     if (!d) return;
@@ -952,7 +1172,6 @@ function viewProjectAsAdmin(idx) {
     navigate('template');
 
     setTimeout(() => {
-        // Заполняем поля
         if (d.fields) {
             for (let id in d.fields) {
                 const el = document.getElementById(id);
@@ -960,7 +1179,6 @@ function viewProjectAsAdmin(idx) {
             }
         }
         
-        // Фото
         if (d.image) {
             uploadedImageBase64 = d.image;
             const img = document.getElementById('preview_img');
@@ -969,24 +1187,62 @@ function viewProjectAsAdmin(idx) {
             if (txt) txt.style.display = 'none';
         }
 
-        // --- МАГИЯ БЛОКИРОВКИ ---
-        // 1. Отключаем все инпуты, селекторы и текстареа
         const allInputs = document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea');
         allInputs.forEach(el => {
             el.disabled = true;
-            el.style.backgroundColor = '#f1f5f9'; // Делаем серым, чтобы было видно "только чтение"
+            el.style.backgroundColor = '#f1f5f9'; 
         });
 
-        // 2. Скрываем кнопку "В архив", чтобы админ случайно не перезаписал
         const saveBtn = document.querySelector('button[onclick="saveToArchive()"]');
         if (saveBtn) saveBtn.style.display = 'none';
 
-        // 3. Скрываем кнопки "+" в таблице
         document.querySelectorAll('.admin-add-btn').forEach(btn => btn.style.display = 'none');
         
         checkDualTemp();
     }, 300);
 }
+async function deleteProjectAsAdmin(idx) {
+    const project = allAdminProjects[idx];
+    if (!project) return;
+    
+    const tzNo = project.tz_no;
+    const owner = project._owner; // Тот самый логин пользователя, чей это проект
+
+    if (!confirm(`⚠️ ВНИМАНИЕ!\nВы уверены, что хотите НАВСЕГДА удалить ТЗ № ${tzNo} (Автор: ${owner})?\nЭто действие нельзя будет отменить.`)) {
+        return;
+    }
+
+    try {
+        if (typeof db === 'undefined') return alert("Нет подключения к базе данных!");
+
+        // 1. Скачиваем архив этого конкретного пользователя из базы
+        const snap = await db.ref('users/' + owner + '/archive').once('value');
+        
+        if (snap.exists()) {
+            let userArchive = snap.val();
+            
+            // 2. Фильтруем архив, выкидывая из него проект с этим номером
+            userArchive = userArchive.filter(p => p && String(p.tz_no).trim() !== String(tzNo).trim());
+            
+            // 3. Отправляем очищенный архив обратно в облако
+            await db.ref('users/' + owner + '/archive').set(userArchive);
+            
+            // 4. Перезагружаем список проектов админа, чтобы проект исчез с экрана
+            loadAllProjectsForAdmin();
+            alert(`✅ Проект № ${tzNo} успешно удален из базы!`);
+            
+        } else {
+            alert("⚠️ Ошибка: Архив этого пользователя пуст или не найден.");
+        }
+    } catch (error) {
+        alert("Системная ошибка при удалении: " + error.message);
+        console.error(error);
+    }
+}
+// ======================================================
+// 8. ГЕНЕРАЦИЯ ОТПРАВКИ 
+// ======================================================
+
 async function sendTZ() {
     const tzNo = document.getElementById('tz_no').value || "DOC";
     const fileName = `TZ_${tzNo}.pdf`;
@@ -1011,12 +1267,10 @@ async function sendTZ() {
             const margin = 10; 
             const imgWidth = 210 - (margin * 2); 
 
-            // Снимаем первую страницу (Пункты 1-8)
             const canvas1 = await html2canvas(page1, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgHeight1 = (canvas1.height * imgWidth) / canvas1.width;
             pdf.addImage(canvas1.toDataURL('image/png'), 'PNG', margin, margin, imgWidth, imgHeight1);
 
-            // Снимаем вторую страницу (Пункт 8 Эскиз и подписи)
             pdf.addPage();
             const canvas2 = await html2canvas(page2, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const imgHeight2 = (canvas2.height * imgWidth) / canvas2.width;
