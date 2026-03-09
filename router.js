@@ -242,7 +242,12 @@ const portalView = () => `
     </div>
 `;
 
-const loginView = () => `
+const loginView = () => {
+    // Достаем сохраненный логин и пароль
+    const savedLogin = localStorage.getItem('pronto_saved_login') || '';
+    const savedPass = localStorage.getItem('pronto_saved_pass') || '';
+    
+    return `
     <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <button onclick="navigate('portal')" class="btn-mini" style="background:#cbd5e1; color:#0f172a;">🡠 Назад</button>
@@ -251,12 +256,17 @@ const loginView = () => `
         </div>
         <div style="text-align: left;">
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
-            <input type="text" id="auth_login" placeholder="Ваш логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
+            <input type="text" id="auth_login" placeholder="Ваш логин" value="${savedLogin}" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
             
             <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
-            <div style="position:relative; margin-bottom:25px;">
-                <input type="password" id="auth_pass" placeholder="Ваш пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
+            <div style="position:relative; margin-bottom:15px;">
+                <input type="password" id="auth_pass" placeholder="Ваш пароль" value="${savedPass}" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
                 <span onclick="document.getElementById('auth_pass').type = document.getElementById('auth_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
+            </div>
+            
+            <div style="margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="remember_login" ${savedLogin ? 'checked' : ''} style="width:18px; height:18px; cursor:pointer;">
+                <label for="remember_login" style="font-size:14px; color:#64748b; cursor:pointer; user-select:none;">Запомнить меня</label>
             </div>
             
             <button onclick="mockLogin()" class="btn" style="width:100%; margin-bottom:15px; background:#10b981;">ВОЙТИ</button>
@@ -266,29 +276,8 @@ const loginView = () => `
             </div>
         </div>
     </div>
-`;
-
-const registerView = () => `
-    <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-            <button onclick="navigate('portal')" class="btn-mini" style="background:#cbd5e1; color:#0f172a;">🡠 Назад</button>
-            <h2 style="margin:0; color:var(--pronto);">РЕГИСТРАЦИЯ</h2>
-            <div style="width:50px;"></div>
-        </div>
-        <div style="text-align: left;">
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ЛОГИН:</label>
-            <input type="text" id="reg_login" placeholder="Новый логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
-            
-            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПАРОЛЬ:</label>
-            <div style="position:relative; margin-bottom:25px;">
-                <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
-                <span onclick="document.getElementById('reg_pass').type = document.getElementById('reg_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
-            </div>
-            
-            <button onclick="mockRegister()" class="btn" style="width:100%; margin-bottom:15px; background:#3b82f6;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
-        </div>
-    </div>
-`;
+    `;
+};
 
 const homeView = () => {
     const s = getSettings();
@@ -405,22 +394,28 @@ const templateView = () => `
     <div class="document-sheet fade-in" id="print-root">
         
         <div id="pdf-page-1">
-            <div class="doc-header">
-                <div style="flex-grow:1;">
+            <div class="doc-header" style="display:flex; align-items:flex-start;">
+                <div style="flex-grow:1; padding-right: 20px;">
                     <div style="display:flex; align-items:center; padding-bottom: 5px;">
                         <span style="font-weight:900; color:var(--pronto); font-size:32px; margin-right: 20px;">SPECS (ТЗ) №</span>
                         <input type="text" id="tz_no" style="width:200px; font-size:32px; border:none; font-weight:900; margin:0; padding:2px; line-height:normal; background:transparent;" placeholder="000-00">
                         <span id="tz_no_text" style="display:none; font-size:32px; font-weight:900; margin:0; padding:2px; line-height:normal;"></span>
                     </div>
+                    
+                    <div style="margin-top:10px; display:flex; align-items:baseline; width:100%;">
+                        <b style="font-size:16px; margin-right:10px; white-space:nowrap;">ЗАКАЗЧИК:</b> 
+                        <input type="text" id="client_name" style="flex-grow:1; margin-right:10px; border:none; border-bottom:2px solid #ccc; font-size:16px; font-weight:bold; background:transparent; outline:none;" placeholder="Название компании или ФИО клиента">
+                    </div>
+
                     <div style="margin-top:10px;">
-                        <b style="font-size:16px;">МЕНЕДЖЕР:</b> 
-                        <input type="text" id="manager_name" style="border:none; border-bottom:2px solid #ccc; width:250px; font-size:16px; font-weight:bold;" placeholder="Фамилия">
+                        <b style="font-size:16px; margin-right:10px;">МЕНЕДЖЕР:</b> 
+                        <input type="text" id="manager_name" style="border:none; border-bottom:2px solid #ccc; width:250px; font-size:16px; font-weight:bold; background:transparent; outline:none;" placeholder="Фамилия">
                     </div>
                 </div>
                 <button onclick="navigate('home')" class="close-x no-print">✕</button>
             </div>
             
-            <div class="top-info-grid">
+            <div class="top-info-grid" style="margin-top: 20px;">
                 <div><label style="font-size:11px; font-weight:bold; color:#64748b; display:block;">ОБОРУДОВАНИЕ</label>${renderSelect('equipment_select', 'equipment')}</div>
                 <div><label style="font-size:11px; font-weight:bold; color:#64748b; display:block;">ЕД. ИЗМ.</label><select id="unit"><option>шт.</option><option>компл.</option></select></div>
                 <div><label style="font-size:11px; font-weight:bold; color:#64748b; display:block;">КОЛ-ВО</label><input type="number" id="qty" style="width:100%;"></div>
@@ -484,9 +479,15 @@ const templateView = () => `
                 </tbody>
             </table>
 
-            <div id="signature-box" style="display:flex; justify-content:space-between; margin-top:40px; margin-bottom:20px; font-weight:bold; font-size:16px; color:black;">
-                <div>ЗАКАЗЧИК: _____________________</div>
-                <div>ИСПОЛНИТЕЛЬ: _____________________</div>
+            <div id="signature-box" style="margin-top:40px; margin-bottom:10px; font-weight:bold; font-size:16px; color:black;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 30px;">
+                    <div>ЗАКАЗЧИК: _____________________</div>
+                    <div>ИСПОЛНИТЕЛЬ: _____________________</div>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <div>ДАТА: _________________________</div>
+                    <div>СРОК: _________________________</div>
+                </div>
             </div>
         </div> 
         
@@ -541,7 +542,6 @@ function handleRole(el) {
         document.getElementById('loginModal').style.display = 'flex'; 
     } 
 }
-
 function closeModals() { 
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
 }
@@ -550,17 +550,21 @@ function checkLogin() {
     const passInp = document.getElementById('inputPassword');
     
     if (window.APP_CONFIG && passInp.value === window.APP_CONFIG.adminPassword) {
-        // Пароль верный! Берем текущие настройки, меняем роль на админа и сохраняем
         const s = getSettings();
         s.role = 'admin';
         localStorage.setItem('pronto_settings', JSON.stringify(s));
         
-        passInp.value = ''; // Заметаем следы (чистим пароль)
+        // --- НОВОЕ: ЗАПИСЫВАЕМ СТАТУС АДМИНА В БАЗУ ДАННЫХ ---
+        if (typeof db !== 'undefined' && s.username) {
+            db.ref('users/' + s.username).update({ role: 'admin' });
+        }
+        
+        passInp.value = ''; 
         closeModals(); 
-        navigate('settings'); // Перезагружаем страницу настроек, чтобы появились админ-панели
+        navigate('settings'); 
     } else {
         alert("⚠️ Неверный пароль! Доступ запрещен.");
-        passInp.value = ''; // Чистим поле после ошибки
+        passInp.value = ''; 
     }
 }
 
@@ -577,7 +581,17 @@ function saveNewCredentials() {
 function saveSettings() {
     const r = document.getElementById('role_select').value;
     const t = document.getElementById('theme_select').value;
-    localStorage.setItem('pronto_settings', JSON.stringify({role: r, theme: t}));
+    
+    const s = getSettings(); 
+    s.role = r;
+    s.theme = t;
+    localStorage.setItem('pronto_settings', JSON.stringify(s)); 
+    
+    // --- НОВОЕ: СОХРАНЯЕМ РОЛЬ В БАЗУ ПРИ ВЫХОДЕ ИЗ НАСТРОЕК ---
+    if (typeof db !== 'undefined' && s.username) {
+        db.ref('users/' + s.username).update({ role: r });
+    }
+
     applyTheme(); 
     navigate('home');
 }
@@ -911,6 +925,14 @@ async function mockRegister() {
                 role: 'participant', 
                 status: 'pending' 
             });
+
+            // --- ДОБАВЛЕНО: Запоминаем логин и ПАРОЛЬ ---
+            const rememberCheckbox = document.getElementById('reg_remember_login');
+            if (rememberCheckbox && rememberCheckbox.checked) {
+                localStorage.setItem('pronto_saved_login', login);
+                localStorage.setItem('pronto_saved_pass', pass);
+            }
+
             alert("✅ Успешно! Ваша заявка отправлена администратору на одобрение.");
             navigate('portal'); 
         }
@@ -985,6 +1007,16 @@ async function mockLogin() {
         }
         
         if (btn) { btn.innerText = 'ВОЙТИ'; btn.disabled = false; }
+
+        // --- ДОБАВЛЕНО: Запоминаем логин и ПАРОЛЬ ---
+        const rememberCheckbox = document.getElementById('remember_login');
+        if (rememberCheckbox && rememberCheckbox.checked) {
+            localStorage.setItem('pronto_saved_login', login); 
+            localStorage.setItem('pronto_saved_pass', pass); 
+        } else if (rememberCheckbox && !rememberCheckbox.checked) {
+            localStorage.removeItem('pronto_saved_login'); 
+            localStorage.removeItem('pronto_saved_pass'); 
+        }
 
         if (user.role === 'admin') {
             alert("Секретный вход! Добро пожаловать в панель управления.");
