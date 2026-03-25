@@ -1,9 +1,3 @@
-/**
- * ======================================================
- * PRONTO SPECS CLOUD ENGINE | FULL READABLE VERSION
- * ======================================================
- */
-
 // ======================================================
 // 1. ИНИЦИАЛИЗАЦИЯ И СИСТЕМНЫЕ ФУНКЦИИ
 // ======================================================
@@ -41,9 +35,33 @@ function hideLoader() {
 let uploadedImageBase64 = null; 
 let currentManageKey = null;    
 
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ ГЕТАРХИВ
 const getArchive = () => {
-    const data = localStorage.getItem('pronto_archive');
-    return data ? JSON.parse(data) : [];
+    try {
+        const data = localStorage.getItem('pronto_archive');
+        const parsed = data ? JSON.parse(data) : [];
+        // - Защита: всегда возвращаем массив
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+};
+
+// НОВОЕ: Функции для корзины
+const getTrash = () => {
+    try {
+        const data = localStorage.getItem('pronto_trash');
+        const parsed = data ? JSON.parse(data) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+};
+
+const cleanupTrash = (trashArray) => {
+    const fifteenDaysInMs = 15 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return trashArray.filter(item => (now - (item.deletedAt || 0)) < fifteenDaysInMs);
 };
 
 const getSettings = () => {
@@ -67,21 +85,36 @@ function navigate(view) {
     if (!app) return;
 
     app.innerHTML = ''; 
-    if (view === 'portal') app.innerHTML = portalView();
-    else if (view === 'login') app.innerHTML = loginView();
-    else if (view === 'register') app.innerHTML = registerView();
-    else if (view === 'home') app.innerHTML = homeView();
-    else if (view === 'settings') app.innerHTML = settingsView();
-    else if (view === 'template') app.innerHTML = templateView();
-    else app.innerHTML = portalView();
+
+    // Сначала определяем основной шаблон
+    let mainContent = '';
+    if (view === 'portal') mainContent = portalView();
+    else if (view === 'login') mainContent = loginView();
+    else if (view === 'register') mainContent = registerView();
+    else if (view === 'home') mainContent = homeView();
+    else if (view === 'settings') mainContent = settingsView();
+    else if (view === 'template') mainContent = templateView();
+    else if (view === 'trash') mainContent = trashView();
+    else if (view === 'admin_trash') mainContent = adminTrashView();
+    else mainContent = portalView();
+
+    // ВАЖНО: Сначала собираем ВЕСЬ HTML (шаблон + модалки)
+    app.innerHTML = mainContent + modalsHTML;
+
+    // И ТОЛЬКО ПОТОМ запускаем функции, которые ищут элементы на экране
+    if (view === 'admin_trash') {
+        loadAllTrashForAdmin(); // Теперь она найдет "живой" блок
+    }
 
     if (view === 'template') {
-        populateSelects();
-        checkDualTemp();
+        setTimeout(() => {
+            populateSelects();
+            checkDualTemp();
+        }, 50);
     }
+    
     window.scrollTo(0, 0);
 }
-
 // ======================================================
 // 2. АДМИНКА И СПИСКИ (НАСТРОЙКИ СЕЛЕКТОРОВ)
 // ======================================================
@@ -281,13 +314,8 @@ const loginView = () => {
 
 const homeView = () => {
     const s = getSettings();
-    if (s.username && typeof db !== 'undefined') {
-        db.ref('users/' + s.username + '/archive').once('value').then(snap => {
-            if (snap.exists()) localStorage.setItem('pronto_archive', JSON.stringify(snap.val()));
-        });
-    }
-
     const archive = getArchive();
+    
     return `
     <div class="home-card fade-in">
         <h1 class="main-title">PRODUCTION</h1>
@@ -302,7 +330,11 @@ const homeView = () => {
         </div>
         
         <div style="margin-top:70px; text-align:left;">
-            <h4 style="border-bottom:3px solid var(--border); padding-bottom:15px; color:var(--pronto); font-weight:900;">ПОСЛЕДНИЕ ПРОЕКТЫ</h4>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid var(--border); padding-bottom:15px; margin-bottom:15px;">
+                <h4 style="margin:0; color:var(--pronto); font-weight:900;">ПОСЛЕДНИЕ ПРОЕКТЫ</h4>
+                <button onclick="navigate('trash')" class="btn-mini" style="background:#ef4444; border:none; color:white; padding:8px 15px; font-size:12px; border-radius:10px; cursor:pointer; font-weight:bold;">🗑️ КОРЗИНА</button>
+            </div>
+
             ${archive.length > 0 ? archive.map((item, i) => `
                 <div class="archive-item">
                     <div class="archive-content" style="display:flex; align-items:center; gap:15px; width:100%;">
@@ -325,6 +357,7 @@ const homeView = () => {
         </div>
     </div>`;
 };
+
 
 const settingsView = () => {
     const s = getSettings();
@@ -364,11 +397,15 @@ const settingsView = () => {
                     <div id="all_users_list" style="background:#f8fafc; border-radius:10px; padding:15px; text-align:center; border: 1px solid #cbd5e1; max-height:300px; overflow-y:auto;">Загрузка...</div>
                 </div>
 
-                <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
-                    <h4 style="margin-top:0; text-align:center; color:var(--pronto);">БАЗА ВСЕХ ПРОЕКТОВ (ТЗ)</h4>
-                    <input type="text" id="admin_search" onkeyup="searchAllProjects()" placeholder="🔍 Поиск по № ТЗ или Менеджеру..." style="width:100%; padding:12px; border-radius:8px; border:2px solid #cbd5e1; margin-bottom:15px;">
-                    <div id="admin_projects_list" style="background:#f8fafc; border-radius:10px; padding:15px; border: 1px solid #cbd5e1; max-height:400px; overflow-y:auto;">Идет поиск в базе...</div>
-                </div>
+          <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
+    <h4 style="margin-top:0; text-align:center; color:var(--pronto);">БАЗА ВСЕХ ПРОЕКТОВ (ТЗ)</h4>
+    
+    <input type="text" id="admin_search" onkeyup="searchAllProjects()" placeholder="🔍 Поиск по № ТЗ или Менеджеру..." style="width:100%; padding:12px; border-radius:8px; border:2px solid #cbd5e1; margin-bottom:15px;">
+    
+    <button onclick="navigate('admin_trash')" class="btn" style="background:#ef4444; width:100%; margin-bottom:15px; font-size:14px; font-weight:bold; border:none; color:white; cursor:pointer;">🗑️ ПОСМОТРЕТЬ УДАЛЕННЫЕ (ОБЩАЯ КОРЗИНА)</button>
+    
+    <div id="admin_projects_list" style="background:#f8fafc; border-radius:10px; padding:15px; border: 1px solid #cbd5e1; max-height:400px; overflow-y:auto;">Идет поиск в базе...</div>
+</div>
 
                 <div style="background:rgba(255,255,255,0.5); padding:20px; border:2px solid var(--pronto); border-radius:15px; margin-bottom:30px;">
                     <h4 style="margin-top:0; text-align:center;">БЕЗОПАСНОСТЬ</h4>
@@ -381,7 +418,42 @@ const settingsView = () => {
         ${modalsHTML}
     </div>`;
 };
+// Найди конец функции settingsView (после последней обратной кавычки `)
+// И вставляй:
 
+const trashView = () => {
+    let trash = getTrash();
+    // Авто-очистка при открытии (15 дней)
+    const cleanedTrash = cleanupTrash(trash);
+    if (cleanedTrash.length !== trash.length) {
+        trash = cleanedTrash;
+        localStorage.setItem('pronto_trash', JSON.stringify(trash));
+        const s = getSettings();
+        if (s.username) db.ref('users/' + s.username + '/trash').set(trash);
+    }
+
+    return `
+    <div class="home-card fade-in">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <h1 style="margin:0; color:#ef4444;">КОРЗИНА (15 ДНЕЙ)</h1>
+            <button onclick="navigate('home')" class="close-x">✕</button>
+        </div>
+        <div style="text-align:left;">
+            ${trash.length > 0 ? trash.map((item, i) => `
+                <div class="archive-item" style="border-left: 4px solid #ef4444; margin-bottom:10px; padding:15px; background:white; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1;">
+                        <b style="font-size:16px;">№ ${item.tz_no}</b> — <span style="color:var(--pronto);">${item.eq}</span><br>
+                        <small style="color:#64748b;">Удалено: ${new Date(item.deletedAt).toLocaleDateString()} (владелец: ${item._originalOwner || 'вы'})</small>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="restoreFromTrash(${i})" class="btn-mini" style="background:#10b981; padding:8px 12px;">Восстановить</button>
+                        <button onclick="permanentDelete(${i})" class="btn-mini" style="background:#ef4444; padding:8px 12px;">Удалить</button>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align:center; padding:50px; color:#94a3b8;">Корзина пуста</p>'}
+        </div>
+    </div>`;
+};
 const templateView = () => `
     <style>
         @media print {
@@ -503,6 +575,17 @@ const templateView = () => `
     </div>
 `;
 
+const adminTrashView = () => `
+    <div class="home-card fade-in">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <h1 style="margin:0; color:#ef4444; font-weight:900;">ОБЩАЯ КОРЗИНА</h1>
+            <button onclick="navigate('settings')" class="close-x">✕</button>
+        </div>
+        <div id="admin_trash_list" style="text-align:left; min-height: 200px; background:rgba(0,0,0,0.03); border-radius:15px; padding:15px;">
+             <p style="text-align:center; padding:50px; color:#94a3b8;">🔍 Соединение с облаком...</p>
+        </div>
+    </div>`;
+
 // ======================================================
 // 4. ОБРАБОТЧИКИ СОБЫТИЙ И ПЕЧАТЬ
 // ======================================================
@@ -527,10 +610,10 @@ function populateSelects() {
 
 function checkDualTemp() {
     const el = document.getElementById('equipment_select'); 
-    if (el) {
-        const zone = document.getElementById('dual_temp_zone');
-        if (zone) zone.style.display = el.value.toLowerCase().includes('комби') ? 'flex' : 'none';
-    }
+    if (!el) return; // Добавь эту строчку!
+    
+    const zone = document.getElementById('dual_temp_zone');
+    if (zone) zone.style.display = el.value.toLowerCase().includes('комби') ? 'flex' : 'none';
 }
 
 function handleRole(el) { 
@@ -699,6 +782,8 @@ async function genPDF() {
 // 5. АРХИВ (ПЫЛЕСОС И УМНЫЕ КНОПКИ)
 // ======================================================
 
+
+
 function createNewTZ() { 
     uploadedImageBase64 = null; 
     window.currentEditIndex = null; // ГАРАНТИЯ: Режим создания
@@ -724,17 +809,27 @@ function createNewTZ() {
 async function saveToArchive() {
     try {
         const s = getSettings();
-        if (!s.username) return alert("Ошибка: Вы не авторизованы!");
+        // 1. Проверка авторизации
+        if (!s.username) {
+            return alert("⚠️ Ошибка: Вы не авторизованы!");
+        }
 
         const tzInput = document.getElementById('tz_no');
         const currentTzNo = tzInput ? tzInput.value.trim() : '';
 
+        // 2. Проверка номера ТЗ
         if (currentTzNo === '' || currentTzNo === '?') {
             return alert("⚠️ Ошибка: Укажите номер ТЗ перед сохранением!");
         }
 
         const isEditing = window.currentEditIndex !== null && window.currentEditIndex !== undefined;
-        const arc = getArchive() || [];
+        
+        // 3. ЗАЩИТА ОТ ОШИБКИ [arc.unshift is not a function]
+        let arc = getArchive();
+        if (!Array.isArray(arc)) {
+            console.warn("Архив был поврежден, сбрасываю до пустого списка.");
+            arc = []; 
+        }
 
         let tzChanged = false;
         if (isEditing) {
@@ -742,6 +837,7 @@ async function saveToArchive() {
             tzChanged = (currentTzNo !== originalTzNo);
         }
 
+        // 4. Проверка на дубликаты в глобальной базе Firebase
         let tzExistsGlobally = false;
         let ownerOfTz = null;
 
@@ -764,12 +860,13 @@ async function saveToArchive() {
         }
 
         if (isEditing && tzChanged && tzExistsGlobally) {
-            return alert(`⚠️ Ошибка: Номер ${currentTzNo} уже существует в базе (автор: ${ownerOfTz})!\n\nВыберите другой номер.`);
+            return alert(`⚠️ Ошибка: Номер ${currentTzNo} уже существует в базе (автор: ${ownerOfTz})!\nВыберите другой номер.`);
         }
         if (!isEditing && tzExistsGlobally) {
             return alert(`⚠️ Ошибка: ТЗ с номером ${currentTzNo} уже существует в базе (автор: ${ownerOfTz})!`);
         }
 
+        // 5. Сбор данных из полей
         const docData = { 
             tz_no: currentTzNo, 
             eq: document.getElementById('equipment_select') ? document.getElementById('equipment_select').value : '',
@@ -781,20 +878,25 @@ async function saveToArchive() {
 
         const allInputs = document.querySelectorAll('.document-sheet input, .document-sheet select, .document-sheet textarea');
         allInputs.forEach(el => {
-            if (el.id && el.id !== 'file_input') docData.fields[el.id] = el.value;
+            if (el.id && el.id !== 'file_input') {
+                docData.fields[el.id] = el.value;
+            }
         });
 
+        // 6. Сохранение: либо замена старого, либо добавление в начало (unshift)
         if (isEditing && !tzChanged) {
             arc[window.currentEditIndex] = docData;
         } else {
             arc.unshift(docData);
         }
 
+        // 7. Запись в локальную память и в облако Firebase
         localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
         if (typeof db !== 'undefined') {
             await db.ref('users/' + s.username + '/archive').set(arc);
         }
         
+        // 8. Сброс индекса редактирования и возврат на главную
         window.currentEditIndex = null;
         navigate('home');
 
@@ -848,20 +950,76 @@ function editFromArchive(i) {
     }, 200);
 }
 
-function deleteFromArchive(i) {
-    if (!confirm('⚠️ Вы уверены, что хотите НАВСЕГДА удалить этот проект?')) return;
+async function deleteFromArchive(i) {
+    if (!confirm('Переместить проект в корзину? (Он будет храниться там 15 дней)')) return;
     
     const s = getSettings();
-    let arc = getArchive() || [];
-    arc.splice(i, 1); 
+    let arc = getArchive();
+    let trash = getTrash();
+
+    // 1. Извлекаем проект
+    const projectToDelete = arc.splice(i, 1)[0];
     
-    localStorage.setItem('pronto_archive', JSON.stringify(arc)); 
+    // 2. Добавляем метку времени удаления
+    projectToDelete.deletedAt = Date.now();
+    projectToDelete._originalOwner = s.username; // Чтобы админ знал, чьё это
     
+    trash.unshift(projectToDelete);
+
+    // 3. Сохраняем обновленный архив и корзину
+    localStorage.setItem('pronto_archive', JSON.stringify(arc));
+    localStorage.setItem('pronto_trash', JSON.stringify(trash));
+
     if (typeof db !== 'undefined' && s.username) {
-        db.ref('users/' + s.username + '/archive').set(arc);
+        // Обновляем только нужные ветки (быстро)
+        await db.ref('users/' + s.username + '/archive').set(arc);
+        await db.ref('users/' + s.username + '/trash').set(trash);
     }
     
     navigate('home');
+}
+
+// Добавь эти функции в конец раздела про архив:
+
+async function restoreFromTrash(i) {
+    let trash = getTrash();
+    let arc = getArchive();
+    const s = getSettings();
+
+    const restored = trash[i];
+    if (!restored) return;
+
+    // --- ПРОВЕРКА НА ДУБЛИКАТ ---
+    const isDuplicate = arc.find(p => p && String(p.tz_no).trim() === String(restored.tz_no).trim());
+    if (isDuplicate) {
+        return alert(`⚠️ Ошибка восстановления!\nПроект № ${restored.tz_no} уже существует в вашем архиве. Сначала удалите или переименуйте текущий проект № ${restored.tz_no}.`);
+    }
+    // ----------------------------
+
+    trash.splice(i, 1);
+    delete restored.deletedAt;
+    arc.unshift(restored);
+
+    localStorage.setItem('pronto_archive', JSON.stringify(arc));
+    localStorage.setItem('pronto_trash', JSON.stringify(trash));
+
+    if (s.username && typeof db !== 'undefined') {
+        await db.ref(`users/${s.username}/archive`).set(arc);
+        await db.ref(`users/${s.username}/trash`).set(trash);
+    }
+    navigate('trash');
+}
+
+async function permanentDelete(i) {
+    if (!confirm('Удалить проект навсегда без возможности восстановления?')) return;
+    let trash = getTrash();
+    const s = getSettings();
+    
+    trash.splice(i, 1);
+    
+    localStorage.setItem('pronto_trash', JSON.stringify(trash));
+    if (s.username) await db.ref('users/' + s.username + '/trash').set(trash);
+    navigate('trash');
 }
 
 function pdfFromArchive(i) {
@@ -1159,7 +1317,12 @@ function loadAllProjectsForAdmin() {
 }
 
 function searchAllProjects() {
-    const query = document.getElementById('admin_search').value.toLowerCase();
+    const searchInput = document.getElementById('admin_search');
+    
+    // ЗАЩИТА: Если мы ушли с экрана настроек и поля нет — просто выходим
+    if (!searchInput) return; 
+
+    const query = searchInput.value.toLowerCase();
     const listDiv = document.getElementById('admin_projects_list');
     if (!listDiv) return;
 
@@ -1181,19 +1344,18 @@ function searchAllProjects() {
             <div class="archive-item" style="margin-bottom:10px; padding:15px; border-left:4px solid var(--pronto); text-align:left;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="flex:1;">
-                        <b style="font-size:18px; color:var(--text);">№ ${item.tz_no || 'Без номера'}</b>
-                        <div style="font-size:14px; font-weight:bold; margin-top:3px; color:var(--pronto);">${item.eq || 'Не указано'}</div>
+                        <b style="font-size:18px; color:var(--text);">№ ${item.tz_no || '---'}</b>
+                        <div style="font-size:14px; font-weight:bold; margin-top:3px; color:var(--pronto);">${item.eq || '---'}</div>
                         <div style="font-size:12px; color:#64748b; margin-top:5px;">Менеджер: ${item.manager || '—'} | Автор: ${item._owner}</div>
                     </div>
                     <div style="display:flex; gap:5px;">
-                        <button onclick="viewProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#3b82f6; padding:10px;" title="Просмотреть">📂 ОТКРЫТЬ</button>
-                        <button onclick="deleteProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#ef4444; padding:10px;" title="Удалить">🗑️</button>
+                        <button onclick="viewProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#3b82f6; padding:10px;">📂 ОТКРЫТЬ</button>
+                        <button onclick="deleteProjectAsAdmin(${realIdx})" class="btn-mini" style="background:#ef4444; padding:10px;">🗑️</button>
                     </div>
                 </div>
             </div>
         `;
     });
-    
     listDiv.innerHTML = html;
 }
 
@@ -1320,4 +1482,119 @@ async function sendTZ() {
             prepareForPrint(false);
         }
     }, 150);
+}
+// ======================================================
+// 9. ФУНКЦИИ ОБЩЕЙ КОРЗИНЫ ДЛЯ АДМИНА (ПОЛНАЯ ВЕРСИЯ)
+// ======================================================
+
+async function loadAllTrashForAdmin() {
+    // 1. Небольшая задержка, чтобы браузер успел отрисовать HTML-блок
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    const listDiv = document.getElementById('admin_trash_list');
+    if (!listDiv) {
+        console.error("❌ Ошибка: Блок 'admin_trash_list' не найден на странице!");
+        return;
+    }
+
+    console.log("--- Запуск загрузки общей корзины ---");
+
+    try {
+        if (typeof db === 'undefined') {
+            listDiv.innerHTML = "<p style='text-align:center; color:red;'>Ошибка: Firebase не подключен</p>";
+            return;
+        }
+
+        // 2. Тянем данные всех пользователей
+        const snap = await db.ref('users').once('value');
+        if (!snap.exists()) {
+            listDiv.innerHTML = "<p style='text-align:center; padding:50px;'>В базе данных пока нет пользователей.</p>";
+            return;
+        }
+
+        const users = snap.val();
+        let allDeleted = [];
+
+        // 3. Собираем всё удаленное в один массив
+        for (let login in users) {
+            let uTrash = users[login].trash;
+            if (uTrash) {
+                // Если данные пришли как объект {}, превращаем их в массив []
+                const trashArray = Array.isArray(uTrash) ? uTrash : Object.values(uTrash);
+                
+                trashArray.forEach((item, idx) => {
+                    if (item && item.tz_no) {
+                        allDeleted.push({ 
+                            ...item, 
+                            _owner: login, 
+                            _idxInTrash: idx 
+                        });
+                    }
+                });
+            }
+        }
+
+        console.log("Найдено удаленных проектов:", allDeleted.length);
+
+        if (allDeleted.length === 0) {
+            listDiv.innerHTML = '<p style="text-align:center; padding:50px; color:#94a3b8;">Общая корзина пуста</p>';
+            return;
+        }
+
+        // 4. Сортировка: свежеудаленные сверху
+        allDeleted.sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+
+        // 5. Вывод на экран
+        listDiv.innerHTML = allDeleted.map(item => `
+            <div class="archive-item" style="border-left: 4px solid #ef4444; margin-bottom:12px; padding:15px; background:white; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <div style="flex:1; text-align:left;">
+                    <b style="font-size:16px; color:#1e293b;">№ ${item.tz_no}</b> — <span style="color:var(--pronto); font-weight:bold;">${item.eq || 'Без названия'}</span><br>
+                    <small style="color:#64748b;">Автор: <b style="color:#334155;">${item._owner}</b> | Удалено: ${item.deletedAt ? new Date(item.deletedAt).toLocaleDateString() : '???'}</small>
+                </div>
+                <button onclick="adminRestoreFromTrash('${item._owner}', ${item._idxInTrash})" class="btn-mini" style="background:#10b981; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; border:none; color:white;">Восстановить</button>
+            </div>
+        `).join('');
+
+    } catch (e) {
+        console.error("КРИТИЧЕСКАЯ ОШИБКА:", e);
+        listDiv.innerHTML = "<p style='text-align:center; color:red;'>Ошибка загрузки: " + e.message + "</p>";
+    }
+}
+
+async function adminRestoreFromTrash(owner, index) {
+    try {
+        const snap = await db.ref(`users/${owner}`).once('value');
+        if (!snap.exists()) return alert("Пользователь не найден!");
+
+        const userData = snap.val();
+        let trash = Array.isArray(userData.trash) ? userData.trash : Object.values(userData.trash || {});
+        let archive = Array.isArray(userData.archive) ? userData.archive : Object.values(userData.archive || {});
+
+        const restored = trash[index];
+        if (!restored) return alert("Проект не найден в корзине.");
+
+        // ПРОВЕРКА НА ДУБЛИКАТ (Чтобы не было двух ТЗ с одним номером)
+        const isDuplicate = archive.find(p => p && String(p.tz_no).trim() === String(restored.tz_no).trim());
+        if (isDuplicate) {
+            return alert(`⚠️ Ошибка!\nУ пользователя ${owner} уже есть активный проект № ${restored.tz_no}.\nВосстановление невозможно.`);
+        }
+
+        if (!confirm(`Восстановить проект № ${restored.tz_no} для пользователя ${owner}?`)) return;
+
+        // Переносим
+        trash.splice(index, 1);
+        delete restored.deletedAt;
+        archive.unshift(restored);
+
+        // Сохраняем
+        await db.ref(`users/${owner}/trash`).set(trash);
+        await db.ref(`users/${owner}/archive`).set(archive);
+        
+        alert("✅ Проект успешно возвращен автору!");
+        loadAllTrashForAdmin(); // Обновляем список на экране
+
+    } catch (e) {
+        alert("Системная ошибка: " + e.message);
+        console.error(e);
+    }
 }
