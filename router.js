@@ -312,6 +312,39 @@ const loginView = () => {
     `;
 };
 
+const registerView = () => {
+    return `
+    <div class="home-card fade-in" style="max-width: 400px; text-align: center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <button onclick="navigate('portal')" class="btn-mini" style="background:#cbd5e1; color:#0f172a;">🡠 Назад</button>
+            <h2 style="margin:0; color:var(--pronto);">РЕГИСТРАЦИЯ</h2>
+            <div style="width:50px;"></div>
+        </div>
+        <div style="text-align: left;">
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ЛОГИН:</label>
+            <input type="text" id="reg_login" placeholder="Новый логин" style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #e2e8f0; border-radius:8px;">
+            
+            <label style="font-weight:bold; font-size:12px; color:#64748b;">ПРИДУМАЙТЕ ПАРОЛЬ:</label>
+            <div style="position:relative; margin-bottom:15px;">
+                <input type="password" id="reg_pass" placeholder="Новый пароль" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; padding-right:40px;">
+                <span onclick="document.getElementById('reg_pass').type = document.getElementById('reg_pass').type === 'password' ? 'text' : 'password'" style="position:absolute; right:15px; top:12px; cursor:pointer; font-size:18px;">👁️</span>
+            </div>
+            
+            <div style="margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="reg_remember_login" style="width:18px; height:18px; cursor:pointer;">
+                <label for="reg_remember_login" style="font-size:14px; color:#64748b; cursor:pointer; user-select:none;">Запомнить меня</label>
+            </div>
+            
+            <button onclick="mockRegister()" class="btn" style="width:100%; margin-bottom:15px; background:#10b981;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+            <div style="text-align:center; margin-top:10px;">
+                <span style="color:#64748b; font-size:14px;">Уже есть аккаунт? </span>
+                <a href="#" onclick="navigate('login')" style="color:var(--pronto); font-weight:bold; text-decoration:none;">Войти</a>
+            </div>
+        </div>
+    </div>
+    `;
+};
+
 const homeView = () => {
     const s = getSettings();
     const archive = getArchive();
