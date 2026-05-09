@@ -2,37 +2,75 @@
 // HR ADMIN PANEL | SMART ROUTING
 // ==========================================
 
-// 💡 УМНЫЙ СПИСОК ВСЕХ ТЕКСТОВ БОТА
-// Чтобы добавить новый текст, просто скопируй любую строчку, поменяй 'key' (например, "new_q") и впиши свои тексты.
+// 💡 ПОЛНЫЙ СПИСОК ВСЕХ ТЕКСТОВ И КНОПОК
 const ADMIN_FIELDS = [
+    // --- ПРИВЕТСТВИЯ И МЕНЮ ---
     { key: "menu_greeting", name: "Приветствие в главном меню", type: "textarea", ru: "Приветствуем! Выберите нужный раздел:", uz: "Xush kelibsiz! Kerakli bo'limni tanlang:" },
-    { key: "about_text", name: "Раздел 'О нас'", type: "textarea", ru: "Мы — крутая компания!", uz: "Biz — ajoyib kompaniyamiz!" },
+    { key: "about_text", name: "Текст 'О нас'", type: "textarea", ru: "Мы — крутая компания!", uz: "Biz — ajoyib kompaniyamiz!" },
+    
+    // --- ГЛАВНЫЕ КНОПКИ МЕНЮ ---
+    { key: "btn_about", name: "Кнопка 'О нас'", type: "input", ru: "О нас", uz: "Biz haqimizda" },
+    { key: "btn_vacancies", name: "Кнопка 'Вакансии'", type: "input", ru: "Вакансии", uz: "Vakansiyalar" },
+    { key: "btn_lang", name: "Кнопка 'Язык'", type: "input", ru: "Язык / Til", uz: "Til / Язык" },
+
+    // --- ВОПРОСЫ АНКЕТЫ ---
     { key: "vacancy_q", name: "Вопрос: Выбор вакансии", type: "input", ru: "На какую профессию вы претендуете?", uz: "Qaysi kasbga da'vogarlik qilyapsiz?" },
-    { key: "vacancy_info", name: "Требования по вакансии", type: "textarea", ru: "Требования и условия по выбранной профессии...", uz: "Tanlangan kasb bo'yicha talablar va shartlar..." },
+    { key: "vacancy_info", name: "Текст: Условия вакансии", type: "textarea", ru: "Требования и условия по выбранной профессии:\n- Требование 1\n- Условие 1\n\nГотовы откликнуться?", uz: "Tanlangan kasb bo'yicha talablar va shartlar:\n- 1-talab\n- 1-shart\n\nAriza topshirishga tayyormisiz?" },
+    { key: "btn_fill_form", name: "Кнопка 'Заполнить анкету'", type: "input", ru: "Заполнить анкету", uz: "Anketani to'ldirish" },
     { key: "fio_q", name: "Вопрос: ФИО", type: "input", ru: "Введите ваше ФИО (по паспорту):", uz: "F.I.Sh. ni kiriting (pasport bo'yicha):" },
     { key: "birth_q", name: "Вопрос: Дата рождения", type: "input", ru: "Введите вашу дату рождения:", uz: "Tug'ilgan sanangizni kiriting:" },
     { key: "location_q", name: "Вопрос: Место проживания", type: "input", ru: "Введите ваше место проживания:", uz: "Yashash joyingizni kiriting:" },
     { key: "phone_q", name: "Вопрос: Телефон", type: "input", ru: "Введите ваш номер телефона:", uz: "Telefon raqamingizni kiriting:" },
     { key: "gender_q", name: "Вопрос: Пол", type: "input", ru: "Укажите ваш пол:", uz: "Jinsingizni ko'rsating:" },
+    { key: "marital_q", name: "Вопрос: Семейное положение", type: "input", ru: "Ваше семейное положение:", uz: "Oilaviy ahvolingiz:" },
     { key: "student_q", name: "Вопрос: Студент", type: "input", ru: "Вы являетесь студентом?", uz: "Talabamisiz?" },
-    { key: "exp_q", name: "Вопрос: Опыт работы", type: "textarea", ru: "Опишите ваш опыт работы (компания, срок, должность)...", uz: "Ish tajribangizni tasvirlab bering..." },
+    { key: "student_mode_q", name: "Вопрос: Форма обучения", type: "input", ru: "Форма обучения:", uz: "Ta'lim shakli:" },
+    { key: "student_time_q", name: "Вопрос: Время обучения", type: "input", ru: "Время обучения:", uz: "O'qish vaqti:" },
+    { key: "exp_q", name: "Вопрос: Опыт работы", type: "textarea", ru: "Опишите ваш опыт работы (компания, срок, должность). Если опыта нет, напишите 'Нет опыта':", uz: "Ish tajribangizni tasvirlab bering (kompaniya, muddat, lavozim). Agar tajribangiz bo'lmasa, 'Tajriba yo'q' deb yozing:" },
+    { key: "lang_uz_q", name: "Вопрос: Уровень Узбекского", type: "input", ru: "Уровень Узбекского языка:", uz: "O'zbek tilini bilish darajasi:" },
+    { key: "lang_en_q", name: "Вопрос: Уровень Английского", type: "input", ru: "Уровень Английского языка:", uz: "Ingliz tilini bilish darajasi:" },
+    { key: "lang_ru_q", name: "Вопрос: Уровень Русского", type: "input", ru: "Уровень Русского языка:", uz: "Rus tilini bilish darajasi:" },
     { key: "salary_q", name: "Вопрос: Зарплата", type: "input", ru: "Укажите ожидаемый уровень зарплаты (в сумах):", uz: "Kutilayotgan ish haqi miqdorini ko'rsating (so'mda):" },
     { key: "photo_q", name: "Вопрос: Фото", type: "textarea", ru: "Пожалуйста, отправьте ваше фото (прикрепите как картинку):", uz: "Iltimos, rasmingizni yuboring (rasm sifatida biriktiring):" },
     { key: "source_q", name: "Вопрос: Откуда узнали", type: "input", ru: "Как вы узнали о нашей вакансии?", uz: "Vakansiyamiz haqida qayerdan bildingiz?" },
     { key: "confirm_q", name: "Текст: Проверка ответов", type: "textarea", ru: "📝 Пожалуйста, проверьте ваши ответы:\n\n", uz: "📝 Iltimos, javoblaringizni tekshiring:\n\n" },
-    { key: "success", name: "Текст: Успешная отправка", type: "textarea", ru: "Анкета успешно отправлена! Скоро мы свяжемся с вами.", uz: "Anketa muvaffaqiyatli yuborildi! Tez orada siz bilan bog'lanamiz." }
+    { key: "confirm_ask", name: "Текст: Подтверждение отправки", type: "input", ru: "Всё верно? Отправляем анкету?", uz: "Barchasi to'g'rimi? Anketani yuboramizmi?" },
+    { key: "success", name: "Текст: Успешная отправка", type: "textarea", ru: "Анкета успешно отправлена! Скоро мы свяжемся с вами.", uz: "Anketa muvaffaqiyatli yuborildi! Tez orada siz bilan bog'lanamiz." },
+
+    // --- КНОПКИ ДЕЙСТВИЙ И ОТВЕТОВ ---
+    { key: "btn_yes", name: "Кнопка 'Да'", type: "input", ru: "Да", uz: "Ha" },
+    { key: "btn_no", name: "Кнопка 'Нет'", type: "input", ru: "Нет", uz: "Yo'q" },
+    { key: "btn_male", name: "Кнопка 'Муж'", type: "input", ru: "Муж", uz: "Erkak" },
+    { key: "btn_female", name: "Кнопка 'Жен'", type: "input", ru: "Жен", uz: "Ayol" },
+    { key: "btn_married", name: "Кнопка 'Женат/Замужем'", type: "input", ru: "Женат/Замужем", uz: "Uylangan/Turmushga chiqqan" },
+    { key: "btn_single", name: "Кнопка 'Холост/Не замужем'", type: "input", ru: "Холост/Не замужем", uz: "Bo'ydoq/Turmushga chiqmagan" },
+    { key: "btn_fulltime", name: "Кнопка 'Очно'", type: "input", ru: "Очно", uz: "Kunduzgi" },
+    { key: "btn_parttime", name: "Кнопка 'Заочно'", type: "input", ru: "Заочно", uz: "Sirtqi" },
+    { key: "btn_morning", name: "Кнопка 'Утреннее'", type: "input", ru: "Утреннее", uz: "Ertalabki" },
+    { key: "btn_evening", name: "Кнопка 'Вечернее'", type: "input", ru: "Вечернее", uz: "Kechki" },
+    { key: "btn_low", name: "Кнопка 'Низкий уровень'", type: "input", ru: "Низкий (не понимаю)", uz: "Past (tushunmayman)" },
+    { key: "btn_mid", name: "Кнопка 'Средний уровень'", type: "input", ru: "Средний (понимаю, не говорю)", uz: "O'rta (tushunaman, gapirmayman)" },
+    { key: "btn_high", name: "Кнопка 'Продвинутый уровень'", type: "input", ru: "Продвинутый (свободно)", uz: "Yuqori (erkin)" },
+    { key: "btn_skip", name: "Кнопка 'Пропустить'", type: "input", ru: "Пропустить", uz: "O'tkazib yuborish" },
+    { key: "btn_send", name: "Кнопка 'Отправить'", type: "input", ru: "✅ Отправить", uz: "✅ Yuborish" },
+    { key: "btn_back", name: "Кнопка 'Назад'", type: "input", ru: "🔙 Назад", uz: "🔙 Orqaga" },
+    { key: "btn_main", name: "Кнопка 'Главное меню'", type: "input", ru: "🏠 Главное меню", uz: "🏠 Asosiy menyu" }
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
-    const settings = localStorage.getItem('pronto_settings');
-    if (settings) {
-        const parsed = JSON.parse(settings);
-        if (parsed.username) {
-            navigate('home'); 
-            return;
+    try {
+        const settings = localStorage.getItem('pronto_settings');
+        if (settings) {
+            const parsed = JSON.parse(settings);
+            if (parsed.username) {
+                navigate('home'); 
+                return;
+            }
         }
+        navigate('login');
+    } catch(e) {
+        navigate('login');
     }
-    navigate('login');
 });
 
 function navigate(view) {
@@ -63,7 +101,7 @@ const loginView = () => `
 const homeView = () => {
     const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
     
-    // МАГИЯ ГЕНЕРАЦИИ ПОЛЕЙ ИЗ СПИСКА
+    // Генерируем карточки для всех полей из массива ADMIN_FIELDS
     let fieldsHTML = '';
     ADMIN_FIELDS.forEach(f => {
         fieldsHTML += `
@@ -119,7 +157,9 @@ function checkLogin() {
 
     if (typeof db === 'undefined') return alert("Ошибка: База данных Firebase не подключена.");
 
+    // Безопасное экранирование логина
     const safeLogin = login.replace(/[.#$\\[\\]]/g, '_');
+    
     db.ref('users/' + safeLogin).once('value').then((snapshot) => {
         if (!snapshot.exists()) return alert("Такого пользователя не существует!");
         const user = snapshot.val();
@@ -141,11 +181,14 @@ function saveToBot() {
     btn.innerText = "⏳ ОТПРАВКА ДАННЫХ...";
     btn.disabled = true;
 
-    // Умный сборщик: сам собирает данные со всех полей списка ADMIN_FIELDS
     let updatedTexts = {};
+    
+    // Собираем данные со всех полей
     ADMIN_FIELDS.forEach(f => {
-        updatedTexts[f.key + '_ru'] = document.getElementById(f.key + '_ru').value;
-        updatedTexts[f.key + '_uz'] = document.getElementById(f.key + '_uz').value;
+        let ruEl = document.getElementById(f.key + '_ru');
+        let uzEl = document.getElementById(f.key + '_uz');
+        if(ruEl) updatedTexts[f.key + '_ru'] = ruEl.value;
+        if(uzEl) updatedTexts[f.key + '_uz'] = uzEl.value;
     });
 
     const payload = {
@@ -153,10 +196,10 @@ function saveToBot() {
         newTexts: updatedTexts
     };
 
-    // ⚠️ ВАЖНО: ССЫЛКА НА ТВОЙ GOOGLE APPS SCRIPT
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; 
+    // ⚠️ СЮДА ВСТАВИШЬ ССЫЛКУ ОТ ГУГЛ СКРИПТА
+    const GAS_URL = "Тhttps://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; 
 
-    if (GAS_URL.includes("ТВОЯ_ТЕКУЩАЯ_ССЫЛКА")) {
+    if (GAS_URL.includes("https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec")) {
         alert("⚠️ Внимание: Кнопка в демо-режиме.\nВставь Web App ссылку Гугла в код router.js (строка GAS_URL)!");
         btn.innerText = "💾 СОХРАНИТЬ И ОТПРАВИТЬ В ТЕЛЕГРАМ";
         btn.disabled = false;
