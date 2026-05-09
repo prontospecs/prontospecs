@@ -157,5 +157,26 @@ function saveToBot() {
     const GAS_URL = "ТВОЯ_ТЕКУЩАЯ_ССЫЛКА_WEB_APP_ОТ_ГУГЛА"; 
 
     if (GAS_URL.includes("ТВОЯ_ТЕКУЩАЯ_ССЫЛКА")) {
-        alert
+        alert("⚠️ Внимание: Кнопка в демо-режиме.\nВставь Web App ссылку Гугла в код router.js (строка GAS_URL)!");
+        btn.innerText = "💾 СОХРАНИТЬ И ОТПРАВИТЬ В ТЕЛЕГРАМ";
+        btn.disabled = false;
+        return;
+    }
+
+    fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
+    })
+    .then(response => response.text())
+    .then(result => {
+        alert("✅ Ура! Тексты успешно обновлены в боте!");
+        btn.innerText = "💾 СОХРАНИТЬ И ОТПРАВИТЬ В ТЕЛЕГРАМ";
+        btn.disabled = false;
+    })
+    .catch(error => {
+        alert("❌ Ошибка при соединении с ботом: " + error);
+        btn.innerText = "💾 СОХРАНИТЬ И ОТПРАВИТЬ В ТЕЛЕГРАМ";
+        btn.disabled = false;
+    });
 }
