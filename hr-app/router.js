@@ -158,3 +158,4 @@ function saveToBot() {
 
     if (GAS_URL.includes("ТВОЯ_ТЕКУЩАЯ_ССЫЛКА")) {
         alert
+}
