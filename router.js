@@ -232,11 +232,12 @@ const modalsHTML = `
 `;
 
 const portalView = () => `
-    <div class="home-card fade-in" style="max-width: 800px; text-align: center;">
+    <div class="home-card fade-in" style="max-width: 1000px; text-align: center;">
         <h1 class="main-title" style="font-size: 48px;">PRONTO</h1>
         <div class="subtitle" style="font-size: 24px; margin-bottom: 5px;">SPECS</div>
         <p style="color:#64748b; margin-bottom: 40px;">Единая платформа для всех сервисов компании</p>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; text-align: left;">
+        
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:20px; text-align: left;">
             
             <div style="border:2px solid #cbd5e1; border-radius:15px; padding:25px; cursor:pointer; transition:0.3s; background: white;" 
                  onmouseover="this.style.borderColor='var(--pronto)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
@@ -268,13 +269,31 @@ const portalView = () => `
 
                 <h3 style="margin:0 0 5px 0; color:var(--text); font-size:22px;">BUSINESS PROPOSAL</h3>
                 <div style="font-size:14px; font-weight:bold; color:#eab308; margin-bottom:10px;">(commercial)</div>
-                <p style="font-size:13px; color:#64748b; margin:0;">Конструктор коммерческих предложений и база товаров.</p>
+                <p style="font-size:13px; color:#64748b; margin:0;">Конструктор коммерческих предложений.</p>
+            </div>
+
+            <div style="border:2px solid #cbd5e1; border-radius:15px; padding:25px; cursor:pointer; transition:0.3s; background: white;" 
+                 onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
+                 onmouseout="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'" 
+                 onclick="window.location.href='./hr-app/index.html'">
+                
+                <div style="margin-bottom:15px; color:#10b981;">
+                    <svg width="55" height="55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+
+                <h3 style="margin:0 0 5px 0; color:var(--text); font-size:22px;">HUMAN RESOURCES</h3>
+                <div style="font-size:14px; font-weight:bold; color:#10b981; margin-bottom:10px;">(hr)</div>
+                <p style="font-size:13px; color:#64748b; margin:0;">Админ-панель для найма и управления ботом.</p>
             </div>
 
         </div>
     </div>
 `;
-
 const loginView = () => {
     // Достаем сохраненный логин и пароль
     const savedLogin = localStorage.getItem('pronto_saved_login') || '';
