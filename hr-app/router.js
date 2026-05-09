@@ -154,7 +154,7 @@ function saveToBot() {
     };
 
     // ⚠️ ВАЖНО: ССЫЛКА НА ТВОЙ GOOGLE APPS SCRIPT
-    const GAS_URL = "ТВОЯ_ТЕКУЩАЯ_ССЫЛКА_WEB_APP_ОТ_ГУГЛА"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; 
 
     if (GAS_URL.includes("ТВОЯ_ТЕКУЩАЯ_ССЫЛКА")) {
         alert("⚠️ Внимание: Кнопка в демо-режиме.\nВставь Web App ссылку Гугла в код router.js (строка GAS_URL)!");
