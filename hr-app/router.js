@@ -6,10 +6,24 @@ window.BOT_VACANCIES = [
     { id: 1, name_ru: "Менеджер", name_uz: "Menejer", req_ru: "Опыт...", req_uz: "Tajriba..." }
 ];
 
+// 💡 2. ДИНАМИЧЕСКИЙ СПИСОК ВОПРОСОВ (ПОЛНЫЙ)
 window.BOT_QUESTIONS = [
-    { id: 1, name_ru: "ФИО", name_uz: "F.I.Sh", q_ru: "Введите ваше ФИО:", q_uz: "F.I.Sh kiriting:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 2, name_ru: "Студент", name_uz: "Talaba", q_ru: "Вы студент?", q_uz: "Talabamisiz?", type: "buttons", buttons_ru: "Да, Нет", buttons_uz: "Ha, Yo'q", cond_ru: "Нет", cond_uz: "Yo'q", cond_target: "end" },
-    { id: 3, name_ru: "Форма обучения", name_uz: "Ta'lim shakli", q_ru: "Форма обучения:", q_uz: "Ta'lim shakli:", type: "buttons", buttons_ru: "Очно, Заочно", buttons_uz: "Kunduzgi, Sirtqi", cond_ru: "", cond_uz: "", cond_target: "" }
+    { id: 1, name_ru: "ФИО", name_uz: "F.I.Sh", q_ru: "Введите ваше ФИО (по паспорту):", q_uz: "F.I.Sh. ni kiriting (pasport bo'yicha):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 2, name_ru: "Дата рождения", name_uz: "Tug'ilgan sana", q_ru: "Введите вашу дату рождения (например, 15.05.1995):", q_uz: "Tug'ilgan sanangizni kiriting (masalan, 15.05.1995):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 3, name_ru: "Место проживания", name_uz: "Yashash joyi", q_ru: "Введите ваше место проживания (город, район):", q_uz: "Yashash joyingizni kiriting (shahar, tuman):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 4, name_ru: "Телефон", name_uz: "Telefon", q_ru: "Введите ваш номер телефона:", q_uz: "Telefon raqamingizni kiriting:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 5, name_ru: "Пол", name_uz: "Jins", q_ru: "Укажите ваш пол:", q_uz: "Jinsingizni ko'rsating:", type: "buttons", buttons_ru: "Муж, Жен", buttons_uz: "Erkak, Ayol", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 6, name_ru: "Семейное положение", name_uz: "Oilaviy ahvol", q_ru: "Ваше семейное положение:", q_uz: "Oilaviy ahvolingiz:", type: "buttons", buttons_ru: "Женат/Замужем, Холост/Не замужем", buttons_uz: "Uylangan/Turmushga chiqqan, Bo'ydoq/Turmushga chiqmagan", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 7, name_ru: "Студент", name_uz: "Talaba", q_ru: "Вы являетесь студентом?", q_uz: "Talabamisiz?", type: "buttons", buttons_ru: "Да, Нет", buttons_uz: "Ha, Yo'q", cond_ru: "Нет", cond_uz: "Yo'q", cond_target: "10" },
+    { id: 8, name_ru: "Форма обучения", name_uz: "Ta'lim shakli", q_ru: "Форма обучения:", q_uz: "Ta'lim shakli:", type: "buttons", buttons_ru: "Очно, Заочно", buttons_uz: "Kunduzgi, Sirtqi", cond_ru: "Заочно", cond_uz: "Sirtqi", cond_target: "10" },
+    { id: 9, name_ru: "Время обучения", name_uz: "O'qish vaqti", q_ru: "Время обучения:", q_uz: "O'qish vaqti:", type: "buttons", buttons_ru: "Утреннее, Вечернее", buttons_uz: "Ertalabki, Kechki", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 10, name_ru: "Опыт работы", name_uz: "Ish tajribasi", q_ru: "Опишите ваш опыт работы (компания, срок, должность).\nЕсли опыта нет, напишите 'Нет опыта':", q_uz: "Ish tajribangizni tasvirlab bering (kompaniya, muddat, lavozim).\nAgar tajribangiz bo'lmasa, 'Tajriba yo'q' deb yozing:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 11, name_ru: "Уровень Узбекского", name_uz: "O'zbek tili", q_ru: "Уровень Узбекского языка:", q_uz: "O'zbek tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий (не понимаю), Средний (понимаю), Продвинутый (свободно)", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 12, name_ru: "Уровень Английского", name_uz: "Ingliz tili", q_ru: "Уровень Английского языка:", q_uz: "Ingliz tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий (не понимаю), Средний (понимаю), Продвинутый (свободно)", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 13, name_ru: "Уровень Русского", name_uz: "Rus tili", q_ru: "Уровень Русского языка:", q_uz: "Rus tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий (не понимаю), Средний (понимаю), Продвинутый (свободно)", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 14, name_ru: "Зарплата", name_uz: "Maosh", q_ru: "Укажите ожидаемый уровень зарплаты (в сумах):", q_uz: "Kutilayotgan ish haqi miqdorini ko'rsating (so'mda):", type: "buttons", buttons_ru: "Пропустить", buttons_uz: "O'tkazib yuborish", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 15, name_ru: "Фото", name_uz: "Rasm", q_ru: "Пожалуйста, отправьте ваше фото (прикрепите как картинку):", q_uz: "Iltimos, rasmingizni yuboring (rasm sifatida biriktiring):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 16, name_ru: "Откуда узнали", name_uz: "Qayerdan bildingiz", q_ru: "Как вы узнали о нашей вакансии?", q_uz: "Vakansiyamiz haqida qayerdan bildingiz?", type: "buttons", buttons_ru: "Telegram, HeadHunter, Знакомые, Другое", buttons_uz: "Telegram, HeadHunter, Tanishlar, Boshqa", cond_ru: "", cond_uz: "", cond_target: "" }
 ];
 
 const ADMIN_FIELDS = [
