@@ -257,7 +257,7 @@ function saveToBot() {
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; 
 
     if (GAS_URL.includes("ТВОЯ_ТЕКУЩАЯ_ССЫЛКА")) {
-        alert("⚠️ Внимание: Кнопка в демо-режиме.\nДанные готовы! Но нужно вставить Web App ссылку Гугла в код router.js (строка GAS_URL)!");
+        alert("⚠️ Внимание: Кнопка в демо-режиме.\nДанные готовы! Но нужно вставить Web App ссылку Гугла в код router.js (строка GAS_URL)");
         console.log("ДАННЫЕ ДЛЯ БОТА:", payload); // Можно посмотреть в консоли (F12), что именно отправляется
         btn.innerText = "💾 СОХРАНИТЬ И ОТПРАВИТЬ В ТЕЛЕГРАМ";
         btn.disabled = false;
