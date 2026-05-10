@@ -205,7 +205,7 @@ function saveToBot() {
         questions: window.BOT_QUESTIONS
     };
 
-    const GAS_URL = "ТВОЯ_ТЕКУЩАЯ_ССЫЛКА_WEB_APP_ОТ_ГУГЛА"; // <--- НЕ ЗАБУДЬ ВСТАВИТЬ ССЫЛКУ
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- НЕ ЗАБУДЬ ВСТАВИТЬ ССЫЛКУ
 
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
     .then(r => r.text()).then(r => { alert("✅ Успешно!"); btn.innerText = "💾 ОТПРАВИТЬ В БОТА"; btn.disabled = false; })
