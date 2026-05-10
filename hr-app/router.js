@@ -1,29 +1,28 @@
 // ==========================================
-// HR ADMIN PANEL | DYNAMIC FORM BUILDER + LOGIC
+// HR ADMIN PANEL | PROTECTED AREA (ADMINS ONLY)
 // ==========================================
 
 window.BOT_VACANCIES = [
     { id: 1, name_ru: "Менеджер", name_uz: "Menejer", req_ru: "Опыт...", req_uz: "Tajriba..." }
 ];
 
-// 💡 2. ДИНАМИЧЕСКИЙ СПИСОК ВОПРОСОВ (ПОЛНЫЙ)
 window.BOT_QUESTIONS = [
-    { id: 1, name_ru: "ФИО", name_uz: "F.I.Sh", q_ru: "Введите ваше ФИО (по паспорту):", q_uz: "F.I.Sh. ni kiriting (pasport bo'yicha):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 2, name_ru: "Дата рождения", name_uz: "Tug'ilgan sana", q_ru: "Введите вашу дату рождения (например, 15.05.1995):", q_uz: "Tug'ilgan sanangizni kiriting (masalan, 15.05.1995):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 3, name_ru: "Место проживания", name_uz: "Yashash joyi", q_ru: "Введите ваше место проживания (город, район):", q_uz: "Yashash joyingizni kiriting (shahar, tuman):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 1, name_ru: "ФИО", name_uz: "F.I.Sh", q_ru: "Введите ваше ФИО (по паспорту):", q_uz: "F.I.Sh. ni kiriting:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 2, name_ru: "Дата рождения", name_uz: "Tug'ilgan sana", q_ru: "Введите вашу дату рождения:", q_uz: "Tug'ilgan sanangizni kiriting:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 3, name_ru: "Место проживания", name_uz: "Yashash joyi", q_ru: "Введите ваше место проживания:", q_uz: "Yashash joyingizni kiriting:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
     { id: 4, name_ru: "Телефон", name_uz: "Telefon", q_ru: "Введите ваш номер телефона:", q_uz: "Telefon raqamingizni kiriting:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
     { id: 5, name_ru: "Пол", name_uz: "Jins", q_ru: "Укажите ваш пол:", q_uz: "Jinsingizni ko'rsating:", type: "buttons", buttons_ru: "Муж, Жен", buttons_uz: "Erkak, Ayol", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 6, name_ru: "Семейное положение", name_uz: "Oilaviy ahvol", q_ru: "Ваше семейное положение:", q_uz: "Oilaviy ahvolingiz:", type: "buttons", buttons_ru: "Женат/Замужем, Холост/Не замужем", buttons_uz: "Uylangan/Turmushga chiqqan, Bo'ydoq/Turmushga chiqmagan", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 6, name_ru: "Семейное положение", name_uz: "Oilaviy ahvol", q_ru: "Ваше семейное положение:", q_uz: "Oilaviy ahvolingiz:", type: "buttons", buttons_ru: "Женат, Холост", buttons_uz: "Uylangan, Bo'ydoq", cond_ru: "", cond_uz: "", cond_target: "" },
     { id: 7, name_ru: "Студент", name_uz: "Talaba", q_ru: "Вы являетесь студентом?", q_uz: "Talabamisiz?", type: "buttons", buttons_ru: "Да, Нет", buttons_uz: "Ha, Yo'q", cond_ru: "Нет", cond_uz: "Yo'q", cond_target: "10" },
     { id: 8, name_ru: "Форма обучения", name_uz: "Ta'lim shakli", q_ru: "Форма обучения:", q_uz: "Ta'lim shakli:", type: "buttons", buttons_ru: "Очно, Заочно", buttons_uz: "Kunduzgi, Sirtqi", cond_ru: "Заочно", cond_uz: "Sirtqi", cond_target: "10" },
     { id: 9, name_ru: "Время обучения", name_uz: "O'qish vaqti", q_ru: "Время обучения:", q_uz: "O'qish vaqti:", type: "buttons", buttons_ru: "Утреннее, Вечернее", buttons_uz: "Ertalabki, Kechki", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 10, name_ru: "Опыт работы", name_uz: "Ish tajribasi", q_ru: "Опишите ваш опыт работы (компания, срок, должность).\nЕсли опыта нет, напишите 'Нет опыта':", q_uz: "Ish tajribangizni tasvirlab bering (kompaniya, muddat, lavozim).\nAgar tajribangiz bo'lmasa, 'Tajriba yo'q' deb yozing:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 11, name_ru: "Уровень Узбекского", name_uz: "O'zbek tili", q_ru: "Уровень Узбекского языка:", q_uz: "O'zbek tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий (не понимаю), Средний (понимаю), Продвинутый (свободно)", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 12, name_ru: "Уровень Английского", name_uz: "Ingliz tili", q_ru: "Уровень Английского языка:", q_uz: "Ingliz tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий (не понимаю), Средний (понимаю), Продвинутый (свободно)", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 13, name_ru: "Уровень Русского", name_uz: "Rus tili", q_ru: "Уровень Русского языка:", q_uz: "Rus tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий (не понимаю), Средний (понимаю), Продвинутый (свободно)", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 14, name_ru: "Зарплата", name_uz: "Maosh", q_ru: "Укажите ожидаемый уровень зарплаты (в сумах):", q_uz: "Kutilayotgan ish haqi miqdorini ko'rsating (so'mda):", type: "buttons", buttons_ru: "Пропустить", buttons_uz: "O'tkazib yuborish", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 15, name_ru: "Фото", name_uz: "Rasm", q_ru: "Пожалуйста, отправьте ваше фото (прикрепите как картинку):", q_uz: "Iltimos, rasmingizni yuboring (rasm sifatida biriktiring):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 16, name_ru: "Откуда узнали", name_uz: "Qayerdan bildingiz", q_ru: "Как вы узнали о нашей вакансии?", q_uz: "Vakansiyamiz haqida qayerdan bildingiz?", type: "buttons", buttons_ru: "Telegram, HeadHunter, Знакомые, Другое", buttons_uz: "Telegram, HeadHunter, Tanishlar, Boshqa", cond_ru: "", cond_uz: "", cond_target: "" }
+    { id: 10, name_ru: "Опыт работы", name_uz: "Ish tajribasi", q_ru: "Опишите ваш опыт работы (если нет, напишите 'Нет'):", q_uz: "Ish tajribangizni tasvirlab bering (yo'q bo'lsa 'Yo'q' deb yozing):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 11, name_ru: "Уровень Узбекского", name_uz: "O'zbek tili", q_ru: "Уровень Узбекского языка:", q_uz: "O'zbek tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий, Средний, Продвинутый", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 12, name_ru: "Уровень Английского", name_uz: "Ingliz tili", q_ru: "Уровень Английского языка:", q_uz: "Ingliz tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий, Средний, Продвинутый", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 13, name_ru: "Уровень Русского", name_uz: "Rus tili", q_ru: "Уровень Русского языка:", q_uz: "Rus tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий, Средний, Продвинутый", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 14, name_ru: "Зарплата", name_uz: "Maosh", q_ru: "Ожидаемый уровень зарплаты:", q_uz: "Kutilayotgan ish haqi:", type: "buttons", buttons_ru: "Пропустить", buttons_uz: "O'tkazib yuborish", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 15, name_ru: "Фото", name_uz: "Rasm", q_ru: "Пожалуйста, отправьте ваше фото:", q_uz: "Iltimos, rasmingizni yuboring:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
+    { id: 16, name_ru: "Откуда узнали", name_uz: "Qayerdan bildingiz", q_ru: "Как вы узнали о вакансии?", q_uz: "Vakansiyamiz haqida qayerdan bildingiz?", type: "buttons", buttons_ru: "Telegram, Знакомые", buttons_uz: "Telegram, Tanishlar", cond_ru: "", cond_uz: "", cond_target: "" }
 ];
 
 const ADMIN_FIELDS = [
@@ -32,37 +31,46 @@ const ADMIN_FIELDS = [
     { key: "success", name: "Успешная отправка", ru: "Анкета отправлена!", uz: "Anketa yuborildi!" }
 ];
 
+// 🌟 СТРОГАЯ ПРОВЕРКА ПРАВ ДОСТУПА 🌟
 document.addEventListener("DOMContentLoaded", () => {
     try {
         const s = localStorage.getItem('pronto_settings');
-        if (s && JSON.parse(s).username) return navigate('home');
+        if (s) {
+            const parsed = JSON.parse(s);
+            if (parsed.username && parsed.role === 'admin') {
+                // Это Админ! Пропускаем в панель.
+                return navigate('home');
+            } else if (parsed.username) {
+                // Это залогиненный сотрудник, но НЕ админ. Выгоняем.
+                alert("⛔ Доступ запрещен! В HR-панель могут зайти только Администраторы.");
+                window.location.href = '../index.html';
+                return;
+            }
+        }
     } catch(e) {}
-    navigate('login');
+    
+    // Если пользователь вообще не входил на портале
+    alert("Сначала авторизуйтесь на Главном портале!");
+    window.location.href = '../index.html';
 });
 
 function navigate(view) {
     const app = document.getElementById('app');
     if (!app) return;
     app.innerHTML = ''; 
-    if (view === 'login') app.innerHTML = loginView();
-    else if (view === 'home') app.innerHTML = homeView();
+    if (view === 'home') app.innerHTML = homeView();
 }
 
-const loginView = () => `
-    <div class="home-card fade-in" style="max-width: 400px; margin-top: 10vh; text-align: center;">
-        <h2 style="color:var(--pronto);">ВХОД В HR</h2>
-        <input type="text" id="auth_login" placeholder="Логин">
-        <input type="password" id="auth_pass" placeholder="Пароль">
-        <button onclick="checkLogin()" class="btn">ВОЙТИ</button>
-    </div>
-`;
-
 const homeView = () => {
+    const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
     return `
     <div class="home-card fade-in" style="max-width: 900px; text-align: left;">
-        <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
-            <h1 style="margin:0; color: var(--pronto);">HR ПАНЕЛЬ</h1>
-            <button onclick="logout()" class="btn-mini" style="background:#ef4444; color:white;">ВЫЙТИ</button>
+        <div style="display:flex; justify-content:space-between; margin-bottom: 20px; align-items: center;">
+            <div>
+                <h1 style="margin:0; color: var(--pronto);">HR ПАНЕЛЬ</h1>
+                <p style="margin:0; color:#64748b; font-weight:bold; font-size: 14px;">Пользователь: ${s.username} (Администратор)</p>
+            </div>
+            <button onclick="window.location.href='../index.html'" class="btn" style="background:#64748b; color:white; width: auto; padding: 10px 20px;">🔙 НА ПОРТАЛ</button>
         </div>
         
         <div style="background: #e0f2fe; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
@@ -110,7 +118,6 @@ function addVacancy() { saveState(); window.BOT_VACANCIES.push({id: Date.now(), 
 function removeVacancy(id) { saveState(); window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
 
 function buildQuestionsHTML() {
-    // Собираем список всех вопросов для выпадающего списка
     let questionOptions = `<option value="">-- Следующий по списку (Обычно) --</option><option value="end">🏁 Сразу завершить анкету</option>`;
     window.BOT_QUESTIONS.forEach(targetQ => {
         questionOptions += `<option value="${targetQ.id}">Перейти к: ${targetQ.name_ru}</option>`;
@@ -192,16 +199,6 @@ function refreshUI() {
     document.getElementById('q_container').innerHTML = buildQuestionsHTML();
 }
 
-function checkLogin() {
-    const login = document.getElementById('auth_login').value.trim();
-    const pass = document.getElementById('auth_pass').value.trim();
-    if (login === 'admin' && pass === '123') { 
-        localStorage.setItem('pronto_settings', JSON.stringify({ role: 'admin', username: 'SuperAdmin' }));
-        return navigate('home'); 
-    }
-}
-function logout() { localStorage.removeItem('pronto_settings'); navigate('login'); }
-
 function saveToBot() {
     saveState();
     const btn = document.getElementById('saveBtn'); btn.innerText = "⏳ ОТПРАВКА..."; btn.disabled = true;
@@ -219,7 +216,7 @@ function saveToBot() {
         questions: window.BOT_QUESTIONS
     };
 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- НЕ ЗАБУДЬ ВСТАВИТЬ ССЫЛКУ
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- НЕ ЗАБУДЬ ВСТАВИТЬ ССЫЛКУ ОТ ГУГЛА
 
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
     .then(r => r.text()).then(r => { alert("✅ Успешно!"); btn.innerText = "💾 ОТПРАВИТЬ В БОТА"; btn.disabled = false; })
