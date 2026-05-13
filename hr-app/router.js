@@ -1,5 +1,5 @@
 // ==========================================
-// HR ADMIN PANEL | AUTO-SAVE, SYNC & PROTECTED AREA
+// HR ADMIN PANEL | FINAL FIXED VERSION
 // ==========================================
 
 window.BOT_VACANCIES = [
@@ -40,209 +40,179 @@ function loadLocalData() {
             if (parsed.questions) window.BOT_QUESTIONS = parsed.questions;
             if (parsed.fields) window.ADMIN_FIELDS = parsed.fields;
         }
-    } catch(e) { console.error("Ошибка загрузки сохранений:", e); }
+    } catch(e) { console.error(e); }
 }
 loadLocalData();
 
 document.addEventListener("DOMContentLoaded", () => {
-    try {
-        const s = localStorage.getItem('pronto_settings');
-        if (s) {
-            const parsed = JSON.parse(s);
-            if (parsed.username && parsed.role === 'admin') {
-                return navigate('home');
-            } else if (parsed.username) {
-                alert("⛔ Доступ запрещен!");
-                window.location.href = '../index.html';
-                return;
-            }
-        }
-    } catch(e) {}
-    alert("Авторизуйтесь!");
-    window.location.href = '../index.html';
+    const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
+    if (s.username && s.role === 'admin') navigate('home');
+    else window.location.href = '../index.html';
 });
 
 function navigate(view) {
     const app = document.getElementById('app');
-    if (!app) return;
-    app.innerHTML = ''; 
     if (view === 'home') app.innerHTML = homeView();
 }
 
-const homeView = () => {
+function homeView() {
     const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
     return `
     <div class="home-card fade-in" style="max-width: 900px; text-align: left;">
         <div style="display:flex; justify-content:space-between; margin-bottom: 20px; align-items: center;">
             <div>
                 <h1 style="margin:0; color: var(--pronto);">HR ПАНЕЛЬ</h1>
-                <p style="margin:0; color:#64748b; font-weight:bold; font-size: 14px;">Пользователь: ${s.username} <span id="saveStatus" style="color:#22c55e; margin-left:10px; font-size:12px;">✔️ Сохранено локально</span></p>
+                <p style="margin:0; color:#64748b; font-size: 14px;">Админ: ${s.username} <span id="saveStatus" style="color:#22c55e;">✔️</span></p>
             </div>
             <div style="display:flex; gap:10px;">
-                <button onclick="syncFromBot()" class="btn-mini" style="background:#8b5cf6; color:white; padding:10px;">🔄 СИНХРОНИЗИРОВАТЬ</button>
-                <button onclick="window.location.href='../index.html'" class="btn-mini" style="background:#64748b; color:white; padding:10px;">🔙 ПОРТАЛ</button>
+                <button onclick="syncFromBot()" class="btn-mini" style="background:#8b5cf6; color:white;">🔄 СИНХРОНИЗАЦИЯ</button>
+                <button onclick="window.location.href='../index.html'" class="btn-mini" style="background:#64748b; color:white;">🔙 ВЫХОД</button>
             </div>
         </div>
         
         <div style="background: #e0f2fe; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
             <h3>💼 Вакансии</h3>
             <div id="vac_container">${buildVacanciesHTML()}</div>
-            <button onclick="addVacancy()" class="btn-mini" style="background:#3b82f6; color:white; margin-top:10px;">➕ ДОБАВИТЬ ВАКАНСИЮ</button>
+            <button onclick="addVacancy()" class="btn-mini" style="background:#3b82f6; color:white;">➕ ДОБАВИТЬ</button>
         </div>
 
         <div style="background: #fef08a; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-            <h3>📋 Умный конструктор анкеты</h3>
+            <h3>📋 Конструктор анкеты</h3>
             <div id="q_container">${buildQuestionsHTML()}</div>
-            <button onclick="addQuestion()" class="btn-mini" style="background:#ca8a04; color:white; margin-top:10px;">➕ ДОБАВИТЬ ВОПРОС</button>
+            <button onclick="addQuestion()" class="btn-mini" style="background:#ca8a04; color:white;">➕ ДОБАВИТЬ ВОПРОС</button>
         </div>
 
-        <div style="background: #f8fafc; padding: 20px; border-radius: 15px;">
+        <div id="fields_container" style="background: #f8fafc; padding: 20px; border-radius: 15px;">
             <h3>📝 Основные тексты</h3>
-            ${window.ADMIN_FIELDS.map(f => `
-                <div style="margin-bottom: 10px;">
-                    <label>${f.name}:</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="${f.key}_ru" value="${f.ru}" oninput="saveState()">
-                        <input type="text" id="${f.key}_uz" value="${f.uz}" oninput="saveState()">
-                    </div>
-                </div>
-            `).join('')}
+            ${buildFieldsHTML()}
         </div>
 
-        <button onclick="saveToBot()" id="saveBtn" class="btn" style="height:60px; font-size:18px; margin-top:20px;">💾 ОТПРАВИТЬ В TELEGRAM</button>
+        <button onclick="saveToBot()" id="saveBtn" class="btn" style="height:60px; margin-top:20px;">💾 ОТПРАВИТЬ В TELEGRAM</button>
     </div>
     `;
-};
+}
 
 function buildVacanciesHTML() {
-    return window.BOT_VACANCIES.map((v, i) => `
+    return window.BOT_VACANCIES.map(v => `
         <div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #93c5fd; position:relative;">
-            <button onclick="removeVacancy(${v.id})" class="btn-mini" style="position:absolute; right:10px; top:10px; background:#ef4444; color:white;">🗑️</button>
+            <button onclick="removeVacancy(${v.id})" style="position:absolute; right:10px; top:10px; background:#ef4444; color:white; border:none; border-radius:5px; cursor:pointer;">🗑️</button>
             <input type="text" id="vac_name_ru_${v.id}" value="${v.name_ru}" oninput="saveState()" placeholder="Название (RU)" style="width:45%;">
             <input type="text" id="vac_name_uz_${v.id}" value="${v.name_uz}" oninput="saveState()" placeholder="Название (UZ)" style="width:45%;">
-            <textarea id="vac_req_ru_${v.id}" oninput="saveState()" placeholder="Условия (RU)" rows="2" style="width:45%;"></textarea>
-            <textarea id="vac_req_uz_${v.id}" oninput="saveState()" placeholder="Условия (UZ)" rows="2" style="width:45%;"></textarea>
+            <textarea id="vac_req_ru_${v.id}" oninput="saveState()" placeholder="Условия (RU)" style="width:45%; margin-top:5px;">${v.req_ru}</textarea>
+            <textarea id="vac_req_uz_${v.id}" oninput="saveState()" placeholder="Условия (UZ)" style="width:45%; margin-top:5px;">${v.req_uz}</textarea>
         </div>
     `).join('');
 }
-function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
-function removeVacancy(id) { window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
 
 function buildQuestionsHTML() {
-    let questionOptions = `<option value="">-- Обычно --</option><option value="end">🏁 Конец</option>`;
-    window.BOT_QUESTIONS.forEach(targetQ => { questionOptions += `<option value="${targetQ.id}">Прыжок на: ${targetQ.name_ru}</option>`; });
+    let opts = `<option value="">-- Обычно --</option><option value="end">🏁 Конец</option>`;
+    window.BOT_QUESTIONS.forEach(t => { opts += `<option value="${t.id}">Прыжок на: ${t.name_ru}</option>`; });
 
     return window.BOT_QUESTIONS.map((q, i) => `
         <div style="background:white; padding:15px; border-radius:8px; margin-bottom:15px; border:2px solid #eab308; position:relative;">
-            <div style="position:absolute; right:10px; top:10px; display:flex; gap:5px;">
+            <div style="position:absolute; right:10px; top:10px;">
                 <button onclick="moveQuestion(${i}, -1)" class="btn-mini">⬆️</button>
                 <button onclick="moveQuestion(${i}, 1)" class="btn-mini">⬇️</button>
                 <button onclick="removeQuestion(${q.id})" class="btn-mini" style="background:#ef4444;">🗑️</button>
             </div>
-            <b>Вопрос ${i+1}:</b> <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveState()" style="width:200px;">
+            <b>В ${i+1}:</b> <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveState()" style="width:150px;">
             <br>
             <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveState()" placeholder="RU" style="width:48%;">
             <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveState()" placeholder="UZ" style="width:48%;">
             <br>
-            <select id="q_type_${q.id}" onchange="saveState(); refreshUI()">
+            Тип: <select id="q_type_${q.id}" onchange="saveState(); refreshUI()">
                 <option value="text" ${q.type==='text'?'selected':''}>Текст</option>
                 <option value="buttons" ${q.type==='buttons'?'selected':''}>Кнопки</option>
             </select>
-            ${q.type === 'buttons' ? `
-                <div style="margin-top:5px;">
-                    <input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveState()" placeholder="Да, Нет" style="width:48%;">
-                    <input type="text" id="q_btn_uz_${q.id}" value="${q.buttons_uz}" oninput="saveState()" placeholder="Ha, Yo'q" style="width:48%;">
-                </div>
-            ` : ''}
-            <div style="margin-top:10px; font-size:12px; border-top:1px dashed #ccc; padding-top:5px;">
-                🔀 Прыжок если ответ: <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveState()" placeholder="Нет" style="width:100px;">
-                на вопрос: <select id="q_cond_target_${q.id}" onchange="saveState()">
-                    ${questionOptions.replace(`value="${q.cond_target}"`, `value="${q.cond_target}" selected`)}
+            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveState()" placeholder="Да, Нет" style="width:40%;">` : ''}
+            <div style="margin-top:5px; font-size:12px;">
+                Логика: Если <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveState()" style="width:80px;"> ➡️
+                <select id="q_cond_target_${q.id}" onchange="saveState()">
+                    ${opts.replace(`value="${q.cond_target}"`, `value="${q.cond_target}" selected`)}
                 </select>
             </div>
         </div>
     `).join('');
 }
 
-function moveQuestion(index, direction) {
-    if (index + direction < 0 || index + direction >= window.BOT_QUESTIONS.length) return;
-    let temp = window.BOT_QUESTIONS[index];
-    window.BOT_QUESTIONS[index] = window.BOT_QUESTIONS[index + direction];
-    window.BOT_QUESTIONS[index + direction] = temp;
+function buildFieldsHTML() {
+    return window.ADMIN_FIELDS.map(f => `
+        <div style="margin-bottom: 10px;">
+            <label>${f.name}:</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="${f.key}_ru" value="${f.ru}" oninput="saveState()" style="flex:1;">
+                <input type="text" id="${f.key}_uz" value="${f.uz}" oninput="saveState()" style="flex:1;">
+            </div>
+        </div>
+    `).join('');
+}
+
+function moveQuestion(idx, dir) {
+    if (idx + dir < 0 || idx + dir >= window.BOT_QUESTIONS.length) return;
+    let temp = window.BOT_QUESTIONS[idx];
+    window.BOT_QUESTIONS[idx] = window.BOT_QUESTIONS[idx + dir];
+    window.BOT_QUESTIONS[idx + dir] = temp;
     refreshUI();
 }
-function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"Yangi", q_ru:"?", q_uz:"?", type:"text", buttons_ru:"", buttons_uz:"", cond_ru:"", cond_uz:"", cond_target:""}); refreshUI(); }
+
+function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
+function removeVacancy(id) { window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
+function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"", q_ru:"", q_uz:"", type:"text", buttons_ru:"", cond_ru:"", cond_target:""}); refreshUI(); }
 function removeQuestion(id) { window.BOT_QUESTIONS = window.BOT_QUESTIONS.filter(q => q.id !== id); refreshUI(); }
 
 function saveState() {
     if (!document.getElementById('vac_container')) return;
     window.BOT_VACANCIES.forEach(v => {
-        v.name_ru = document.getElementById('vac_name_ru_'+v.id)?.value || v.name_ru;
-        v.name_uz = document.getElementById('vac_name_uz_'+v.id)?.value || v.name_uz;
-        v.req_ru = document.getElementById('vac_req_ru_'+v.id)?.value || v.req_ru;
-        v.req_uz = document.getElementById('vac_req_uz_'+v.id)?.value || v.req_uz;
+        v.name_ru = document.getElementById('vac_name_ru_'+v.id).value;
+        v.name_uz = document.getElementById('vac_name_uz_'+v.id).value;
+        v.req_ru = document.getElementById('vac_req_ru_'+v.id).value;
+        v.req_uz = document.getElementById('vac_req_uz_'+v.id).value;
     });
     window.BOT_QUESTIONS.forEach(q => {
-        q.name_ru = document.getElementById('q_name_ru_'+q.id)?.value || q.name_ru;
-        q.q_ru = document.getElementById('q_ru_'+q.id)?.value || q.q_ru;
-        q.q_uz = document.getElementById('q_uz_'+q.id)?.value || q.q_uz;
-        q.type = document.getElementById('q_type_'+q.id)?.value || q.type;
-        if(q.type === 'buttons') {
-            q.buttons_ru = document.getElementById('q_btn_ru_'+q.id)?.value || q.buttons_ru;
-            q.buttons_uz = document.getElementById('q_btn_uz_'+q.id)?.value || q.buttons_uz;
-        }
-        q.cond_ru = document.getElementById('q_cond_ru_'+q.id)?.value || q.cond_ru;
-        q.cond_target = document.getElementById('q_cond_target_'+q.id)?.value || q.cond_target;
+        q.name_ru = document.getElementById('q_name_ru_'+q.id).value;
+        q.q_ru = document.getElementById('q_ru_'+q.id).value;
+        q.q_uz = document.getElementById('q_uz_'+q.id).value;
+        q.type = document.getElementById('q_type_'+q.id).value;
+        if(q.type === 'buttons') q.buttons_ru = document.getElementById('q_btn_ru_'+q.id).value;
+        q.cond_ru = document.getElementById('q_cond_ru_'+q.id).value;
+        q.cond_target = document.getElementById('q_cond_target_'+q.id).value;
     });
     window.ADMIN_FIELDS.forEach(f => {
-        f.ru = document.getElementById(f.key + '_ru')?.value || f.ru;
-        f.uz = document.getElementById(f.key + '_uz')?.value || f.uz;
+        f.ru = document.getElementById(f.key + '_ru').value;
+        f.uz = document.getElementById(f.key + '_uz').value;
     });
     localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
-    const status = document.getElementById('saveStatus');
-    if (status) { status.innerText = "⏳..."; setTimeout(() => status.innerText = "✔️ Сохранено локально", 500); }
 }
 
 function refreshUI() {
     saveState();
-    document.getElementById('vac_container').innerHTML = buildVacanciesHTML();
-    document.getElementById('q_container').innerHTML = buildQuestionsHTML();
+    const app = document.getElementById('app');
+    app.innerHTML = homeView();
 }
 
 function syncFromBot() {
-    if (!confirm("Загрузить актуальные данные из Telegram-бота? Локальные черновики будут перезаписаны.")) return;
-    
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
-    
-    const payload = { command: "get_data", adminPassword: "TimurSuperAdmin123" };
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
-    .then(r => r.json())
-    .then(data => {
-        if (data.questions && data.questions.length > 0) {
-            window.BOT_QUESTIONS = data.questions;
-            window.BOT_VACANCIES = data.vacancies;
-            window.ADMIN_FIELDS.forEach(f => {
-                f.ru = data.newTexts[f.key + '_ru'] || f.ru;
-                f.uz = data.newTexts[f.key + '_uz'] || f.uz;
-            });
-            saveState(); 
-            refreshUI(); 
-            alert("✅ Синхронизация прошла успешно! Данные загружены из бота.");
-        }
-    })
-    .catch(e => alert("❌ Ошибка синхронизации: " + e));
+    if (!confirm("Загрузить данные из облака? Локальные изменения затрутся.")) return;
+    const GAS_URL = "ТВОЯ_ССЫЛКА_ГУГЛ"; 
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ command: "get_data", adminPassword: "TimurSuperAdmin123" }), headers: { "Content-Type": "text/plain" } })
+    .then(r => r.json()).then(data => {
+        window.BOT_QUESTIONS = data.questions;
+        window.BOT_VACANCIES = data.vacancies;
+        window.ADMIN_FIELDS.forEach(f => {
+            f.ru = data.newTexts[f.key + '_ru'] || f.ru;
+            f.uz = data.newTexts[f.key + '_uz'] || f.uz;
+        });
+        localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
+        location.reload(); // Перезагружаем страницу для полной чистоты данных
+    }).catch(e => alert("Ошибка: " + e));
 }
 
 function saveToBot() {
     saveState();
     const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
-    let updatedTexts = {}; window.ADMIN_FIELDS.forEach(f => { updatedTexts[f.key + '_ru'] = f.ru; updatedTexts[f.key + '_uz'] = f.uz; });
-    const payload = { adminPassword: "TimurSuperAdmin123", newTexts: updatedTexts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
-    
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
-    
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
-    .then(r => r.text()).then(r => { alert("✅ Обновлено!"); btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; btn.disabled = false; })
-    .catch(e => { alert("❌ Ошибка!"); btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; btn.disabled = false; });
+    let texts = {}; window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
+    const payload = { adminPassword: "TimurSuperAdmin123", newTexts: texts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
+    const GAS_URL = "ТВОЯ_ССЫЛКА_ГУГЛ";
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain" } })
+    .then(r => r.text()).then(() => { alert("✅ В Telegram!"); btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; btn.disabled = false; })
+    .catch(() => { alert("❌ Ошибка"); btn.disabled = false; });
 }
