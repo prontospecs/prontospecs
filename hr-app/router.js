@@ -1,12 +1,11 @@
 // ==========================================
-// HR ADMIN PANEL | AUTO-SAVE & PROTECTED AREA
+// HR ADMIN PANEL | AUTO-SAVE, SYNC & PROTECTED AREA
 // ==========================================
 
 window.BOT_VACANCIES = [
     { id: 1, name_ru: "Менеджер", name_uz: "Menejer", req_ru: "Опыт...", req_uz: "Tajriba..." }
 ];
 
-// 🌟 ПОЛНЫЙ СПИСОК ИЗ 16 ВОПРОСОВ 🌟
 window.BOT_QUESTIONS = [
     { id: 1, name_ru: "ФИО", name_uz: "F.I.Sh", q_ru: "Введите ваше ФИО (по паспорту):", q_uz: "F.I.Sh. ni kiriting (pasport bo'yicha):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
     { id: 2, name_ru: "Дата рождения", name_uz: "Tug'ilgan sana", q_ru: "Введите вашу дату рождения (например, 15.05.1995):", q_uz: "Tug'ilgan sanangizni kiriting (masalan, 15.05.1995):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
@@ -32,7 +31,6 @@ window.ADMIN_FIELDS = [
     { key: "success", name: "Успешная отправка", ru: "Анкета отправлена!", uz: "Anketa yuborildi!" }
 ];
 
-// 🌟 ЗАГРУЗКА ИЗ ЛОКАЛЬНОГО ХРАНИЛИЩА (Версия 2.0) 🌟
 function loadLocalData() {
     try {
         const data = localStorage.getItem('hr_admin_autosave_v2'); 
@@ -78,9 +76,12 @@ const homeView = () => {
         <div style="display:flex; justify-content:space-between; margin-bottom: 20px; align-items: center;">
             <div>
                 <h1 style="margin:0; color: var(--pronto);">HR ПАНЕЛЬ</h1>
-                <p style="margin:0; color:#64748b; font-weight:bold; font-size: 14px;">Пользователь: ${s.username} <span id="saveStatus" style="color:#22c55e; margin-left:10px; font-size:12px;">✔️ Сохранено</span></p>
+                <p style="margin:0; color:#64748b; font-weight:bold; font-size: 14px;">Пользователь: ${s.username} <span id="saveStatus" style="color:#22c55e; margin-left:10px; font-size:12px;">✔️ Сохранено локально</span></p>
             </div>
-            <button onclick="window.location.href='../index.html'" class="btn" style="background:#64748b; color:white; width: auto; padding: 10px 20px;">🔙 НА ПОРТАЛ</button>
+            <div style="display:flex; gap:10px;">
+                <button onclick="syncFromBot()" class="btn-mini" style="background:#8b5cf6; color:white; padding:10px;">🔄 СИНХРОНИЗИРОВАТЬ</button>
+                <button onclick="window.location.href='../index.html'" class="btn-mini" style="background:#64748b; color:white; padding:10px;">🔙 ПОРТАЛ</button>
+            </div>
         </div>
         
         <div style="background: #e0f2fe; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
@@ -199,7 +200,7 @@ function saveState() {
     });
     localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
     const status = document.getElementById('saveStatus');
-    if (status) { status.innerText = "⏳..."; setTimeout(() => status.innerText = "✔️ Сохранено", 500); }
+    if (status) { status.innerText = "⏳..."; setTimeout(() => status.innerText = "✔️ Сохранено локально", 500); }
 }
 
 function refreshUI() {
@@ -208,12 +209,39 @@ function refreshUI() {
     document.getElementById('q_container').innerHTML = buildQuestionsHTML();
 }
 
+function syncFromBot() {
+    if (!confirm("Загрузить актуальные данные из Telegram-бота? Локальные черновики будут перезаписаны.")) return;
+    
+    const GAS_URL = "ТВОЯ_ССЫЛКА_ГУГЛ"; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
+    
+    const payload = { command: "get_data", adminPassword: "TimurSuperAdmin123" };
+
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
+    .then(r => r.json())
+    .then(data => {
+        if (data.questions && data.questions.length > 0) {
+            window.BOT_QUESTIONS = data.questions;
+            window.BOT_VACANCIES = data.vacancies;
+            window.ADMIN_FIELDS.forEach(f => {
+                f.ru = data.newTexts[f.key + '_ru'] || f.ru;
+                f.uz = data.newTexts[f.key + '_uz'] || f.uz;
+            });
+            saveState(); 
+            refreshUI(); 
+            alert("✅ Синхронизация прошла успешно! Данные загружены из бота.");
+        }
+    })
+    .catch(e => alert("❌ Ошибка синхронизации: " + e));
+}
+
 function saveToBot() {
     saveState();
     const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
     let updatedTexts = {}; window.ADMIN_FIELDS.forEach(f => { updatedTexts[f.key + '_ru'] = f.ru; updatedTexts[f.key + '_uz'] = f.uz; });
     const payload = { adminPassword: "TimurSuperAdmin123", newTexts: updatedTexts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- ВСТАВЬ ССЫЛКУ!
+    
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
+    
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
     .then(r => r.text()).then(r => { alert("✅ Обновлено!"); btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; btn.disabled = false; })
     .catch(e => { alert("❌ Ошибка!"); btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; btn.disabled = false; });
