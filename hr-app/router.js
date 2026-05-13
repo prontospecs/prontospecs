@@ -192,7 +192,7 @@ function refreshUI() {
 
 function syncFromBot() {
     if (!confirm("Загрузить данные из облака? Локальные изменения затрутся.")) return;
-    const GAS_URL = "ТВОЯ_ССЫЛКА_ГУГЛ"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; 
     fetch(GAS_URL, { method: "POST", body: JSON.stringify({ command: "get_data", adminPassword: "TimurSuperAdmin123" }), headers: { "Content-Type": "text/plain" } })
     .then(r => r.json()).then(data => {
         window.BOT_QUESTIONS = data.questions;
@@ -211,7 +211,7 @@ function saveToBot() {
     const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
     let texts = {}; window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
     const payload = { adminPassword: "TimurSuperAdmin123", newTexts: texts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
-    const GAS_URL = "ТВОЯ_ССЫЛКА_ГУГЛ";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec";
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain" } })
     .then(r => r.text()).then(() => { alert("✅ В Telegram!"); btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; btn.disabled = false; })
     .catch(() => { alert("❌ Ошибка"); btn.disabled = false; });
