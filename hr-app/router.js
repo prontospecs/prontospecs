@@ -212,7 +212,7 @@ function refreshUI() {
 function syncFromBot() {
     if (!confirm("Загрузить актуальные данные из Telegram-бота? Локальные черновики будут перезаписаны.")) return;
     
-    const GAS_URL = "ТВОЯ_ССЫЛКА_ГУГЛ"; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEHSCuchjeLD6IzBtUgy3_wTI21fM9-V5EtJRNzJGiDqGHmv3Bc0KWE4GqG4awJKWWew/exec"; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
     
     const payload = { command: "get_data", adminPassword: "TimurSuperAdmin123" };
 
