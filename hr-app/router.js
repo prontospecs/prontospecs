@@ -208,11 +208,39 @@ function syncFromBot() {
 
 function saveToBot() {
     saveState();
-    const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
-    let texts = {}; window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
-    const payload = { adminPassword: "TimurSuperAdmin123", newTexts: texts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
+    const btn = document.getElementById('saveBtn'); 
+    btn.innerText = "⏳..."; 
+    btn.disabled = true;
+    
+    let texts = {}; 
+    window.ADMIN_FIELDS.forEach(f => { 
+        texts[f.key + '_ru'] = f.ru; 
+        texts[f.key + '_uz'] = f.uz; 
+    });
+    
+    // 👇 ВОТ ЗДЕСЬ БЫЛ НЕПРАВИЛЬНЫЙ ПАРОЛЬ, ТЕПЕРЬ СТОИТ ТВОЙ КЛЮЧ 👇
+    const payload = { 
+        adminPassword: "TimaSafeKey_2026", 
+        newTexts: texts, 
+        vacancies: window.BOT_VACANCIES, 
+        questions: window.BOT_QUESTIONS 
+    };
+    
     const GAS_URL = "https://script.google.com/macros/s/AKfycbycNi8t9H1uDVRKvyFazjiHum6iPTc86dnR2Z9Gryh02Ocf5duJpd3hgsEk87wdVPtzbg/exec";
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain" } })
-    .then(r => r.text()).then(() => { alert("✅ В Telegram!"); btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; btn.disabled = false; })
-    .catch(() => { alert("❌ Ошибка"); btn.disabled = false; });
+    
+    fetch(GAS_URL, { 
+        method: "POST", 
+        body: JSON.stringify(payload), 
+        headers: { "Content-Type": "text/plain;charset=utf-8" } // 🛡️ Защита от CORS
+    })
+    .then(r => r.text())
+    .then(() => { 
+        alert("✅ В Telegram!"); 
+        btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; 
+        btn.disabled = false; 
+    })
+    .catch(() => { 
+        alert("❌ Ошибка"); 
+        btn.disabled = false; 
+    });
 }
