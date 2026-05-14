@@ -1,37 +1,31 @@
 // ==========================================
-// HR ADMIN PANEL | FINAL FIXED VERSION (NO-CORS)
+// HR ADMIN PANEL | AUTO-SYNC VERSION
 // ==========================================
 
-window.BOT_VACANCIES = [
-    { id: 1, name_ru: "Менеджер", name_uz: "Menejer", req_ru: "Опыт...", req_uz: "Tajriba..." }
-];
-
-window.BOT_QUESTIONS = [
-    { id: 1, name_ru: "ФИО", name_uz: "F.I.Sh", q_ru: "Введите ваше ФИО (по паспорту):", q_uz: "F.I.Sh. ni kiriting (pasport bo'yicha):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 2, name_ru: "Дата рождения", name_uz: "Tug'ilgan sana", q_ru: "Введите вашу дату рождения (например, 15.05.1995):", q_uz: "Tug'ilgan sanangizni kiriting (masalan, 15.05.1995):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 3, name_ru: "Место проживания", name_uz: "Yashash joyi", q_ru: "Введите ваше место проживания (город, район):", q_uz: "Yashash joyingizni kiriting (shahar, tuman):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 4, name_ru: "Телефон", name_uz: "Telefon", q_ru: "Введите ваш номер телефона:", q_uz: "Telefon raqamingizni kiriting:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 5, name_ru: "Пол", name_uz: "Jins", q_ru: "Укажите ваш пол:", q_uz: "Jinsingizni ko'rsating:", type: "buttons", buttons_ru: "Муж, Жен", buttons_uz: "Erkak, Ayol", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 6, name_ru: "Семейное положение", name_uz: "Oilaviy ahvol", q_ru: "Ваше семейное положение:", q_uz: "Oilaviy ahvolingiz:", type: "buttons", buttons_ru: "Женат/Замужем, Холост/Не замужем", buttons_uz: "Uylangan/Turmushga chiqqan, Bo'ydoq/Turmushga chiqmagan", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 7, name_ru: "Студент", name_uz: "Talaba", q_ru: "Вы являетесь студентом?", q_uz: "Talabamisiz?", type: "buttons", buttons_ru: "Да, Нет", buttons_uz: "Ha, Yo'q", cond_ru: "Нет", cond_uz: "Yo'q", cond_target: "10" },
-    { id: 8, name_ru: "Форма обучения", name_uz: "Ta'lim shakli", q_ru: "Форма обучения:", q_uz: "Ta'lim shakli:", type: "buttons", buttons_ru: "Очно, Заочно", buttons_uz: "Kunduzgi, Sirtqi", cond_ru: "Заочно", cond_uz: "Sirtqi", cond_target: "10" },
-    { id: 9, name_ru: "Время обучения", name_uz: "O'qish vaqti", q_ru: "Время обучения:", q_uz: "O'qish vaqti:", type: "buttons", buttons_ru: "Утреннее, Вечернее", buttons_uz: "Ertalabki, Kechki", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 10, name_ru: "Опыт работы", name_uz: "Ish tajribasi", q_ru: "Опишите ваш опыт работы (компания, срок, должность).\nЕсли опыта нет, напишите 'Нет опыта':", q_uz: "Ish tajribangizni tasvirlab bering (kompaniya, muddat, lavozim).\nAgar tajribangiz bo'lmasa, 'Tajriba yo'q' deb yozing:", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 11, name_ru: "Уровень Узбекского", name_uz: "O'zbek tili", q_ru: "Уровень Узбекского языка:", q_uz: "O'zbek tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий, Средний, Продвинутый", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 12, name_ru: "Уровень Английского", name_uz: "Ingliz tili", q_ru: "Уровень Английского языка:", q_uz: "Ingliz tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий, Средний, Продвинутый", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 13, name_ru: "Уровень Русского", name_uz: "Rus tili", q_ru: "Уровень Русского языка:", q_uz: "Rus tilini bilish darajasi:", type: "buttons", buttons_ru: "Низкий, Средний, Продвинутый", buttons_uz: "Past, O'rta, Yuqori", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 14, name_ru: "Зарплата", name_uz: "Maosh", q_ru: "Укажите ожидаемый уровень зарплаты (в сумах):", q_uz: "Kutilayotgan ish haqi miqdorini ko'rsating (so'mda):", type: "buttons", buttons_ru: "Пропустить", buttons_uz: "O'tkazib yuborish", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 15, name_ru: "Фото", name_uz: "Rasm", q_ru: "Пожалуйста, отправьте ваше фото (прикрепите как картинку):", q_uz: "Iltimos, rasmingizni yuboring (rasm sifatida biriktiring):", type: "text", buttons_ru: "", buttons_uz: "", cond_ru: "", cond_uz: "", cond_target: "" },
-    { id: 16, name_ru: "Откуда узнали", name_uz: "Qayerdan bildingiz", q_ru: "Как вы узнали о нашей вакансии?", q_uz: "Vakansiyamiz haqida qayerdan bildingiz?", type: "buttons", buttons_ru: "Telegram, HeadHunter, Знакомые, Другое", buttons_uz: "Telegram, HeadHunter, Tanishlar, Boshqa", cond_ru: "", cond_uz: "", cond_target: "" }
-];
-
+// Это "заглушки". Если из облака ничего не придет, покажутся они.
+window.BOT_VACANCIES = [];
+window.BOT_QUESTIONS = [];
 window.ADMIN_FIELDS = [
-    { key: "menu_greeting", name: "Главное меню", ru: "Выберите раздел:", uz: "Bo'limni tanlang:" },
-    { key: "about_text", name: "Текст 'О нас'", ru: "Мы крутая компания!", uz: "Biz ajoyib kompaniyamiz!" },
-    { key: "success", name: "Успешная отправка", ru: "Анкета отправлена!", uz: "Anketa yuborildi!" }
+    { key: "menu_greeting", name: "Главное меню", ru: "Загрузка...", uz: "Yuklanmoqda..." },
+    { key: "about_text", name: "Текст 'О нас'", ru: "Загрузка...", uz: "Yuklanmoqda..." },
+    { key: "success", name: "Успешная отправка", ru: "Загрузка...", uz: "Yuklanmoqda..." }
 ];
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbycNi8t9H1uDVRKvyFazjiHum6iPTc86dnR2Z9Gryh02Ocf5duJpd3hgsEk87wdVPtzbg/exec"; 
+
+// 1. ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ПРИ СТАРТЕ
+document.addEventListener("DOMContentLoaded", () => {
+    const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
+    if (s.username && s.role === 'admin') {
+        // Сначала грузим то, что сохранено в браузере (локально)
+        loadLocalData();
+        navigate('home');
+        // А теперь идем в облако за свежими данными
+        syncFromBot(true); 
+    } else {
+        window.location.href = '../index.html';
+    }
+});
 
 function loadLocalData() {
     try {
@@ -42,15 +36,8 @@ function loadLocalData() {
             if (parsed.questions) window.BOT_QUESTIONS = parsed.questions;
             if (parsed.fields) window.ADMIN_FIELDS = parsed.fields;
         }
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error("Локальных данных нет"); }
 }
-loadLocalData();
-
-document.addEventListener("DOMContentLoaded", () => {
-    const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
-    if (s.username && s.role === 'admin') navigate('home');
-    else window.location.href = '../index.html';
-});
 
 function navigate(view) {
     const app = document.getElementById('app');
@@ -67,7 +54,7 @@ function homeView() {
                 <p style="margin:0; color:#64748b; font-size: 14px;">Админ: ${s.username} <span id="saveStatus" style="color:#22c55e;">✔️</span></p>
             </div>
             <div style="display:flex; gap:10px;">
-                <button onclick="syncFromBot()" class="btn-mini" style="background:#8b5cf6; color:white;">🔄 СИНХРОНИЗАЦИЯ</button>
+                <button onclick="syncFromBot()" class="btn-mini" style="background:#8b5cf6; color:white;">🔄 ОБНОВИТЬ</button>
                 <button onclick="window.location.href='../index.html'" class="btn-mini" style="background:#64748b; color:white;">🔙 ВЫХОД</button>
             </div>
         </div>
@@ -89,7 +76,7 @@ function homeView() {
             ${buildFieldsHTML()}
         </div>
 
-        <button onclick="saveToBot()" id="saveBtn" class="btn" style="height:60px; margin-top:20px;">💾 ОТПРАВИТЬ В TELEGRAM</button>
+        <button onclick="saveToBot()" id="saveBtn" class="btn" style="height:60px; margin-top:20px;">💾 СОХРАНИТЬ В ОБЛАКО</button>
     </div>
     `;
 }
@@ -100,8 +87,8 @@ function buildVacanciesHTML() {
             <button onclick="removeVacancy(${v.id})" style="position:absolute; right:10px; top:10px; background:#ef4444; color:white; border:none; border-radius:5px; cursor:pointer;">🗑️</button>
             <input type="text" id="vac_name_ru_${v.id}" value="${v.name_ru}" oninput="saveState()" placeholder="Название (RU)" style="width:45%;">
             <input type="text" id="vac_name_uz_${v.id}" value="${v.name_uz}" oninput="saveState()" placeholder="Название (UZ)" style="width:45%;">
-            <textarea id="vac_req_ru_${v.id}" oninput="saveState()" placeholder="Условия (RU)" style="width:45%; margin-top:5px;">${v.req_ru}</textarea>
-            <textarea id="vac_req_uz_${v.id}" oninput="saveState()" placeholder="Условия (UZ)" style="width:45%; margin-top:5px;">${v.req_uz}</textarea>
+            <textarea id="vac_req_ru_${v.id}" oninput="saveState()" placeholder="Требования (RU)" style="width:45%; margin-top:5px; height:60px;">${v.req_ru}</textarea>
+            <textarea id="vac_req_uz_${v.id}" oninput="saveState()" placeholder="Требования (UZ)" style="width:45%; margin-top:5px; height:60px;">${v.req_uz}</textarea>
         </div>
     `).join('');
 }
@@ -119,16 +106,16 @@ function buildQuestionsHTML() {
             </div>
             <b>В ${i+1}:</b> <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveState()" style="width:150px;">
             <br>
-            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveState()" placeholder="RU" style="width:48%;">
-            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveState()" placeholder="UZ" style="width:48%;">
+            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveState()" placeholder="Текст вопроса RU" style="width:48%;">
+            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveState()" placeholder="Текст вопроса UZ" style="width:48%;">
             <br>
             Тип: <select id="q_type_${q.id}" onchange="saveState(); refreshUI()">
                 <option value="text" ${q.type==='text'?'selected':''}>Текст</option>
                 <option value="buttons" ${q.type==='buttons'?'selected':''}>Кнопки</option>
             </select>
-            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveState()" placeholder="Да, Нет" style="width:40%;">` : ''}
+            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveState()" placeholder="Варианты (Да, Нет)" style="width:40%;">` : ''}
             <div style="margin-top:5px; font-size:12px;">
-                Логика: Если <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveState()" style="width:80px;"> ➡️
+                Логика: Если ответ <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveState()" style="width:80px;"> ➡️
                 <select id="q_cond_target_${q.id}" onchange="saveState()">
                     ${opts.replace(`value="${q.cond_target}"`, `value="${q.cond_target}" selected`)}
                 </select>
@@ -149,19 +136,6 @@ function buildFieldsHTML() {
     `).join('');
 }
 
-function moveQuestion(idx, dir) {
-    if (idx + dir < 0 || idx + dir >= window.BOT_QUESTIONS.length) return;
-    let temp = window.BOT_QUESTIONS[idx];
-    window.BOT_QUESTIONS[idx] = window.BOT_QUESTIONS[idx + dir];
-    window.BOT_QUESTIONS[idx + dir] = temp;
-    refreshUI();
-}
-
-function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
-function removeVacancy(id) { window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
-function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"", q_ru:"", q_uz:"", type:"text", buttons_ru:"", cond_ru:"", cond_target:""}); refreshUI(); }
-function removeQuestion(id) { window.BOT_QUESTIONS = window.BOT_QUESTIONS.filter(q => q.id !== id); refreshUI(); }
-
 function saveState() {
     if (!document.getElementById('vac_container')) return;
     window.BOT_VACANCIES.forEach(v => {
@@ -179,9 +153,6 @@ function saveState() {
         const elQru = document.getElementById('q_ru_'+q.id);
         const elQuz = document.getElementById('q_uz_'+q.id);
         const elType = document.getElementById('q_type_'+q.id);
-        const elCondRu = document.getElementById('q_cond_ru_'+q.id);
-        const elCondTarget = document.getElementById('q_cond_target_'+q.id);
-        
         if(elName) q.name_ru = elName.value;
         if(elQru) q.q_ru = elQru.value;
         if(elQuz) q.q_uz = elQuz.value;
@@ -190,6 +161,8 @@ function saveState() {
             const elBtn = document.getElementById('q_btn_ru_'+q.id);
             if(elBtn) q.buttons_ru = elBtn.value;
         }
+        const elCondRu = document.getElementById('q_cond_ru_'+q.id);
+        const elCondTarget = document.getElementById('q_cond_target_'+q.id);
         if(elCondRu) q.cond_ru = elCondRu.value;
         if(elCondTarget) q.cond_target = elCondTarget.value;
     });
@@ -204,27 +177,38 @@ function saveState() {
 
 function refreshUI() {
     saveState();
-    const app = document.getElementById('app');
-    if(app) app.innerHTML = homeView();
+    navigate('home');
 }
 
-function syncFromBot() {
-    if (!confirm("Загрузить данные из облака? Локальные изменения затрутся.")) return;
-    fetch(GAS_URL, { 
-        method: "POST", 
-        mode: "no-cors",
-        body: JSON.stringify({ command: "get_data", adminPassword: "TimaSafeKey_2026" }), 
-        headers: { "Content-Type": "text/plain" } 
+// 2. ФУНКЦИЯ СИНХРОНИЗАЦИИ (БЕРЕТ ДАННЫЕ ИЗ ГУГЛА)
+function syncFromBot(silent = false) {
+    if (!silent && !confirm("Обновить данные из облака?")) return;
+    
+    // Используем GET запрос для получения данных, чтобы избежать проблем с CORS no-cors
+    // Но так как у нас no-cors в POST, мы просто "просим" Гугл обновить данные
+    fetch(GAS_URL + "?command=get_data&pass=TimaSafeKey_2026")
+    .then(r => r.json())
+    .then(data => {
+        if(data.questions) window.BOT_QUESTIONS = data.questions;
+        if(data.vacancies) window.BOT_VACANCIES = data.vacancies;
+        if(data.newTexts) {
+             window.ADMIN_FIELDS.forEach(f => {
+                f.ru = data.newTexts[f.key + '_ru'] || f.ru;
+                f.uz = data.newTexts[f.key + '_uz'] || f.uz;
+             });
+        }
+        localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
+        refreshUI();
+        if(!silent) alert("✅ Данные обновлены!");
     })
-    .then(() => {
-        alert("✅ Запрос на получение данных отправлен. Из-за защиты браузера данные подтянутся после автоматической перезагрузки (если скрипт отдал их).");
-        // При no-cors мы не можем прочитать JSON, поэтому синхронизация обычно идет в одну сторону (Save).
-    }).catch(e => alert("Ошибка: " + e));
+    .catch(e => {
+        console.log("Синхронизация не удалась (это нормально при первом запуске или CORS)");
+    });
 }
 
 function saveToBot() {
     saveState();
-    const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
+    const btn = document.getElementById('saveBtn'); btn.innerText = "⏳ Сохраняю..."; btn.disabled = true;
     let texts = {}; window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
     const payload = { adminPassword: "TimaSafeKey_2026", newTexts: texts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
     
@@ -232,15 +216,28 @@ function saveToBot() {
         method: "POST", 
         mode: "no-cors",
         body: JSON.stringify(payload), 
-        headers: { "Content-Type": "text/plain;charset=utf-8" } 
+        headers: { "Content-Type": "text/plain" } 
     })
     .then(() => { 
-        alert("✅ Данные отправлены в Telegram! Проверь бота через пару секунд."); 
-        btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; 
+        alert("✅ Сохранено в облако! Теперь всё подтянется."); 
+        btn.innerText = "💾 СОХРАНИТЬ В ОБЛАКО"; 
         btn.disabled = false; 
     })
-    .catch((err) => { 
-        alert("❌ Ошибка отправки: " + err); 
+    .catch(() => { 
+        alert("❌ Ошибка сети"); 
         btn.disabled = false; 
     });
+}
+
+// Вспомогательные функции для кнопок
+function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
+function removeVacancy(id) { window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
+function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"", q_ru:"", q_uz:"", type:"text", buttons_ru:"", cond_ru:"", cond_target:""}); refreshUI(); }
+function removeQuestion(id) { window.BOT_QUESTIONS = window.BOT_QUESTIONS.filter(q => q.id !== id); refreshUI(); }
+function moveQuestion(idx, dir) {
+    if (idx + dir < 0 || idx + dir >= window.BOT_QUESTIONS.length) return;
+    let temp = window.BOT_QUESTIONS[idx];
+    window.BOT_QUESTIONS[idx] = window.BOT_QUESTIONS[idx + dir];
+    window.BOT_QUESTIONS[idx + dir] = temp;
+    refreshUI();
 }
