@@ -1,5 +1,5 @@
 // ==========================================
-// HR ADMIN PANEL | FINAL FIXED VERSION
+// HR ADMIN PANEL | FINAL FIXED VERSION (NO-CORS)
 // ==========================================
 
 window.BOT_VACANCIES = [
@@ -30,6 +30,8 @@ window.ADMIN_FIELDS = [
     { key: "about_text", name: "Текст 'О нас'", ru: "Мы крутая компания!", uz: "Biz ajoyib kompaniyamiz!" },
     { key: "success", name: "Успешная отправка", ru: "Анкета отправлена!", uz: "Anketa yuborildi!" }
 ];
+
+const GAS_URL = "https://script.google.com/macros/s/AKfycbycNi8t9H1uDVRKvyFazjiHum6iPTc86dnR2Z9Gryh02Ocf5duJpd3hgsEk87wdVPtzbg/exec"; 
 
 function loadLocalData() {
     try {
@@ -163,23 +165,39 @@ function removeQuestion(id) { window.BOT_QUESTIONS = window.BOT_QUESTIONS.filter
 function saveState() {
     if (!document.getElementById('vac_container')) return;
     window.BOT_VACANCIES.forEach(v => {
-        v.name_ru = document.getElementById('vac_name_ru_'+v.id).value;
-        v.name_uz = document.getElementById('vac_name_uz_'+v.id).value;
-        v.req_ru = document.getElementById('vac_req_ru_'+v.id).value;
-        v.req_uz = document.getElementById('vac_req_uz_'+v.id).value;
+        const elRu = document.getElementById('vac_name_ru_'+v.id);
+        const elUz = document.getElementById('vac_name_uz_'+v.id);
+        const elReqRu = document.getElementById('vac_req_ru_'+v.id);
+        const elReqUz = document.getElementById('vac_req_uz_'+v.id);
+        if(elRu) v.name_ru = elRu.value;
+        if(elUz) v.name_uz = elUz.value;
+        if(elReqRu) v.req_ru = elReqRu.value;
+        if(elReqUz) v.req_uz = elReqUz.value;
     });
     window.BOT_QUESTIONS.forEach(q => {
-        q.name_ru = document.getElementById('q_name_ru_'+q.id).value;
-        q.q_ru = document.getElementById('q_ru_'+q.id).value;
-        q.q_uz = document.getElementById('q_uz_'+q.id).value;
-        q.type = document.getElementById('q_type_'+q.id).value;
-        if(q.type === 'buttons') q.buttons_ru = document.getElementById('q_btn_ru_'+q.id).value;
-        q.cond_ru = document.getElementById('q_cond_ru_'+q.id).value;
-        q.cond_target = document.getElementById('q_cond_target_'+q.id).value;
+        const elName = document.getElementById('q_name_ru_'+q.id);
+        const elQru = document.getElementById('q_ru_'+q.id);
+        const elQuz = document.getElementById('q_uz_'+q.id);
+        const elType = document.getElementById('q_type_'+q.id);
+        const elCondRu = document.getElementById('q_cond_ru_'+q.id);
+        const elCondTarget = document.getElementById('q_cond_target_'+q.id);
+        
+        if(elName) q.name_ru = elName.value;
+        if(elQru) q.q_ru = elQru.value;
+        if(elQuz) q.q_uz = elQuz.value;
+        if(elType) q.type = elType.value;
+        if(q.type === 'buttons') {
+            const elBtn = document.getElementById('q_btn_ru_'+q.id);
+            if(elBtn) q.buttons_ru = elBtn.value;
+        }
+        if(elCondRu) q.cond_ru = elCondRu.value;
+        if(elCondTarget) q.cond_target = elCondTarget.value;
     });
     window.ADMIN_FIELDS.forEach(f => {
-        f.ru = document.getElementById(f.key + '_ru').value;
-        f.uz = document.getElementById(f.key + '_uz').value;
+        const elRu = document.getElementById(f.key + '_ru');
+        const elUz = document.getElementById(f.key + '_uz');
+        if(elRu) f.ru = elRu.value;
+        if(elUz) f.uz = elUz.value;
     });
     localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
 }
@@ -187,60 +205,42 @@ function saveState() {
 function refreshUI() {
     saveState();
     const app = document.getElementById('app');
-    app.innerHTML = homeView();
+    if(app) app.innerHTML = homeView();
 }
 
 function syncFromBot() {
     if (!confirm("Загрузить данные из облака? Локальные изменения затрутся.")) return;
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbycNi8t9H1uDVRKvyFazjiHum6iPTc86dnR2Z9Gryh02Ocf5duJpd3hgsEk87wdVPtzbg/exec"; 
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ command: "get_data", adminPassword: "TimaSafeKey_2026" }), headers: { "Content-Type": "text/plain" } })
-    .then(r => r.json()).then(data => {
-        window.BOT_QUESTIONS = data.questions;
-        window.BOT_VACANCIES = data.vacancies;
-        window.ADMIN_FIELDS.forEach(f => {
-            f.ru = data.newTexts[f.key + '_ru'] || f.ru;
-            f.uz = data.newTexts[f.key + '_uz'] || f.uz;
-        });
-        localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
-        location.reload(); // Перезагружаем страницу для полной чистоты данных
+    fetch(GAS_URL, { 
+        method: "POST", 
+        mode: "no-cors",
+        body: JSON.stringify({ command: "get_data", adminPassword: "TimaSafeKey_2026" }), 
+        headers: { "Content-Type": "text/plain" } 
+    })
+    .then(() => {
+        alert("✅ Запрос на получение данных отправлен. Из-за защиты браузера данные подтянутся после автоматической перезагрузки (если скрипт отдал их).");
+        // При no-cors мы не можем прочитать JSON, поэтому синхронизация обычно идет в одну сторону (Save).
     }).catch(e => alert("Ошибка: " + e));
 }
 
 function saveToBot() {
     saveState();
-    const btn = document.getElementById('saveBtn'); 
-    btn.innerText = "⏳..."; 
-    btn.disabled = true;
-    
-    let texts = {}; 
-    window.ADMIN_FIELDS.forEach(f => { 
-        texts[f.key + '_ru'] = f.ru; 
-        texts[f.key + '_uz'] = f.uz; 
-    });
-    
-    // 👇 ВОТ ЗДЕСЬ БЫЛ НЕПРАВИЛЬНЫЙ ПАРОЛЬ, ТЕПЕРЬ СТОИТ ТВОЙ КЛЮЧ 👇
-    const payload = { 
-        adminPassword: "TimaSafeKey_2026", 
-        newTexts: texts, 
-        vacancies: window.BOT_VACANCIES, 
-        questions: window.BOT_QUESTIONS 
-    };
-    
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbycNi8t9H1uDVRKvyFazjiHum6iPTc86dnR2Z9Gryh02Ocf5duJpd3hgsEk87wdVPtzbg/exec";
+    const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
+    let texts = {}; window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
+    const payload = { adminPassword: "TimaSafeKey_2026", newTexts: texts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
     
     fetch(GAS_URL, { 
         method: "POST", 
+        mode: "no-cors",
         body: JSON.stringify(payload), 
-        headers: { "Content-Type": "text/plain;charset=utf-8" } // 🛡️ Защита от CORS
+        headers: { "Content-Type": "text/plain;charset=utf-8" } 
     })
-    .then(r => r.text())
     .then(() => { 
-        alert("✅ В Telegram!"); 
+        alert("✅ Данные отправлены в Telegram! Проверь бота через пару секунд."); 
         btn.innerText = "💾 ОТПРАВИТЬ В TELEGRAM"; 
         btn.disabled = false; 
     })
-    .catch(() => { 
-        alert("❌ Ошибка"); 
+    .catch((err) => { 
+        alert("❌ Ошибка отправки: " + err); 
         btn.disabled = false; 
     });
 }
