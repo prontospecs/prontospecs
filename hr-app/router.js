@@ -4,7 +4,7 @@
 
 // ⚠️ ВНИМАНИЕ: ВСТАВЬ СЮДА СВОЮ НОВУЮ ССЫЛКУ ИЗ GOOGLE APPS SCRIPT! ⚠️
 // Ту самую, которую ты использовал для setWebhook.
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzRwMKtK77aXzrNyDOCEmgOP1X5xVV24wqG6JPQS6QCrDNA3l9N4Pwf8q3DcqpL2wngcw/exec"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwW_QnQO2Wirs-2vSZ2NVDK5owjc0w7RDtf4czuDACtxyY245C1PuMMvo9mSbuPCYcbwA/exec"; 
 
 window.BOT_VACANCIES = [];
 window.BOT_QUESTIONS = [];
