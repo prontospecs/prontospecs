@@ -40,11 +40,20 @@ async function syncAllData() {
 
 document.addEventListener("DOMContentLoaded", () => {
     const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
+    
+    // Проверяем авторизацию с главного экрана
     if (s.username && s.role === 'admin') {
         syncAllData(); // Грузим данные при старте
         navigate('home');
     } else {
-        window.location.href = '../index.html';
+        // Просто показываем сообщение, что нет доступа
+        document.body.innerHTML = `
+            <div style="text-align:center; margin-top:100px; font-family:sans-serif;">
+                <h1 style="color:#ef4444;">⚠️ Доступ закрыт</h1>
+                <p style="font-size:18px;">Вы не авторизованы. Пожалуйста, войдите через главный экран.</p>
+                <button onclick="window.location.href='../index.html'" style="margin-top:20px; padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Вернуться на главную</button>
+            </div>
+        `;
     }
 });
 
