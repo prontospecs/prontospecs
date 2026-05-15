@@ -149,7 +149,12 @@ function buildQuestionsHTML() {
                 <option value="text" ${q.type==='text'?'selected':''}>Текст</option>
                 <option value="buttons" ${q.type==='buttons'?'selected':''}>Кнопки</option>
             </select>
-            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveStateSafe()" placeholder="Кнопки (Да, Нет)" style="width:40%;">` : ''}
+            ${q.type === 'buttons' ? `
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru || ''}" oninput="saveStateSafe()" placeholder="Кнопки RU (Да, Нет)" style="flex:1;">
+                    <input type="text" id="q_btn_uz_${q.id}" value="${q.buttons_uz || ''}" oninput="saveStateSafe()" placeholder="Кнопки UZ (Ha, Yo'q)" style="flex:1;">
+                </div>
+            ` : ''}
             
             <div style="margin-top:10px; padding:10px; background:#fef9c3; border-radius:5px;">
                 <div style="font-size:12px; font-weight:bold; color:#854d0e;">🔀 Логика ветвления:</div>
@@ -212,6 +217,7 @@ function saveStateSafe() {
             q.type = document.getElementById('q_type_'+q.id)?.value || q.type;
             if(q.type === 'buttons') {
                 q.buttons_ru = document.getElementById('q_btn_ru_'+q.id)?.value || q.buttons_ru || "";
+                q.buttons_uz = document.getElementById('q_btn_uz_'+q.id)?.value || q.buttons_uz || "";
             }
             
             // Сохраняем все условия для вопроса
@@ -278,7 +284,7 @@ async function saveToBot() {
 
 function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
 function removeVacancy(id) { window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
-function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"", q_ru:"", q_uz:"", type:"text", buttons_ru:"", conditions:[]}); refreshUI(); }
+function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"Yangi", q_ru:"", q_uz:"", type:"text", buttons_ru:"", buttons_uz:"", conditions:[]}); refreshUI(); }
 function removeQuestion(id) { window.BOT_QUESTIONS = window.BOT_QUESTIONS.filter(q => q.id !== id); refreshUI(); }
 function moveQuestion(idx, dir) {
     if (idx + dir < 0 || idx + dir >= window.BOT_QUESTIONS.length) return;
