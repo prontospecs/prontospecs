@@ -1,7 +1,8 @@
 // ==========================================
-// HR ADMIN PANEL | ВЕТВЛЕНИЕ (МНОЖЕСТВО УСЛОВИЙ)
+// HR ADMIN PANEL | ВЕРСИЯ С НАЗВАНИЯМИ НА УЗБЕКСКОМ И ВЕТВЛЕНИЕМ
 // ==========================================
 
+// ⚠️ ВСТАВЬ СЮДА СВОЮ РАБОЧУЮ ССЫЛКУ ИЗ ГУГЛА (БЕЗ /u/4/)
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwW_QnQO2Wirs-2vSZ2NVDK5owjc0w7RDtf4czuDACtxyY245C1PuMMvo9mSbuPCYcbwA/exec"; 
 
 window.BOT_VACANCIES = [];
@@ -21,15 +22,8 @@ async function syncAllData() {
         if (data.vacancies) window.BOT_VACANCIES = data.vacancies;
         
         if (data.questions) {
-            // Переносим вопросы и автоматически конвертируем старые условия в массив новых
             window.BOT_QUESTIONS = data.questions.map(q => {
-                if (!q.conditions) {
-                    q.conditions = [];
-                    // Если была старая логика, сохраняем её
-                    if (q.cond_ru && q.cond_target) {
-                        q.conditions.push({ value: q.cond_ru, target: q.cond_target });
-                    }
-                }
+                if (!q.conditions) q.conditions = [];
                 return q;
             });
         }
@@ -117,12 +111,10 @@ function buildVacanciesHTML() {
 function buildQuestionsHTML() {
     if (window.BOT_QUESTIONS.length === 0) return "<p style='color:gray;'>Анкета пуста.</p>";
     
-    // Подготавливаем опции для выпадающих списков
     let opts = `<option value="">-- Следующий по порядку --</option><option value="end">🏁 Конец анкеты</option>`;
     window.BOT_QUESTIONS.forEach(t => { opts += `<option value="${t.id}">${t.name_ru}</option>`; });
 
     return window.BOT_QUESTIONS.map((q, i) => {
-        // Собираем HTML для множественных условий
         let condsHTML = (q.conditions || []).map((c, cIdx) => `
             <div style="margin-top:5px; font-size:12px; display:flex; gap:5px; align-items:center;">
                 Если ответ <input type="text" id="q_cond_val_${q.id}_${cIdx}" value="${c.value}" oninput="saveStateSafe()" style="width:100px; padding:2px;" placeholder="Текст (Да, Нет)"> ➡️ Перейди к:
@@ -140,21 +132,29 @@ function buildQuestionsHTML() {
                 <button onclick="moveQuestion(${i}, 1)" class="btn-mini">⬇️</button>
                 <button onclick="removeQuestion(${q.id})" class="btn-mini" style="background:#ef4444;">🗑️</button>
             </div>
-            <b>В ${i+1}:</b> <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveStateSafe()" style="width:150px;">
+            
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom: 5px;">
+                <b>В ${i+1}:</b> 
+                <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveStateSafe()" placeholder="Название (RU)" style="width:150px; font-weight:bold;">
+                <input type="text" id="q_name_uz_${q.id}" value="${q.name_uz || ''}" oninput="saveStateSafe()" placeholder="Название отчета (UZ)" style="width:150px; font-weight:bold;">
+            </div>
+            
+            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveStateSafe()" placeholder="Текст вопроса RU" style="width:48%;">
+            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveStateSafe()" placeholder="Текст вопроса UZ" style="width:48%;">
             <br>
-            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveStateSafe()" placeholder="RU" style="width:48%;">
-            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveStateSafe()" placeholder="UZ" style="width:48%;">
-            <br>
-            Тип: <select id="q_type_${q.id}" onchange="saveStateSafe(); refreshUI()">
-                <option value="text" ${q.type==='text'?'selected':''}>Текст</option>
-                <option value="buttons" ${q.type==='buttons'?'selected':''}>Кнопки</option>
-            </select>
-            ${q.type === 'buttons' ? `
-                <div style="display:flex; gap:10px; margin-top:5px;">
-                    <input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru || ''}" oninput="saveStateSafe()" placeholder="Кнопки RU (Да, Нет)" style="flex:1;">
-                    <input type="text" id="q_btn_uz_${q.id}" value="${q.buttons_uz || ''}" oninput="saveStateSafe()" placeholder="Кнопки UZ (Ha, Yo'q)" style="flex:1;">
-                </div>
-            ` : ''}
+            
+            <div style="margin-top: 5px;">
+                Тип: <select id="q_type_${q.id}" onchange="saveStateSafe(); refreshUI()">
+                    <option value="text" ${q.type==='text'?'selected':''}>Текст</option>
+                    <option value="buttons" ${q.type==='buttons'?'selected':''}>Кнопки</option>
+                </select>
+                ${q.type === 'buttons' ? `
+                    <div style="display:inline-flex; gap:10px; margin-left: 10px;">
+                        <input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru || ''}" oninput="saveStateSafe()" placeholder="Кнопки RU (Да, Нет)" style="width:150px;">
+                        <input type="text" id="q_btn_uz_${q.id}" value="${q.buttons_uz || ''}" oninput="saveStateSafe()" placeholder="Кнопки UZ (Ha, Yo'q)" style="width:150px;">
+                    </div>
+                ` : ''}
+            </div>
             
             <div style="margin-top:10px; padding:10px; background:#fef9c3; border-radius:5px;">
                 <div style="font-size:12px; font-weight:bold; color:#854d0e;">🔀 Логика ветвления:</div>
@@ -178,7 +178,6 @@ function buildFieldsHTML() {
     `).join('');
 }
 
-// Функции для управления условиями
 function addCondition(qId) {
     saveStateSafe();
     let q = window.BOT_QUESTIONS.find(x => x.id === qId);
@@ -198,7 +197,6 @@ function removeCondition(qId, cIdx) {
     }
 }
 
-// 🔴 СУПЕР-БЕЗОПАСНОЕ СОХРАНЕНИЕ
 function saveStateSafe() {
     try {
         if (!document.getElementById('vac_container')) return;
@@ -212,6 +210,7 @@ function saveStateSafe() {
         
         window.BOT_QUESTIONS.forEach(q => {
             q.name_ru = document.getElementById('q_name_ru_'+q.id)?.value || q.name_ru;
+            q.name_uz = document.getElementById('q_name_uz_'+q.id)?.value || q.name_uz;
             q.q_ru = document.getElementById('q_ru_'+q.id)?.value || q.q_ru;
             q.q_uz = document.getElementById('q_uz_'+q.id)?.value || q.q_uz;
             q.type = document.getElementById('q_type_'+q.id)?.value || q.type;
@@ -220,7 +219,6 @@ function saveStateSafe() {
                 q.buttons_uz = document.getElementById('q_btn_uz_'+q.id)?.value || q.buttons_uz || "";
             }
             
-            // Сохраняем все условия для вопроса
             if (q.conditions) {
                 q.conditions.forEach((c, cIdx) => {
                     c.value = document.getElementById(`q_cond_val_${q.id}_${cIdx}`)?.value || c.value;
@@ -284,7 +282,7 @@ async function saveToBot() {
 
 function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
 function removeVacancy(id) { window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
-function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"Yangi", q_ru:"", q_uz:"", type:"text", buttons_ru:"", buttons_uz:"", conditions:[]}); refreshUI(); }
+function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"", q_ru:"", q_uz:"", type:"text", buttons_ru:"", buttons_uz:"", conditions:[]}); refreshUI(); }
 function removeQuestion(id) { window.BOT_QUESTIONS = window.BOT_QUESTIONS.filter(q => q.id !== id); refreshUI(); }
 function moveQuestion(idx, dir) {
     if (idx + dir < 0 || idx + dir >= window.BOT_QUESTIONS.length) return;
