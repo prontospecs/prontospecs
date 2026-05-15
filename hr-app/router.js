@@ -1,9 +1,7 @@
 // ==========================================
-// HR ADMIN PANEL | AUTO-SYNC & FIX
+// HR ADMIN PANEL | БРОНЕБОЙНАЯ ВЕРСИЯ
 // ==========================================
 
-// ⚠️ ВНИМАНИЕ: ВСТАВЬ СЮДА СВОЮ НОВУЮ ССЫЛКУ ИЗ GOOGLE APPS SCRIPT! ⚠️
-// Ту самую, которую ты использовал для setWebhook.
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwW_QnQO2Wirs-2vSZ2NVDK5owjc0w7RDtf4czuDACtxyY245C1PuMMvo9mSbuPCYcbwA/exec"; 
 
 window.BOT_VACANCIES = [];
@@ -17,9 +15,7 @@ window.ADMIN_FIELDS = [
 async function syncAllData() {
     try {
         const response = await fetch(GAS_URL + "?t=" + new Date().getTime());
-        
-        if (!response.ok) throw new Error("Network response was not ok");
-        
+        if (!response.ok) throw new Error("Ошибка сети: " + response.status);
         const data = await response.json();
         
         if (data.vacancies) window.BOT_VACANCIES = data.vacancies;
@@ -30,30 +26,24 @@ async function syncAllData() {
                 if (data.newTexts[f.key + '_uz']) f.uz = data.newTexts[f.key + '_uz'];
             });
         }
-        
-        // 🔴 ИСПРАВЛЕНИЕ ЗДЕСЬ: Мы просто перерисовываем экран без вызова saveState()
-        navigate('home'); 
-        
+        navigate('home');
     } catch (e) {
         console.error("Ошибка синхронизации:", e);
-        alert("⚠️ Ошибка: Данные не загрузились! Проверь ссылку GAS_URL");
+        alert("⚠️ Данные не загрузились. Проверьте ссылку или интернет.");
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
-    
-    // Проверяем авторизацию с главного экрана
     if (s.username && s.role === 'admin') {
-        syncAllData(); // Грузим данные при старте
+        syncAllData();
         navigate('home');
     } else {
-        // Просто показываем сообщение, что нет доступа
         document.body.innerHTML = `
             <div style="text-align:center; margin-top:100px; font-family:sans-serif;">
                 <h1 style="color:#ef4444;">⚠️ Доступ закрыт</h1>
-                <p style="font-size:18px;">Вы не авторизованы. Пожалуйста, войдите через главный экран.</p>
-                <button onclick="window.location.href='../index.html'" style="margin-top:20px; padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Вернуться на главную</button>
+                <p style="font-size:18px;">Вы не авторизованы. Войдите через главный экран.</p>
+                <button onclick="window.location.href='../index.html'" style="margin-top:20px; padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">На главную</button>
             </div>
         `;
     }
@@ -92,26 +82,26 @@ function homeView() {
             ${buildFieldsHTML()}
         </div>
 
-        <button onclick="saveToBot()" id="saveBtn" class="btn" style="height:60px; margin-top:20px;">💾 СОХРАНИТЬ В ОБЛАКО</button>
+        <button onclick="saveToBot()" id="saveBtn" class="btn" style="height:60px; margin-top:20px; width: 100%;">💾 СОХРАНИТЬ В ОБЛАКО</button>
     </div>
     `;
 }
 
 function buildVacanciesHTML() {
-    if (window.BOT_VACANCIES.length === 0) return "<p style='color:gray;'>Нет данных. Нажмите 'Обновить' или 'Добавить'.</p>";
+    if (window.BOT_VACANCIES.length === 0) return "<p style='color:gray;'>Нет данных.</p>";
     return window.BOT_VACANCIES.map(v => `
         <div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #93c5fd; position:relative;">
             <button onclick="removeVacancy(${v.id})" style="position:absolute; right:10px; top:10px; background:#ef4444; color:white; border:none; border-radius:5px;">🗑️</button>
-            <input type="text" id="vac_name_ru_${v.id}" value="${v.name_ru}" oninput="saveState()" placeholder="Название (RU)" style="width:45%;">
-            <input type="text" id="vac_name_uz_${v.id}" value="${v.name_uz}" oninput="saveState()" placeholder="Название (UZ)" style="width:45%;">
-            <textarea id="vac_req_ru_${v.id}" oninput="saveState()" placeholder="Требования (RU)" style="width:45%; margin-top:5px; height:60px;">${v.req_ru}</textarea>
-            <textarea id="vac_req_uz_${v.id}" oninput="saveState()" placeholder="Требования (UZ)" style="width:45%; margin-top:5px; height:60px;">${v.req_uz}</textarea>
+            <input type="text" id="vac_name_ru_${v.id}" value="${v.name_ru}" oninput="saveStateSafe()" placeholder="Название (RU)" style="width:45%;">
+            <input type="text" id="vac_name_uz_${v.id}" value="${v.name_uz}" oninput="saveStateSafe()" placeholder="Название (UZ)" style="width:45%;">
+            <textarea id="vac_req_ru_${v.id}" oninput="saveStateSafe()" placeholder="Требования (RU)" style="width:45%; margin-top:5px; height:60px;">${v.req_ru}</textarea>
+            <textarea id="vac_req_uz_${v.id}" oninput="saveStateSafe()" placeholder="Требования (UZ)" style="width:45%; margin-top:5px; height:60px;">${v.req_uz}</textarea>
         </div>
     `).join('');
 }
 
 function buildQuestionsHTML() {
-    if (window.BOT_QUESTIONS.length === 0) return "<p style='color:gray;'>Анкета пуста. Нажмите 'Обновить' или добавьте вопрос.</p>";
+    if (window.BOT_QUESTIONS.length === 0) return "<p style='color:gray;'>Анкета пуста.</p>";
     let opts = `<option value="">-- Обычно --</option><option value="end">🏁 Конец</option>`;
     window.BOT_QUESTIONS.forEach(t => { opts += `<option value="${t.id}">${t.name_ru}</option>`; });
 
@@ -122,19 +112,19 @@ function buildQuestionsHTML() {
                 <button onclick="moveQuestion(${i}, 1)" class="btn-mini">⬇️</button>
                 <button onclick="removeQuestion(${q.id})" class="btn-mini" style="background:#ef4444;">🗑️</button>
             </div>
-            <b>В ${i+1}:</b> <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveState()" style="width:150px;">
+            <b>В ${i+1}:</b> <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveStateSafe()" style="width:150px;">
             <br>
-            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveState()" placeholder="RU" style="width:48%;">
-            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveState()" placeholder="UZ" style="width:48%;">
+            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveStateSafe()" placeholder="RU" style="width:48%;">
+            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveStateSafe()" placeholder="UZ" style="width:48%;">
             <br>
-            Тип: <select id="q_type_${q.id}" onchange="saveState(); refreshUI()">
+            Тип: <select id="q_type_${q.id}" onchange="saveStateSafe(); refreshUI()">
                 <option value="text" ${q.type==='text'?'selected':''}>Текст</option>
                 <option value="buttons" ${q.type==='buttons'?'selected':''}>Кнопки</option>
             </select>
-            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveState()" placeholder="Кнопки (Да, Нет)" style="width:40%;">` : ''}
+            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveStateSafe()" placeholder="Кнопки (Да, Нет)" style="width:40%;">` : ''}
             <div style="margin-top:5px; font-size:12px;">
-                Логика: Если <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveState()" style="width:80px;"> ➡️
-                <select id="q_cond_target_${q.id}" onchange="saveState()">
+                Логика: Если <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveStateSafe()" style="width:80px;"> ➡️
+                <select id="q_cond_target_${q.id}" onchange="saveStateSafe()">
                     ${opts.replace(`value="${q.cond_target}"`, `value="${q.cond_target}" selected`)}
                 </select>
             </div>
@@ -147,63 +137,88 @@ function buildFieldsHTML() {
         <div style="margin-bottom: 10px;">
             <label>${f.name}:</label>
             <div style="display:flex; gap:10px;">
-                <input type="text" id="${f.key}_ru" value="${f.ru}" oninput="saveState()" style="flex:1;">
-                <input type="text" id="${f.key}_uz" value="${f.uz}" oninput="saveState()" style="flex:1;">
+                <input type="text" id="${f.key}_ru" value="${f.ru}" oninput="saveStateSafe()" style="flex:1;">
+                <input type="text" id="${f.key}_uz" value="${f.uz}" oninput="saveStateSafe()" style="flex:1;">
             </div>
         </div>
     `).join('');
 }
 
-function saveState() {
-    if (!document.getElementById('vac_container')) return;
-    window.BOT_VACANCIES.forEach(v => {
-        v.name_ru = document.getElementById('vac_name_ru_'+v.id).value;
-        v.name_uz = document.getElementById('vac_name_uz_'+v.id).value;
-        v.req_ru = document.getElementById('vac_req_ru_'+v.id).value;
-        v.req_uz = document.getElementById('vac_req_uz_'+v.id).value;
-    });
-    window.BOT_QUESTIONS.forEach(q => {
-        q.name_ru = document.getElementById('q_name_ru_'+q.id).value;
-        q.q_ru = document.getElementById('q_ru_'+q.id).value;
-        q.q_uz = document.getElementById('q_uz_'+q.id).value;
-        q.type = document.getElementById('q_type_'+q.id).value;
-        if(q.type === 'buttons') q.buttons_ru = document.getElementById('q_btn_ru_'+q.id).value;
-        q.cond_ru = document.getElementById('q_cond_ru_'+q.id).value;
-        q.cond_target = document.getElementById('q_cond_target_'+q.id).value;
-    });
-    window.ADMIN_FIELDS.forEach(f => {
-        f.ru = document.getElementById(f.key + '_ru').value;
-        f.uz = document.getElementById(f.key + '_uz').value;
-    });
+// 🔴 СУПЕР-БЕЗОПАСНОЕ СОХРАНЕНИЕ
+function saveStateSafe() {
+    try {
+        if (!document.getElementById('vac_container')) return;
+        
+        window.BOT_VACANCIES.forEach(v => {
+            v.name_ru = document.getElementById('vac_name_ru_'+v.id)?.value || v.name_ru;
+            v.name_uz = document.getElementById('vac_name_uz_'+v.id)?.value || v.name_uz;
+            v.req_ru = document.getElementById('vac_req_ru_'+v.id)?.value || v.req_ru;
+            v.req_uz = document.getElementById('vac_req_uz_'+v.id)?.value || v.req_uz;
+        });
+        
+        window.BOT_QUESTIONS.forEach(q => {
+            q.name_ru = document.getElementById('q_name_ru_'+q.id)?.value || q.name_ru;
+            q.q_ru = document.getElementById('q_ru_'+q.id)?.value || q.q_ru;
+            q.q_uz = document.getElementById('q_uz_'+q.id)?.value || q.q_uz;
+            q.type = document.getElementById('q_type_'+q.id)?.value || q.type;
+            if(q.type === 'buttons') {
+                q.buttons_ru = document.getElementById('q_btn_ru_'+q.id)?.value || q.buttons_ru || "";
+            }
+            q.cond_ru = document.getElementById('q_cond_ru_'+q.id)?.value || "";
+            q.cond_target = document.getElementById('q_cond_target_'+q.id)?.value || "";
+        });
+        
+        window.ADMIN_FIELDS.forEach(f => {
+            f.ru = document.getElementById(f.key + '_ru')?.value || f.ru;
+            f.uz = document.getElementById(f.key + '_uz')?.value || f.uz;
+        });
+    } catch(e) {
+        console.error("Ошибка при чтении полей:", e);
+    }
 }
 
 function refreshUI() {
-    saveState();
+    saveStateSafe();
     navigate('home');
 }
 
-function saveToBot() {
-    saveState();
-    const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
-    let texts = {}; window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
-    const payload = { adminPassword: "TimaSafeKey_2026", newTexts: texts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
+async function saveToBot() {
+    saveStateSafe();
+    const btn = document.getElementById('saveBtn'); 
+    btn.innerText = "⏳ СОХРАНЕНИЕ..."; 
+    btn.disabled = true;
     
-    fetch(GAS_URL, { 
-        method: "POST", 
-        mode: "no-cors",
-        body: JSON.stringify(payload), 
-        headers: { "Content-Type": "text/plain" } 
-    })
-    .then(() => { 
-        alert("✅ Успешно сохранено в облако!"); 
-        btn.innerText = "💾 СОХРАНИТЬ В ОБЛАКО"; 
-        btn.disabled = false; 
-    })
-    .catch(() => { 
-        alert("❌ Произошла ошибка. Проверьте ссылку в admin.js"); 
+    let texts = {}; 
+    window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
+    
+    const payload = { 
+        adminPassword: "TimaSafeKey_2026", 
+        newTexts: texts, 
+        vacancies: window.BOT_VACANCIES, 
+        questions: window.BOT_QUESTIONS 
+    };
+    
+    try {
+        const response = await fetch(GAS_URL, { 
+            method: "POST", 
+            body: JSON.stringify(payload), 
+            headers: { "Content-Type": "text/plain" } 
+        });
+        
+        const result = await response.text();
+        
+        if(result === "OK") {
+            alert("✅ Успешно сохранено в облако!");
+        } else {
+            alert("⚠️ Сервер ответил, но возможно с ошибкой. Проверьте бота.");
+        }
+    } catch (error) {
+        console.error("Ошибка при сохранении:", error);
+        alert("❌ Ошибка соединения! Проверь интернет или настройки ссылки.");
+    } finally {
         btn.innerText = "💾 СОХРАНИТЬ В ОБЛАКО";
-        btn.disabled = false; 
-    });
+        btn.disabled = false;
+    }
 }
 
 function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
