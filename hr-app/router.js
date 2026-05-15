@@ -1,43 +1,52 @@
 // ==========================================
-// HR ADMIN PANEL | AUTO-SYNC VERSION
+// HR ADMIN PANEL | AUTO-SYNC & FIX
 // ==========================================
 
-// Это "заглушки". Если из облака ничего не придет, покажутся они.
+// ⚠️ ВНИМАНИЕ: ВСТАВЬ СЮДА СВОЮ НОВУЮ ССЫЛКУ ИЗ GOOGLE APPS SCRIPT! ⚠️
+// Ту самую, которую ты использовал для setWebhook.
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzRwMKtK77aXzrNyDOCEmgOP1X5xVV24wqG6JPQS6QCrDNA3l9N4Pwf8q3DcqpL2wngcw/exec"; 
+
 window.BOT_VACANCIES = [];
 window.BOT_QUESTIONS = [];
 window.ADMIN_FIELDS = [
-    { key: "menu_greeting", name: "Главное меню", ru: "Загрузка...", uz: "Yuklanmoqda..." },
-    { key: "about_text", name: "Текст 'О нас'", ru: "Загрузка...", uz: "Yuklanmoqda..." },
-    { key: "success", name: "Успешная отправка", ru: "Загрузка...", uz: "Yuklanmoqda..." }
+    { key: "menu_greeting", name: "Главное меню", ru: "Выберите:", uz: "Tanlang:" },
+    { key: "about_text", name: "Текст 'О нас'", ru: "Информация...", uz: "Ma'lumot..." },
+    { key: "success", name: "Успешная отправка", ru: "Отправлено!", uz: "Yuborildi!" }
 ];
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbycNi8t9H1uDVRKvyFazjiHum6iPTc86dnR2Z9Gryh02Ocf5duJpd3hgsEk87wdVPtzbg/exec"; 
+async function syncAllData() {
+    try {
+        // Добавляем параметр времени, чтобы браузер не брал данные из кэша
+        const response = await fetch(GAS_URL + "?t=" + new Date().getTime());
+        
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const data = await response.json();
+        
+        if (data.vacancies) window.BOT_VACANCIES = data.vacancies;
+        if (data.questions) window.BOT_QUESTIONS = data.questions;
+        if (data.newTexts) {
+            window.ADMIN_FIELDS.forEach(f => {
+                if (data.newTexts[f.key + '_ru']) f.ru = data.newTexts[f.key + '_ru'];
+                if (data.newTexts[f.key + '_uz']) f.uz = data.newTexts[f.key + '_uz'];
+            });
+        }
+        refreshUI();
+    } catch (e) {
+        console.error("Ошибка синхронизации:", e);
+        alert("⚠️ Ошибка: Данные не загрузились! Проверь, правильно ли вставлена ссылка GAS_URL в admin.js");
+    }
+}
 
-// 1. ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ПРИ СТАРТЕ
 document.addEventListener("DOMContentLoaded", () => {
     const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
     if (s.username && s.role === 'admin') {
-        // Сначала грузим то, что сохранено в браузере (локально)
-        loadLocalData();
+        syncAllData(); // Грузим данные при старте
         navigate('home');
-        // А теперь идем в облако за свежими данными
-        syncFromBot(true); 
     } else {
         window.location.href = '../index.html';
     }
 });
-
-function loadLocalData() {
-    try {
-        const data = localStorage.getItem('hr_admin_autosave_v2'); 
-        if (data) {
-            const parsed = JSON.parse(data);
-            if (parsed.vacancies) window.BOT_VACANCIES = parsed.vacancies;
-            if (parsed.questions) window.BOT_QUESTIONS = parsed.questions;
-            if (parsed.fields) window.ADMIN_FIELDS = parsed.fields;
-        }
-    } catch(e) { console.error("Локальных данных нет"); }
-}
 
 function navigate(view) {
     const app = document.getElementById('app');
@@ -45,16 +54,12 @@ function navigate(view) {
 }
 
 function homeView() {
-    const s = JSON.parse(localStorage.getItem('pronto_settings') || '{}');
     return `
     <div class="home-card fade-in" style="max-width: 900px; text-align: left;">
         <div style="display:flex; justify-content:space-between; margin-bottom: 20px; align-items: center;">
-            <div>
-                <h1 style="margin:0; color: var(--pronto);">HR ПАНЕЛЬ</h1>
-                <p style="margin:0; color:#64748b; font-size: 14px;">Админ: ${s.username} <span id="saveStatus" style="color:#22c55e;">✔️</span></p>
-            </div>
+            <h1 style="margin:0; color: var(--pronto);">HR ПАНЕЛЬ</h1>
             <div style="display:flex; gap:10px;">
-                <button onclick="syncFromBot()" class="btn-mini" style="background:#8b5cf6; color:white;">🔄 ОБНОВИТЬ</button>
+                <button onclick="syncAllData()" class="btn-mini" style="background:#8b5cf6; color:white;">🔄 ОБНОВИТЬ</button>
                 <button onclick="window.location.href='../index.html'" class="btn-mini" style="background:#64748b; color:white;">🔙 ВЫХОД</button>
             </div>
         </div>
@@ -82,9 +87,10 @@ function homeView() {
 }
 
 function buildVacanciesHTML() {
+    if (window.BOT_VACANCIES.length === 0) return "<p style='color:gray;'>Нет данных. Нажмите 'Обновить' или 'Добавить'.</p>";
     return window.BOT_VACANCIES.map(v => `
         <div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #93c5fd; position:relative;">
-            <button onclick="removeVacancy(${v.id})" style="position:absolute; right:10px; top:10px; background:#ef4444; color:white; border:none; border-radius:5px; cursor:pointer;">🗑️</button>
+            <button onclick="removeVacancy(${v.id})" style="position:absolute; right:10px; top:10px; background:#ef4444; color:white; border:none; border-radius:5px;">🗑️</button>
             <input type="text" id="vac_name_ru_${v.id}" value="${v.name_ru}" oninput="saveState()" placeholder="Название (RU)" style="width:45%;">
             <input type="text" id="vac_name_uz_${v.id}" value="${v.name_uz}" oninput="saveState()" placeholder="Название (UZ)" style="width:45%;">
             <textarea id="vac_req_ru_${v.id}" oninput="saveState()" placeholder="Требования (RU)" style="width:45%; margin-top:5px; height:60px;">${v.req_ru}</textarea>
@@ -94,8 +100,9 @@ function buildVacanciesHTML() {
 }
 
 function buildQuestionsHTML() {
+    if (window.BOT_QUESTIONS.length === 0) return "<p style='color:gray;'>Анкета пуста. Нажмите 'Обновить' или добавьте вопрос.</p>";
     let opts = `<option value="">-- Обычно --</option><option value="end">🏁 Конец</option>`;
-    window.BOT_QUESTIONS.forEach(t => { opts += `<option value="${t.id}">Прыжок на: ${t.name_ru}</option>`; });
+    window.BOT_QUESTIONS.forEach(t => { opts += `<option value="${t.id}">${t.name_ru}</option>`; });
 
     return window.BOT_QUESTIONS.map((q, i) => `
         <div style="background:white; padding:15px; border-radius:8px; margin-bottom:15px; border:2px solid #eab308; position:relative;">
@@ -106,16 +113,16 @@ function buildQuestionsHTML() {
             </div>
             <b>В ${i+1}:</b> <input type="text" id="q_name_ru_${q.id}" value="${q.name_ru}" oninput="saveState()" style="width:150px;">
             <br>
-            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveState()" placeholder="Текст вопроса RU" style="width:48%;">
-            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveState()" placeholder="Текст вопроса UZ" style="width:48%;">
+            <input type="text" id="q_ru_${q.id}" value="${q.q_ru}" oninput="saveState()" placeholder="RU" style="width:48%;">
+            <input type="text" id="q_uz_${q.id}" value="${q.q_uz}" oninput="saveState()" placeholder="UZ" style="width:48%;">
             <br>
             Тип: <select id="q_type_${q.id}" onchange="saveState(); refreshUI()">
                 <option value="text" ${q.type==='text'?'selected':''}>Текст</option>
                 <option value="buttons" ${q.type==='buttons'?'selected':''}>Кнопки</option>
             </select>
-            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveState()" placeholder="Варианты (Да, Нет)" style="width:40%;">` : ''}
+            ${q.type === 'buttons' ? `<input type="text" id="q_btn_ru_${q.id}" value="${q.buttons_ru}" oninput="saveState()" placeholder="Кнопки (Да, Нет)" style="width:40%;">` : ''}
             <div style="margin-top:5px; font-size:12px;">
-                Логика: Если ответ <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveState()" style="width:80px;"> ➡️
+                Логика: Если <input type="text" id="q_cond_ru_${q.id}" value="${q.cond_ru || ''}" oninput="saveState()" style="width:80px;"> ➡️
                 <select id="q_cond_target_${q.id}" onchange="saveState()">
                     ${opts.replace(`value="${q.cond_target}"`, `value="${q.cond_target}" selected`)}
                 </select>
@@ -139,40 +146,24 @@ function buildFieldsHTML() {
 function saveState() {
     if (!document.getElementById('vac_container')) return;
     window.BOT_VACANCIES.forEach(v => {
-        const elRu = document.getElementById('vac_name_ru_'+v.id);
-        const elUz = document.getElementById('vac_name_uz_'+v.id);
-        const elReqRu = document.getElementById('vac_req_ru_'+v.id);
-        const elReqUz = document.getElementById('vac_req_uz_'+v.id);
-        if(elRu) v.name_ru = elRu.value;
-        if(elUz) v.name_uz = elUz.value;
-        if(elReqRu) v.req_ru = elReqRu.value;
-        if(elReqUz) v.req_uz = elReqUz.value;
+        v.name_ru = document.getElementById('vac_name_ru_'+v.id).value;
+        v.name_uz = document.getElementById('vac_name_uz_'+v.id).value;
+        v.req_ru = document.getElementById('vac_req_ru_'+v.id).value;
+        v.req_uz = document.getElementById('vac_req_uz_'+v.id).value;
     });
     window.BOT_QUESTIONS.forEach(q => {
-        const elName = document.getElementById('q_name_ru_'+q.id);
-        const elQru = document.getElementById('q_ru_'+q.id);
-        const elQuz = document.getElementById('q_uz_'+q.id);
-        const elType = document.getElementById('q_type_'+q.id);
-        if(elName) q.name_ru = elName.value;
-        if(elQru) q.q_ru = elQru.value;
-        if(elQuz) q.q_uz = elQuz.value;
-        if(elType) q.type = elType.value;
-        if(q.type === 'buttons') {
-            const elBtn = document.getElementById('q_btn_ru_'+q.id);
-            if(elBtn) q.buttons_ru = elBtn.value;
-        }
-        const elCondRu = document.getElementById('q_cond_ru_'+q.id);
-        const elCondTarget = document.getElementById('q_cond_target_'+q.id);
-        if(elCondRu) q.cond_ru = elCondRu.value;
-        if(elCondTarget) q.cond_target = elCondTarget.value;
+        q.name_ru = document.getElementById('q_name_ru_'+q.id).value;
+        q.q_ru = document.getElementById('q_ru_'+q.id).value;
+        q.q_uz = document.getElementById('q_uz_'+q.id).value;
+        q.type = document.getElementById('q_type_'+q.id).value;
+        if(q.type === 'buttons') q.buttons_ru = document.getElementById('q_btn_ru_'+q.id).value;
+        q.cond_ru = document.getElementById('q_cond_ru_'+q.id).value;
+        q.cond_target = document.getElementById('q_cond_target_'+q.id).value;
     });
     window.ADMIN_FIELDS.forEach(f => {
-        const elRu = document.getElementById(f.key + '_ru');
-        const elUz = document.getElementById(f.key + '_uz');
-        if(elRu) f.ru = elRu.value;
-        if(elUz) f.uz = elUz.value;
+        f.ru = document.getElementById(f.key + '_ru').value;
+        f.uz = document.getElementById(f.key + '_uz').value;
     });
-    localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
 }
 
 function refreshUI() {
@@ -180,35 +171,9 @@ function refreshUI() {
     navigate('home');
 }
 
-// 2. ФУНКЦИЯ СИНХРОНИЗАЦИИ (БЕРЕТ ДАННЫЕ ИЗ ГУГЛА)
-function syncFromBot(silent = false) {
-    if (!silent && !confirm("Обновить данные из облака?")) return;
-    
-    // Используем GET запрос для получения данных, чтобы избежать проблем с CORS no-cors
-    // Но так как у нас no-cors в POST, мы просто "просим" Гугл обновить данные
-    fetch(GAS_URL + "?command=get_data&pass=TimaSafeKey_2026")
-    .then(r => r.json())
-    .then(data => {
-        if(data.questions) window.BOT_QUESTIONS = data.questions;
-        if(data.vacancies) window.BOT_VACANCIES = data.vacancies;
-        if(data.newTexts) {
-             window.ADMIN_FIELDS.forEach(f => {
-                f.ru = data.newTexts[f.key + '_ru'] || f.ru;
-                f.uz = data.newTexts[f.key + '_uz'] || f.uz;
-             });
-        }
-        localStorage.setItem('hr_admin_autosave_v2', JSON.stringify({ vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS, fields: window.ADMIN_FIELDS }));
-        refreshUI();
-        if(!silent) alert("✅ Данные обновлены!");
-    })
-    .catch(e => {
-        console.log("Синхронизация не удалась (это нормально при первом запуске или CORS)");
-    });
-}
-
 function saveToBot() {
     saveState();
-    const btn = document.getElementById('saveBtn'); btn.innerText = "⏳ Сохраняю..."; btn.disabled = true;
+    const btn = document.getElementById('saveBtn'); btn.innerText = "⏳..."; btn.disabled = true;
     let texts = {}; window.ADMIN_FIELDS.forEach(f => { texts[f.key + '_ru'] = f.ru; texts[f.key + '_uz'] = f.uz; });
     const payload = { adminPassword: "TimaSafeKey_2026", newTexts: texts, vacancies: window.BOT_VACANCIES, questions: window.BOT_QUESTIONS };
     
@@ -219,17 +184,17 @@ function saveToBot() {
         headers: { "Content-Type": "text/plain" } 
     })
     .then(() => { 
-        alert("✅ Сохранено в облако! Теперь всё подтянется."); 
+        alert("✅ Успешно сохранено в облако!"); 
         btn.innerText = "💾 СОХРАНИТЬ В ОБЛАКО"; 
         btn.disabled = false; 
     })
     .catch(() => { 
-        alert("❌ Ошибка сети"); 
+        alert("❌ Произошла ошибка. Проверьте ссылку в admin.js"); 
+        btn.innerText = "💾 СОХРАНИТЬ В ОБЛАКО";
         btn.disabled = false; 
     });
 }
 
-// Вспомогательные функции для кнопок
 function addVacancy() { window.BOT_VACANCIES.push({id: Date.now(), name_ru:"", name_uz:"", req_ru:"", req_uz:""}); refreshUI(); }
 function removeVacancy(id) { window.BOT_VACANCIES = window.BOT_VACANCIES.filter(v => v.id !== id); refreshUI(); }
 function addQuestion() { window.BOT_QUESTIONS.push({id: Date.now(), name_ru:"Новый", name_uz:"", q_ru:"", q_uz:"", type:"text", buttons_ru:"", cond_ru:"", cond_target:""}); refreshUI(); }
