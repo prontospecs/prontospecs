@@ -16,7 +16,6 @@ window.ADMIN_FIELDS = [
 
 async function syncAllData() {
     try {
-        // Добавляем параметр времени, чтобы браузер не брал данные из кэша
         const response = await fetch(GAS_URL + "?t=" + new Date().getTime());
         
         if (!response.ok) throw new Error("Network response was not ok");
@@ -31,10 +30,13 @@ async function syncAllData() {
                 if (data.newTexts[f.key + '_uz']) f.uz = data.newTexts[f.key + '_uz'];
             });
         }
-        refreshUI();
+        
+        // 🔴 ИСПРАВЛЕНИЕ ЗДЕСЬ: Мы просто перерисовываем экран без вызова saveState()
+        navigate('home'); 
+        
     } catch (e) {
         console.error("Ошибка синхронизации:", e);
-        alert("⚠️ Ошибка: Данные не загрузились! Проверь, правильно ли вставлена ссылка GAS_URL в admin.js");
+        alert("⚠️ Ошибка: Данные не загрузились! Проверь ссылку GAS_URL");
     }
 }
 
